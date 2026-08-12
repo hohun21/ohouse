@@ -1,3 +1,11 @@
 /.metadata/
 ohousePro/.classpath
 Servers/Tomcat v10.1 Server at localhost-config/server.xml
+Servers/.settings/org.eclipse.wst.server.core.prefs
+Servers/.settings/org.eclipse.core.resources.prefs
+Servers/.project
+Servers/Tomcat v10.1 Server at localhost-config/catalina.policy
+Servers/Tomcat v10.1 Server at localhost-config/catalina.properties
+Servers/Tomcat v10.1 Server at localhost-config/context.xml
+Servers/Tomcat v10.1 Server at localhost-config/web.xml
+Servers/Tomcat v10.1 Server at localhost-config/tomcat-users.xml

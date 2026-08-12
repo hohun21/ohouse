@@ -1,3 +1,0 @@
-INDEX VERSION 1.134
-C:\ohouseClass\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\2443014570.index
-\ohousePro\src\main\java
