@@ -1,0 +1,42 @@
+-- 현재 컨테이너 확인
+SHOW CON_NAME;
+
+-- XEPDB1로 이동
+ALTER SESSION SET CONTAINER = XEPDB1;
+
+-- 확인
+SHOW CON_NAME;
+
+-- 프로젝트 계정 생성
+CREATE USER OHOUSE IDENTIFIED BY 1234;
+
+-- 권한
+GRANT CONNECT, RESOURCE TO OHOUSE;
+
+-- USERS 테이블스페이스 사용량
+ALTER USER OHOUSE QUOTA UNLIMITED ON USERS;
+
+========================================================
+
++ 새접속
+접속이름 OHOUSE21C
+
+사용자 이름
+OHOUSE
+
+비밀번호
+1234
+
+롤
+기본값
+
+세부정보
+호스트 이름 : localhost
+포트        : 1521
+서비스 이름 : XEPDB1
+
+우리 프로젝트 ConncectionProvider
+
+String url = "jdbc:oracle:thin:@localhost:1521/XEPDB1";
+String user = "OHOUSE";
+String password = "1234";
