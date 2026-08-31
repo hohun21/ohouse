@@ -80,7 +80,7 @@ public class ReviewDAOImpl implements ReviewDAO {
             int paramIdx = 1;
             
             // [필수] 상품 ID
-            pstmt.setInt(paramIdx++, reqDTO.getProductId());
+            pstmt.setLong(paramIdx++, reqDTO.getProduct_id());
 
             // [동적] 별점 목록 (Integer)
             if (reqDTO.getRatings() != null && !reqDTO.getRatings().isEmpty()) {
@@ -211,10 +211,10 @@ public class ReviewDAOImpl implements ReviewDAO {
             int paramIdx = 1;
             
             // 💥 [수정] 하드코딩 4 제거 -> reqDTO에서 전달된 회원 ID 동적 적용 (IS_LIKED 판단용)
-            pstmt.setInt(paramIdx++, reqDTO.getMemberId());
+            pstmt.setInt(paramIdx++, reqDTO.getMember_id());
 
             // [필수] 상품 ID
-            pstmt.setInt(paramIdx++, reqDTO.getProductId());
+            pstmt.setLong(paramIdx++, reqDTO.getProduct_id());
 
             // [동적] 별점
             if (reqDTO.getRatings() != null && !reqDTO.getRatings().isEmpty()) {
@@ -306,7 +306,7 @@ public class ReviewDAOImpl implements ReviewDAO {
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             int paramIdx = 1;
 
-            pstmt.setInt(paramIdx++, reqDTO.getProductId());
+            pstmt.setLong(paramIdx++, reqDTO.getProduct_id());
 
             if (reqDTO.getRatings() != null && !reqDTO.getRatings().isEmpty()) {
                 for (Integer rating : reqDTO.getRatings()) {
@@ -329,7 +329,7 @@ public class ReviewDAOImpl implements ReviewDAO {
         return totalCount;
     }
     @Override
-    public ReviewSummaryDTO selectReviewSummary(Connection conn, int productId) throws Exception {
+    public ReviewSummaryDTO selectReviewSummary(Connection conn, long productId) throws Exception {
         String sql = "SELECT COUNT(*) as TOTAL_COUNT, " +
                      "       NVL(AVG(RATING), 0) as AVG_RATING, " +
                      "       COUNT(CASE WHEN RATING = 5 THEN 1 END) as COUNT5, " +
@@ -342,7 +342,7 @@ public class ReviewDAOImpl implements ReviewDAO {
         ReviewSummaryDTO summary = null;
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, productId);
+            pstmt.setLong(1, productId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     int total = rs.getInt("TOTAL_COUNT");
@@ -373,7 +373,7 @@ public class ReviewDAOImpl implements ReviewDAO {
 
     // 2단 구조의 리뷰 옵션 필터 드롭다운용 목록 조회 추가
     @Override
-    public List<OptionFilterDTO> selectOptionFilterList(Connection conn, int productId) throws Exception {
+    public List<OptionFilterDTO> selectOptionFilterList(Connection conn, long productId) throws Exception {
         String sql = """
             SELECT ov1.OPTION_VALUE_ID AS PARENT_VAL_ID,
                    ov1.OPTION_NAME AS PARENT_VAL_NAME,
@@ -396,7 +396,7 @@ public class ReviewDAOImpl implements ReviewDAO {
         List<OptionFilterDTO> list = null;
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, productId);
+            pstmt.setLong(1, productId);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 Map<Integer, OptionFilterDTO> map = new LinkedHashMap<>();
