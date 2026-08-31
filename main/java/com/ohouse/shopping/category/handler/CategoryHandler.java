@@ -11,8 +11,8 @@ import com.ohouse.shopping.category.dao.CategoryDAO;
 import com.ohouse.shopping.category.dao.CategoryDAOImple;
 import com.ohouse.shopping.category.dto.CategoryDTO;
 import com.ohouse.shopping.category.service.CategoryService;
-import com.util.conn.ConnectionProvider;
-import com.util.conn.JdbcUtil;
+import com.ohouse.util.conn.ConnectionProvider;
+import com.ohouse.util.conn.JdbcUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

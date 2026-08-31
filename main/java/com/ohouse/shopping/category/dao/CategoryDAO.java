@@ -18,4 +18,7 @@ public interface CategoryDAO {
 	
 	// 카테고리 좌측 메뉴open용
 	List<CategoryDTO> getAllCategories(Connection conn) throws SQLException;
+	
+	List<CategoryDTO> getRootCategories(Connection conn)
+	        throws SQLException;
 }
