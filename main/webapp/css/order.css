@@ -1,0 +1,854 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Noto Sans KR", sans-serif;
+
+    color: #2f3438;
+    background: #fff;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+    height: 80px;
+
+    border-bottom: 1px solid #eee;
+
+    display: flex;
+    align-items: center;
+}
+
+.header-inner {
+    width: 1200px;
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: 800;
+
+    color: #35c5f0;
+
+    text-decoration: none;
+}
+
+.header-title {
+    margin-left: 25px;
+    padding-left: 25px;
+
+    border-left: 1px solid #ddd;
+
+    font-size: 20px;
+    font-weight: 700;
+}
+
+
+/* =========================
+   PAGE
+========================= */
+
+.container {
+    width: 1200px;
+
+    margin: 0 auto;
+
+    padding: 45px 0 100px;
+}
+
+.page-title {
+    margin: 0 0 35px;
+
+    font-size: 28px;
+    font-weight: 700;
+}
+
+
+/* =========================
+   CONTENT
+========================= */
+
+.content {
+    display: grid;
+
+    grid-template-columns: 760px 360px;
+
+    gap: 60px;
+
+    align-items: start;
+}
+
+.left {
+    width: 760px;
+}
+
+
+/* =========================
+   SECTION
+========================= */
+
+.section {
+    border-top: 1px solid #222;
+
+    padding: 25px 0 30px;
+}
+
+.section-title {
+    margin: 0 0 24px;
+
+    font-size: 20px;
+    font-weight: 700;
+}
+
+
+/* =========================
+   ORDER PRODUCT
+========================= */
+
+.order-item {
+    width: 100%;
+    min-height: 150px;
+
+    padding: 20px 0;
+
+    display: flex;
+    align-items: center;
+
+    border-bottom: 1px solid #eee;
+}
+
+
+/* 상품 이미지 */
+
+.order-item .product-image {
+    flex: 0 0 120px;
+
+    width: 120px;
+    height: 120px;
+
+    margin-right: 20px;
+
+    background: #f5f5f5;
+
+    border-radius: 6px;
+
+    overflow: hidden;
+}
+
+.order-item .product-image img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.order-item .image-placeholder {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #999;
+
+    font-size: 13px;
+}
+
+
+/* 상품 정보 */
+
+.order-item .product-info {
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 0 20px 0 0;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+}
+
+
+/* 상품명 */
+
+.order-item .product-name {
+    margin: 0 0 7px;
+
+    font-size: 16px;
+    font-weight: 500;
+
+    line-height: 1.5;
+
+    color: #2f3438;
+
+    word-break: keep-all;
+}
+
+
+/* 옵션 */
+
+.order-item .product-option {
+    margin: 0 0 12px;
+
+    font-size: 13px;
+
+    color: #828282;
+}
+
+
+/* =========================
+   QUANTITY + OPTION BUTTON
+========================= */
+
+.order-item .order-option-control {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+
+/* 수량 박스 */
+
+.order-item .quantity-control {
+    width: 104px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+
+    border: 1px solid #ddd;
+
+    border-radius: 4px;
+
+    overflow: hidden;
+
+    background: #fff;
+}
+
+
+/* 수량 버튼 */
+
+.order-item .quantity-control button {
+    width: 32px;
+    height: 32px;
+
+    padding: 0;
+
+    border: none;
+
+    background: #fff;
+
+    color: #555;
+
+    font-size: 15px;
+
+    line-height: 32px;
+
+    text-align: center;
+
+    cursor: pointer;
+}
+
+.order-item .quantity-control button:hover {
+    background: #f7f7f7;
+}
+
+
+/* 수량 */
+
+.order-item .quantity-number {
+    width: 40px;
+    height: 32px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    color: #333;
+
+    font-size: 13px;
+
+    text-align: center;
+}
+
+
+/* 옵션 변경 */
+
+.order-item .option-change-btn {
+    height: 34px;
+
+    padding: 0 13px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 4px;
+
+    background: #fff;
+
+    color: #555;
+
+    font-size: 13px;
+
+    cursor: pointer;
+}
+
+.order-item .option-change-btn:hover {
+    background: #f7f7f7;
+
+    border-color: #bbb;
+}
+
+
+/* 상품 가격 */
+
+.order-item .product-price {
+    flex: 0 0 130px;
+
+    width: 130px;
+
+    text-align: right;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    color: #222;
+}
+
+.order-item .item-price {
+    white-space: nowrap;
+}
+
+
+/* =========================
+   DELIVERY
+========================= */
+
+.address-box {
+    border: 1px solid #ddd;
+
+    border-radius: 6px;
+
+    padding: 20px;
+}
+
+.address-top {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 15px;
+}
+
+.address-name {
+    font-weight: 700;
+}
+
+.default-label {
+    display: inline-block;
+
+    margin-left: 7px;
+
+    padding: 3px 6px;
+
+    border-radius: 3px;
+
+    background: #f1f8ff;
+
+    color: #35c5f0;
+
+    font-size: 11px;
+}
+
+.change-btn {
+    padding: 7px 12px;
+
+    border: 1px solid #ddd;
+
+    background: #fff;
+
+    border-radius: 4px;
+
+    cursor: pointer;
+}
+
+.address {
+    font-size: 14px;
+
+    line-height: 1.7;
+}
+
+.delivery-row {
+    margin-top: 20px;
+}
+
+.delivery-row label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+
+/* =========================
+   INPUT / SELECT
+========================= */
+
+select,
+input {
+    width: 100%;
+    height: 46px;
+
+    padding: 0 12px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 4px;
+
+    background: #fff;
+
+    font-size: 14px;
+
+    outline: none;
+}
+
+select:focus,
+input:focus {
+    border-color: #35c5f0;
+}
+
+
+/* =========================
+   DISCOUNT
+========================= */
+
+.discount-row {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 15px;
+}
+
+.discount-row input {
+    flex: 1;
+}
+
+.discount-btn {
+    width: 100px;
+    height: 46px;
+
+    border: 1px solid #ddd;
+
+    background: #fff;
+
+    border-radius: 4px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.discount-btn:hover {
+    background: #f7f7f7;
+}
+
+.point-info {
+    display: flex;
+
+    justify-content: space-between;
+
+    font-size: 13px;
+
+    color: #828282;
+}
+
+
+/* =========================
+   PAYMENT METHOD
+========================= */
+
+.payment-methods {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 8px;
+}
+
+.payment-method {
+    height: 52px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 5px;
+
+    background: #fff;
+
+    cursor: pointer;
+
+    font-size: 14px;
+}
+
+.payment-method:hover {
+    background: #f7f7f7;
+}
+
+.payment-method.active {
+    border: 2px solid #35c5f0;
+
+    color: #35c5f0;
+
+    font-weight: 700;
+}
+
+
+/* =========================
+   RIGHT PAYMENT
+========================= */
+
+.content > aside {
+    width: 360px;
+}
+
+.payment-summary {
+    position: sticky;
+
+    top: 30px;
+
+    width: 100%;
+
+    border: 1px solid #ddd;
+
+    border-radius: 8px;
+
+    padding: 28px 24px;
+
+    background: #fff;
+}
+
+.summary-title {
+    padding-bottom: 22px;
+
+    border-bottom: 1px solid #eee;
+
+    font-size: 20px;
+
+    font-weight: 700;
+}
+
+.summary-row {
+    display: flex;
+
+    justify-content: space-between;
+
+    padding: 13px 0;
+
+    font-size: 14px;
+}
+
+.summary-row.discount {
+    color: #f04452;
+}
+
+.summary-total {
+    margin-top: 10px;
+
+    padding-top: 22px;
+
+    border-top: 1px solid #eee;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+}
+
+.summary-total span:first-child {
+    font-size: 15px;
+
+    font-weight: 700;
+}
+
+.total-price {
+    font-size: 27px;
+
+    font-weight: 800;
+
+    color: #35c5f0;
+}
+
+.pay-btn {
+    width: 100%;
+    height: 58px;
+
+    margin-top: 25px;
+
+    border: none;
+
+    border-radius: 4px;
+
+    background: #35c5f0;
+
+    color: #fff;
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.pay-btn:hover {
+    background: #24b7e3;
+}
+
+.agreement {
+    margin-top: 20px;
+
+    color: #828282;
+
+    font-size: 12px;
+
+    line-height: 1.6;
+}
+
+.agreement input {
+    width: 16px;
+    height: 16px;
+
+    margin-right: 5px;
+
+    vertical-align: middle;
+}
+
+
+/* =====================================================
+   OPTION CHANGE MODAL
+===================================================== */
+
+.option-modal {
+    display: none;
+
+    position: fixed;
+
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    padding: 20px;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    z-index: 99999;
+
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* JS에서 active를 붙이면 표시 */
+
+.option-modal.active {
+    display: flex;
+}
+
+
+/* 모달 내부 */
+
+.option-modal-content {
+    position: relative;
+
+    width: 500px;
+
+    max-width: 100%;
+
+    max-height: 80vh;
+
+    overflow-y: auto;
+
+    padding: 30px;
+
+    border-radius: 8px;
+
+    background: #fff;
+
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+
+/* 모달 닫기 */
+
+.option-modal-close {
+    position: absolute;
+
+    top: 14px;
+    right: 16px;
+
+    width: 32px;
+    height: 32px;
+
+    padding: 0;
+
+    border: none;
+
+    background: transparent;
+
+    color: #555;
+
+    font-size: 24px;
+
+    line-height: 32px;
+
+    text-align: center;
+
+    cursor: pointer;
+}
+
+.option-modal-close:hover {
+    color: #111;
+}
+
+
+/* 모달 제목 */
+
+.option-modal-content h2 {
+    margin: 0 0 25px;
+
+    font-size: 20px;
+
+    font-weight: 700;
+}
+
+
+/* 옵션 영역 */
+
+#changeOptionArea {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+    margin-bottom: 20px;
+}
+
+
+/* 모달 안 select */
+
+#changeOptionArea select {
+    width: 100%;
+
+    height: 48px;
+
+    padding: 0 14px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 4px;
+
+    background: #fff;
+
+    font-size: 14px;
+}
+
+
+/* 변경 버튼 */
+
+#optionChangeConfirm {
+    width: 100%;
+
+    height: 50px;
+
+    border: none;
+
+    border-radius: 4px;
+
+    background: #35c5f0;
+
+    color: #fff;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+#optionChangeConfirm:hover {
+    background: #24b7e3;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 900px) {
+
+    .header-inner,
+    .container {
+        width: calc(100% - 30px);
+    }
+
+    .content {
+        grid-template-columns: 1fr;
+
+        gap: 30px;
+    }
+
+    .left {
+        width: 100%;
+    }
+
+    .content > aside {
+        width: 100%;
+    }
+
+    .payment-summary {
+        position: static;
+    }
+
+    .order-item .product-image {
+        flex: 0 0 90px;
+
+        width: 90px;
+        height: 90px;
+
+        margin-right: 15px;
+    }
+
+    .order-item .product-price {
+        flex: 0 0 auto;
+
+        width: auto;
+
+        margin-left: 10px;
+    }
+}

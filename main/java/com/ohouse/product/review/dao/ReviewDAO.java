@@ -1,0 +1,39 @@
+package com.ohouse.product.review.dao;
+
+import java.sql.Connection;
+import java.util.List;
+
+import com.ohouse.product.review.dto.OptionFilterDTO;
+import com.ohouse.product.review.dto.ReviewDTO;
+import com.ohouse.product.review.dto.ReviewPageDTO;
+import com.ohouse.product.review.dto.ReviewSummaryDTO;
+
+public interface ReviewDAO {
+    // 1. 특정 상품의 페이징/정렬 처리된 리뷰 목록 (이미지, 작성자 정보 JOIN)
+    List<ReviewDTO> selectReviewList2(Connection conn, ReviewPageDTO reqDTO) throws Exception;
+    
+    // 2. 특정 상품의 리뷰 통계 (평균 별점, 개수)
+    ReviewSummaryDTO selectReviewSummary(Connection conn, int productId) throws Exception;
+
+	int getTotalRecords(Connection conn, ReviewPageDTO reqDTO) throws Exception;
+
+	List<OptionFilterDTO> selectOptionFilterList(Connection conn, int productId) throws Exception;
+
+	boolean isReviewLiked(Connection conn, int reviewId, int memberId);
+
+	int insertReviewLike(Connection conn, int reviewId, int memberId);
+
+	int deleteReviewLike(Connection conn, int reviewId, int memberId);
+
+	int getHelpCount(Connection conn, int reviewId);
+
+	List<ReviewDTO> selectReviewList(Connection conn, ReviewPageDTO reqDTO) throws Exception;
+
+	int updateHideImage(Connection conn, int reviewId, int isHideImage) throws Exception;
+	
+	int updateAdminReply(Connection conn, int reviewId, String adminReply) throws Exception;
+
+	int insertReviewImage(Connection conn, int reviewId, String imageUrl) throws Exception;
+
+	int insertReview(Connection conn, ReviewDTO reviewDTO) throws Exception;
+}

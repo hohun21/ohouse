@@ -1,0 +1,930 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<jsp:include page="/WEB-INF/views/layout/header.jsp"/>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>장바구니 | 오늘의집</title>
+    <style>
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            color: #292929;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+            background: #fff
+        }
+
+        button {
+            border: 0;
+            background: none;
+            cursor: pointer
+        }
+
+        .header {
+            height: 80px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center
+        }
+
+        .header-inner {
+            width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: 800;
+            color: #35c5f0;
+            margin-right: 45px
+        }
+
+        .nav {
+            display: flex;
+            gap: 30px;
+            font-size: 16px;
+            font-weight: 600
+        }
+
+        .nav a {
+            color: #424242;
+            text-decoration: none
+        }
+
+        .cart-icon {
+            margin-left: auto;
+            font-size: 24px
+        }
+
+        .container {
+            width: 1200px;
+            margin: 0 auto;
+            padding: 45px 0 100px
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 35px
+        }
+
+        .cart-layout {
+            display: grid;
+            grid-template-columns:1fr 330px;
+            gap: 40px
+        }
+
+        .cart-box {
+            border-top: 1px solid #333
+        }
+
+        .cart-header {
+            height: 60px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center
+        }
+
+        .check-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px
+        }
+
+        .check-wrap input {
+            width: 18px;
+            height: 18px;
+            accent-color: #35c5f0
+        }
+
+        .delete-selected {
+            margin-left: auto;
+            color: #666;
+            font-size: 13px
+        }
+
+        .cart-item {
+            display: flex;
+            padding: 25px 0;
+            border-bottom: 1px solid #eee;
+            gap: 20px
+        }
+
+        .item-check {
+            width: 20px;
+            padding-top: 5px
+        }
+
+        .item-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 5px;
+            overflow: hidden;
+            background: #f5f5f5
+        }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        .item-info {
+            flex: 1
+        }
+
+        .brand {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 6px
+        }
+
+        .item-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px
+        }
+
+        .option {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 15px
+        }
+
+        .item-bottom {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .quantity {
+            display: flex;
+            width: 100px;
+            height: 32px;
+            border: 1px solid #ddd;
+            border-radius: 4px
+        }
+
+        .quantity button {
+            width: 30px;
+            font-size: 16px;
+            color: #666
+        }
+
+        .quantity input {
+            width: 38px;
+            border: 0;
+            text-align: center;
+            outline: none
+        }
+
+        .price {
+            margin-left: auto;
+            font-size: 17px;
+            font-weight: 700
+        }
+
+        .remove {
+            margin-left: 20px;
+            color: #aaa;
+            font-size: 18px
+        }
+
+        .summary {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 25px;
+            position: sticky;
+            top: 20px;
+            height: max-content
+        }
+
+        .summary-title {
+            font-size: 18px;
+            font-weight: 700;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            font-size: 14px
+        }
+
+        .summary-row.discount {
+            color: #ff5252
+        }
+
+        .summary-total {
+            border-top: 1px solid #eee;
+            margin-top: 10px;
+            padding-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .summary-total span:first-child {
+            font-size: 16px;
+            font-weight: 700
+        }
+
+        .total-price {
+            font-size: 24px;
+            font-weight: 800
+        }
+
+        .buy-btn {
+            width: 100%;
+            height: 52px;
+            margin-top: 25px;
+            border-radius: 4px;
+            background: #35c5f0;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700
+        }
+
+        .empty {
+            padding: 100px 0;
+            text-align: center;
+            color: #999
+        }
+
+        .empty-icon {
+            font-size: 45px;
+            margin-bottom: 15px
+        }
+
+        @media (max-width: 900px) {
+            .header-inner, .container {
+                width: calc(100% - 30px)
+            }
+
+            .cart-layout {
+                grid-template-columns:1fr
+            }
+
+            .summary {
+                position: static
+            }
+        }
+
+        .item-bottom {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .quantity {
+            display: flex;
+            width: 100px;
+            height: 32px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .quantity button {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            font-size: 16px;
+            line-height: 30px;
+            color: #666;
+        }
+
+        .quantity input {
+            width: 38px;
+            height: 30px;
+            padding: 0;
+            border: 0;
+            text-align: center;
+            outline: none;
+        }
+
+        .option-change-btn {
+            width: 76px;
+            height: 32px;
+            padding: 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fff;
+            color: #555;
+            font-size: 13px;
+            line-height: 30px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .option-change-btn:hover {
+            background: #f7f7f7;
+        }
+
+        .option-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .4);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .option-modal.active {
+            display: flex;
+        }
+
+        .option-modal-content {
+            width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .option-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        #optionModalClose {
+            font-size: 28px;
+            color: #555;
+        }
+
+        .change-option-product {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .change-option-product img {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .change-option-product-info {
+            flex: 1;
+        }
+
+        .change-option-product-name {
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        .change-option-product-sku {
+            margin-top: 4px;
+            color: #999;
+            font-size: 12px;
+        }
+
+        #changeOptionArea {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #changeOptionArea .option-select {
+            width: 100%;
+            height: 44px;
+            padding: 0 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fff;
+            font-size: 14px;
+        }
+
+        #changeOptionPreview {
+            margin-top: 14px;
+        }
+
+        .change-option-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f7f8f9;
+            border-radius: 5px;
+        }
+
+        .change-option-item-name {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .change-option-remove {
+            font-size: 17px;
+            color: #aaa;
+            padding: 0;
+        }
+
+        .change-option-item-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+        }
+
+        .change-option-quantity {
+            display: flex;
+            width: 90px;
+            height: 30px;
+            border: 1px solid #ddd;
+            background: #fff;
+        }
+
+        .change-option-quantity button {
+            width: 28px;
+            font-size: 15px;
+        }
+
+        .change-option-quantity span {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .change-option-item-bottom strong {
+            font-size: 16px;
+        }
+
+        .change-option-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-top: 1px solid #eee;
+            margin-top: 15px;
+        }
+
+        .change-option-total strong {
+            font-size: 20px;
+        }
+
+        .change-option-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .change-option-buttons button {
+            flex: 1;
+            height: 48px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        #optionChangeConfirm {
+            background: #35c5f0;
+            color: #fff;
+            border-color: #35c5f0;
+        }
+
+        .brand-group {
+            border-bottom: 1px solid #ddd;
+        }
+
+        .brand-header {
+            height: 55px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            border-bottom: 1px solid #ddd;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .cart-product {
+            border-bottom: 0;
+        }
+
+        .cart-product-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 35px 0 15px;
+        }
+
+        .cart-product-info {
+            flex: 1;
+        }
+
+        .cart-product-delivery {
+            margin-top: 12px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .cart-product > .cart-item {
+            display: block;
+            margin: 8px 0 15px 105px;
+            padding: 25px;
+            border: 0;
+            border-radius: 6px;
+            background: #f7f8f9;
+        }
+
+        .cart-option-content {
+            width: 100%;
+        }
+
+        .cart-product > .cart-item .option {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .cart-product-footer {
+            display: flex;
+            align-items: center;
+            margin-left: 105px;
+            padding: 5px 0 25px;
+        }
+
+        .cart-product-footer .option-change-btn {
+            width: auto;
+            height: auto;
+            padding: 0;
+            border: 0;
+            font-size: 15px;
+            color: #666;
+        }
+
+        .footer-divider {
+            margin: 0 10px;
+            color: #ccc;
+        }
+
+        .product-buy-btn {
+            padding: 0;
+            color: #35c5f0;
+            font-size: 15px;
+        }
+
+        .product-total-price {
+            margin-left: auto;
+            font-size: 22px;
+        }
+
+    </style>
+</head>
+<body>
+
+
+<main class="container">
+<h1 class="title">장바구니</h1>
+
+<div class="cart-layout">
+<section class="cart-box">
+
+<div class="cart-header">
+    <label class="check-wrap">
+        <input type="checkbox" id="checkAll">
+        <span>전체선택</span>
+    </label>
+    <button class="delete-selected" id="deleteSelected">선택삭제</button>
+</div>
+
+<c:choose>
+    <c:when test="${empty cdto}">
+        <div class="empty">
+            <div class="empty-icon">🛒</div>
+            <div>장바구니에 담긴 상품이 없습니다.</div>
+        </div>
+    </c:when>
+
+    <c:otherwise>
+        <c:set var="currentBrand" value=""/>
+        <c:set var="currentProductId" value="-1"/>
+        <c:set var="brandOpen" value="false"/>
+        <c:set var="productOpen" value="false"/>
+
+        <c:forEach var="item" items="${cdto}" varStatus="status">
+
+            <%-- 다음 상품 확인 --%>
+            <c:if test="${not status.last}">
+                <c:set var="nextItem" value="${cdto[status.index + 1]}"/>
+            </c:if>
+
+            <%-- 브랜드가 바뀌면 이전 상품/브랜드 닫기 --%>
+            <c:if test="${currentBrand ne item.brand_name}">
+
+                <c:if test="${productOpen}">
+                    <div class="cart-product-footer">
+                        <button type="button"
+                                class="option-change-btn">
+                            옵션변경
+                        </button>
+
+                        <span class="footer-divider">|</span>
+
+                        <button type="button"
+                                class="product-buy-btn">
+                            구매하기
+                        </button>
+
+                        <strong class="product-total-price">
+                            <c:set var="productTotal" value="0"/>
+                            <c:forEach var="productItem" items="${cdto}">
+                                <c:if test="${productItem.product_id eq currentProductId}">
+                                    <c:set var="productTotal"
+                                           value="${productTotal + (productItem.price * productItem.quantity)}"/>
+                                </c:if>
+                            </c:forEach>
+                            <fmt:formatNumber value="${productTotal}"
+                                              pattern="#,###"/>원
+                        </strong>
+                    </div>
+                    </div>
+                </c:if>
+
+                <c:if test="${brandOpen}">
+                    </div>
+                </c:if>
+
+                <div class="brand-group">
+
+                <div class="brand-header">
+                        ${item.brand_name}
+                </div>
+
+                <c:set var="brandOpen" value="true"/>
+                <c:set var="productOpen" value="false"/>
+                <c:set var="currentBrand" value="${item.brand_name}"/>
+                <c:set var="currentProductId" value="-1"/>
+
+            </c:if>
+
+            <%-- 상품이 바뀌면 이전 상품 닫기 --%>
+            <c:if test="${currentProductId ne item.product_id}">
+
+                <c:if test="${productOpen}">
+                    <div class="cart-product-footer">
+                        <button type="button"
+                                class="option-change-btn">
+                            옵션변경
+                        </button>
+
+                        <span class="footer-divider">|</span>
+
+                        <button type="button"
+                                class="product-buy-btn">
+                            구매하기
+                        </button>
+
+                        <strong class="product-total-price">
+                            <c:set var="productTotal" value="0"/>
+                            <c:forEach var="productItem" items="${cdto}">
+                                <c:if test="${productItem.product_id eq currentProductId}">
+                                    <c:set var="productTotal"
+                                           value="${productTotal + (productItem.price * productItem.quantity)}"/>
+                                </c:if>
+                            </c:forEach>
+                            <fmt:formatNumber value="${productTotal}"
+                                              pattern="#,###"/>원
+                        </strong>
+                    </div>
+                    </div>
+                </c:if>
+
+                <div class="cart-product"
+                data-product-id="${item.product_id}">
+
+                <div class="cart-product-header">
+
+                    <div class="item-check">
+                        <input type="checkbox"
+                               class="item-check-box"
+                               checked>
+                    </div>
+
+                    <div class="item-image">
+                        <img src="${item.image_url}"
+                             alt="${item.product_name}">
+                    </div>
+
+                    <div class="cart-product-info">
+                        <div class="item-name">
+                                ${item.product_name}
+                        </div>
+
+                        <div class="cart-product-delivery">
+                            배송비 40,000원 착불
+                        </div>
+                    </div>
+
+                </div>
+
+                <c:set var="currentProductId"
+                       value="${item.product_id}"/>
+
+                <c:set var="productOpen"
+                       value="true"/>
+
+            </c:if>
+
+            <%-- 옵션 하나 --%>
+            <div class="cart-item"
+                 data-cart-items-id="${item.cart_items_id}"
+                 data-product-id="${item.product_id}"
+                 data-product-option-id="${item.product_option_id}"
+                 data-product-name="${item.product_name}"
+                 data-image-url="${item.image_url}"
+                 data-sku="${item.sku}"
+                 data-price="${item.price}"
+                 data-quantity="${item.quantity}"
+                 data-options='[
+        <c:forEach var="option" items="${item.options}" varStatus="status">
+            <c:if test="${status.index > 0}">,</c:if>
+            {
+                "option_group_id": ${option.option_group_id},
+                "option_group_name": "${option.option_group_name}",
+                "option_value_id": ${option.option_value_id},
+                "option_value_name": "${option.option_value_name}"
+            }
+        </c:forEach>
+        ]'>
+
+                <div class="cart-option-content">
+
+                    <div class="option">
+                        <c:forEach var="option"
+                                   items="${item.options}"
+                                   varStatus="optionStatus">
+
+                            <c:if test="${optionStatus.index > 0}">
+                                <span> / </span>
+                            </c:if>
+
+                            <span>
+                            ${option.option_group_name}:
+                            ${option.option_value_name}
+                        </span>
+
+                        </c:forEach>
+                    </div>
+
+                    <div class="item-bottom">
+
+                        <div class="quantity">
+                            <button type="button"
+                                    class="minus">−
+                            </button>
+
+                            <input type="text"
+                                   class="quantity-input"
+                                   value="${item.quantity}">
+
+                            <button type="button"
+                                    class="plus">+
+                            </button>
+                        </div>
+
+                        <c:set var="itemTotal"
+                               value="${item.price * item.quantity}"/>
+
+                        <div class="price">
+                            <fmt:formatNumber value="${itemTotal}"
+                                              pattern="#,###"/>원
+                        </div>
+
+                        <button type="button"
+                                class="remove">×
+                        </button>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <%-- 마지막 아이템이거나 다음 상품이 달라지면 현재 상품 종료 --%>
+            <c:if test="${status.last or nextItem.product_id ne item.product_id}">
+
+                <div class="cart-product-footer">
+
+                    <button type="button"
+                            class="option-change-btn">
+                        옵션변경
+                    </button>
+
+                    <span class="footer-divider">|</span>
+
+                    <button type="button"
+                            class="product-buy-btn">
+                        구매하기
+                    </button>
+
+                    <strong class="product-total-price">
+                        <c:set var="productTotal" value="0"/>
+
+                        <c:forEach var="productItem" items="${cdto}">
+                            <c:if test="${productItem.product_id eq currentProductId}">
+                                <c:set var="productTotal"
+                                       value="${productTotal + (productItem.price * productItem.quantity)}"/>
+                            </c:if>
+                        </c:forEach>
+
+                        <fmt:formatNumber value="${productTotal}"
+                                          pattern="#,###"/>원
+                    </strong>
+
+                </div>
+
+                </div>
+
+                <c:set var="productOpen" value="false"/>
+
+            </c:if>
+
+        </c:forEach>
+
+        <%-- 마지막 브랜드 닫기 --%>
+        <c:if test="${brandOpen}">
+            </div>
+        </c:if>
+    </c:otherwise>
+
+    <div id="optionModal" class="option-modal">
+    <div class="option-modal-content">
+    <div class="option-modal-header">
+    <strong>옵션변경</strong>
+    <button type="button" id="optionModalClose">×</button>
+    </div>
+
+    <div id="changeOptionProduct"></div>
+
+    <div id="changeOptionArea"></div>
+
+    <div id="changeOptionPreview"></div>
+
+    <div class="change-option-total">
+    <span>주문금액</span>
+    <strong id="changeOptionTotal">0원</strong>
+    </div>
+
+    <div class="change-option-buttons">
+    <button type="button" id="optionChangeCancel">취소</button>
+    <button type="button" id="optionChangeConfirm">확인</button>
+    </div>
+    </div>
+    </div>
+    </section>
+
+    <aside class="summary">
+    <div class="summary-title">결제금액</div>
+
+    <div class="summary-row">
+    <span>상품금액</span>
+    <strong id="productPrice">0원</strong>
+    </div>
+
+    <div class="summary-row discount">
+    <span>할인금액</span>
+    <strong id="discountPrice">-0원</strong>
+    </div>
+
+    <div class="summary-row">
+    <span>배송비</span>
+    <strong id="deliveryPrice">0원</strong>
+    </div>
+
+    <div class="summary-total">
+    <span>최종 결제 금액</span>
+    <span class="total-price" id="totalPrice">0원</span>
+    </div>
+
+    <button class="buy-btn" id="buyBtn">구매하기</button>
+    </aside>
+    </div>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="/js/cart.js"></script>
+    <script>
+
+    </script>
+
+    </body>
+    </html>
+    <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

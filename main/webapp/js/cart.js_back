@@ -1,0 +1,1895 @@
+let currentCartProduct = null;
+let changedCartItems = [];
+let changedOptionData = null;
+
+
+$(function () {
+    updatePrice();
+    updateCheckAll();
+});
+
+/* =========================
+   전체 금액
+========================= */
+
+function updatePrice() {
+    let totalProductPrice = 0;
+
+    $(".cart-product").each(function () {
+        let productTotal = 0;
+
+        $(this).find(".cart-item").each(function () {
+            const price = Number(this.dataset.price) || 0;
+            const quantity =
+                Number($(this).find(".quantity-input").val()) || 0;
+
+            productTotal += price * quantity;
+        });
+
+        $(this)
+            .find(".product-total-price")
+            .text(productTotal.toLocaleString("ko-KR") + "원");
+
+        totalProductPrice += productTotal;
+    });
+
+    $("#totalProductPrice").text(
+        totalProductPrice.toLocaleString("ko-KR") + "원"
+    );
+}
+
+/* =========================
+   체크박스
+========================= */
+
+$("#checkAll").on("change", function () {
+    const checked = $(this).prop("checked");
+
+    $(".cart-product-header .item-check-box")
+        .prop("checked", checked);
+
+    updatePrice();
+});
+
+$(document).on(
+    "change",
+    ".cart-product-header .item-check-box",
+    function () {
+        updateCheckAll();
+        updatePrice();
+    }
+);
+
+function updateCheckAll() {
+    const total =
+        $(".cart-product-header .item-check-box").length;
+
+    const checked =
+        $(".cart-product-header .item-check-box:checked").length;
+
+    $("#checkAll").prop(
+        "checked",
+        total > 0 && total === checked
+    );
+}
+
+/* =========================
+   수량 변경
+========================= */
+
+$(document).on(
+    "click",
+    ".plus, .minus",
+    async function () {
+
+        const cartItem =
+            $(this).closest(".cart-item")[0];
+
+        if (!cartItem) return;
+
+        const input =
+            cartItem.querySelector(".quantity-input");
+
+        const oldQuantity =
+            Number(input.value);
+
+        let quantity = oldQuantity;
+
+        if ($(this).hasClass("plus")) {
+            quantity++;
+        } else {
+            quantity--;
+
+            if (quantity < 1) {
+                quantity = 1;
+            }
+        }
+
+        input.value = quantity;
+
+        try {
+            await updateQuantity(
+                cartItem,
+                quantity
+            );
+
+            input.defaultValue = quantity;
+
+            updateCartItemPrice(cartItem);
+
+            const product =
+                cartItem.closest(".cart-product");
+
+            updateProductTotal(product);
+            updatePrice();
+
+        } catch (error) {
+
+            input.value = oldQuantity;
+
+            console.error(
+                "수량 변경 오류:",
+                error
+            );
+
+            alert(
+                "수량 변경에 실패했습니다."
+            );
+        }
+    }
+);
+
+$(document).on(
+    "change",
+    ".quantity-input",
+    async function () {
+
+        const input = this;
+
+        const cartItem =
+            $(input).closest(".cart-item")[0];
+
+        if (!cartItem) return;
+
+        const oldQuantity =
+            Number(
+                input.defaultValue ||
+                input.value
+            );
+
+        let quantity =
+            Number(input.value);
+
+        if (
+            !Number.isInteger(quantity) ||
+            quantity < 1
+        ) {
+            quantity = 1;
+        }
+
+        input.value = quantity;
+
+        try {
+            await updateQuantity(
+                cartItem,
+                quantity
+            );
+
+            input.defaultValue =
+                quantity;
+
+            updateCartItemPrice(
+                cartItem
+            );
+
+            const product =
+                cartItem.closest(".cart-product");
+
+            updateProductTotal(product);
+            updatePrice();
+
+        } catch (error) {
+
+            input.value =
+                oldQuantity;
+
+            console.error(
+                "수량 변경 오류:",
+                error
+            );
+
+            alert(
+                "수량 변경에 실패했습니다."
+            );
+        }
+    }
+);
+
+async function updateQuantity(
+    cartItem,
+    quantity
+) {
+    const cartItemsId =
+        Number(
+            cartItem.dataset.cartItemsId
+        );
+
+    const response =
+        await fetch(
+            "/cartQuantityEdit.htm",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+                body: JSON.stringify({
+                    cart_items_id:
+                    cartItemsId,
+                    quantity:
+                    quantity
+                })
+            }
+        );
+
+    if (!response.ok) {
+        throw new Error(
+            "수량 변경 실패"
+        );
+    }
+}
+
+function updateCartItemPrice(
+    cartItem
+) {
+    const price =
+        Number(
+            cartItem.dataset.price || 0
+        );
+
+    const quantity =
+        Number(
+            cartItem
+                .querySelector(
+                    ".quantity-input"
+                )
+                .value || 0
+        );
+
+    const priceElement =
+        cartItem.querySelector(
+            ".price"
+        );
+
+    if (!priceElement) return;
+
+    priceElement.textContent =
+        (
+            price * quantity
+        ).toLocaleString(
+            "ko-KR"
+        ) + "원";
+}
+
+function updateProductTotal(
+    product
+) {
+    if (!product) return;
+
+    let total = 0;
+
+    $(product)
+        .find(".cart-item")
+        .each(function () {
+
+            const price =
+                Number(
+                    this.dataset.price || 0
+                );
+
+            const quantity =
+                Number(
+                    $(this)
+                        .find(
+                            ".quantity-input"
+                        )
+                        .val() || 0
+                );
+
+            total +=
+                price * quantity;
+        });
+
+    $(product)
+        .find(".product-total-price")
+        .text(
+            total.toLocaleString(
+                "ko-KR"
+            ) + "원"
+        );
+}
+
+/* =========================
+   개별 삭제
+========================= */
+
+$(document).on(
+    "click",
+    ".remove",
+    async function () {
+
+        const item =
+            $(this).closest(
+                ".cart-item"
+            );
+
+        const cartItemsId =
+            Number(
+                item.data(
+                    "cart-items-id"
+                )
+            );
+
+        if (
+            !confirm(
+                "상품을 삭제하시겠습니까?"
+            )
+        ) {
+            return;
+        }
+
+        try {
+
+            const response =
+                await fetch(
+                    "/cartDelete.htm",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+                        body:
+                            JSON.stringify({
+                                cart_items_id:
+                                cartItemsId
+                            })
+                    }
+                );
+
+            if (!response.ok) {
+                throw new Error(
+                    "삭제 실패"
+                );
+            }
+
+            const product =
+                item.closest(
+                    ".cart-product"
+                );
+
+            item.remove();
+
+            if (
+                $(product).find(
+                    ".cart-item"
+                ).length === 0
+            ) {
+                $(product).remove();
+            } else {
+                updateProductTotal(
+                    product
+                );
+            }
+
+            updateCheckAll();
+            updatePrice();
+
+        } catch (error) {
+
+            console.error(
+                "삭제 오류:",
+                error
+            );
+
+            alert(
+                "상품 삭제에 실패했습니다."
+            );
+        }
+    }
+);
+
+/* =========================
+   선택 삭제
+========================= */
+
+$("#deleteSelected").on(
+    "click",
+    async function () {
+
+        const ids = [];
+
+        $(".cart-product")
+            .filter(function () {
+                return $(this)
+                    .find(
+                        ".item-check-box"
+                    )
+                    .prop("checked");
+            })
+            .each(function () {
+
+                $(this)
+                    .find(".cart-item")
+                    .each(function () {
+
+                        ids.push(
+                            Number(
+                                this.dataset
+                                    .cartItemsId
+                            )
+                        );
+                    });
+            });
+
+        if (ids.length === 0) {
+            alert(
+                "삭제할 상품을 선택해주세요."
+            );
+            return;
+        }
+
+        if (
+            !confirm(
+                "선택한 상품을 삭제하시겠습니까?"
+            )
+        ) {
+            return;
+        }
+
+        try {
+
+            const response =
+                await fetch(
+                    "/cartDelete.htm",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+                        body:
+                            JSON.stringify(ids)
+                    }
+                );
+
+            if (!response.ok) {
+                throw new Error(
+                    "삭제 실패"
+                );
+            }
+
+            $(".cart-product")
+                .filter(function () {
+                    return $(this)
+                        .find(
+                            ".item-check-box"
+                        )
+                        .prop("checked");
+                })
+                .remove();
+
+            updateCheckAll();
+            updatePrice();
+
+        } catch (error) {
+
+            console.error(
+                "선택 삭제 오류:",
+                error
+            );
+
+            alert(
+                "상품 삭제에 실패했습니다."
+            );
+        }
+    }
+);
+
+/* =========================
+   전체 구매
+========================= */
+
+$("#buyBtn").on(
+    "click",
+    function () {
+
+        const selectedItems = [];
+
+        $(".cart-product")
+            .filter(function () {
+                return $(this)
+                    .find(
+                        ".item-check-box"
+                    )
+                    .prop("checked");
+            })
+            .each(function () {
+
+                $(this)
+                    .find(".cart-item")
+                    .each(function () {
+
+                        selectedItems.push({
+                            cart_items_id:
+                                Number(
+                                    this.dataset
+                                        .cartItemsId
+                                ),
+
+                            quantity:
+                                Number(
+                                    $(this)
+                                        .find(
+                                            ".quantity-input"
+                                        )
+                                        .val()
+                                )
+                        });
+                    });
+            });
+
+        if (
+            selectedItems.length === 0
+        ) {
+            alert(
+                "구매할 상품을 선택해주세요."
+            );
+            return;
+        }
+
+        sessionStorage.setItem(
+            "selectedCartItems",
+            JSON.stringify(
+                selectedItems
+            )
+        );
+
+        location.href =
+            "/order.htm";
+    }
+);
+
+/* =========================
+   상품별 구매
+========================= */
+
+$(document).on(
+    "click",
+    ".product-buy-btn",
+    function () {
+
+        const product =
+            $(this).closest(
+                ".cart-product"
+            );
+
+        const selectedItems = [];
+
+        product
+            .find(".cart-item")
+            .each(function () {
+
+                selectedItems.push({
+                    cart_items_id:
+                        Number(
+                            this.dataset
+                                .cartItemsId
+                        ),
+
+                    quantity:
+                        Number(
+                            $(this)
+                                .find(
+                                    ".quantity-input"
+                                )
+                                .val()
+                        )
+                });
+            });
+
+        if (
+            selectedItems.length === 0
+        ) {
+            return;
+        }
+
+        sessionStorage.setItem(
+            "selectedCartItems",
+            JSON.stringify(
+                selectedItems
+            )
+        );
+
+        location.href =
+            "/order.htm";
+    }
+);
+
+/* =========================================================
+   옵션 변경
+========================================================= */
+
+$(document).on(
+    "click",
+    ".option-change-btn",
+    function () {
+
+        currentCartProduct =
+            $(this)
+                .closest(
+                    ".cart-product"
+                )[0];
+
+        if (!currentCartProduct) {
+            return;
+        }
+
+        changedCartItems = [];
+        changedOptionData = null;
+
+        collectCurrentCartItems();
+
+        $("#changeOptionArea")
+            .empty();
+
+        $("#changeOptionPreview")
+            .empty()
+            .show();
+
+        renderCurrentCartItems();
+
+        const productId =
+            currentCartProduct.dataset
+                .productId;
+
+        loadCartOptionSelects(
+            productId
+        );
+    }
+);
+
+/* =========================================================
+   현재 장바구니 항목 수집
+========================================================= */
+
+function collectCurrentCartItems() {
+    $(currentCartProduct).find(".cart-item").each(function () {
+        const cartItem = this;
+
+        let optionName = "";
+
+        // 우선 실제 옵션 표시용 클래스가 있으면 사용
+        const optionElement = cartItem.querySelector(
+            ".option, .option-name, .item-option, .cart-item-option"
+        );
+
+        if (optionElement) {
+            optionName = optionElement.textContent.trim();
+        }
+
+        // 옵션 클래스가 없다면 cart-item 내부의 텍스트 노드에서 가져온다.
+        if (!optionName) {
+            const clone = cartItem.cloneNode(true);
+
+            $(clone).find(
+                "input, button, .quantity, .quantity-box, .quantity-control, .price, .remove"
+            ).remove();
+
+            optionName = clone.textContent
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+
+        changedCartItems.push({
+            cartItemsId: Number(
+                cartItem.dataset.cartItemsId
+            ),
+            productOptionId: Number(
+                cartItem.dataset.productOptionId || 0
+            ),
+            price: Number(
+                cartItem.dataset.price || 0
+            ),
+            quantity: Number(
+                $(cartItem)
+                    .find(".quantity-input")
+                    .val() || 1
+            ),
+            sku: cartItem.dataset.sku || "",
+            optionName: optionName,
+            isNew: false
+        });
+    });
+}
+
+/* =========================================================
+   현재 CART_ITEM 모달 표시
+========================================================= */
+
+function renderCurrentCartItems() {
+    const $preview = $("#changeOptionPreview");
+    $preview.empty();
+
+    if (!changedCartItems || changedCartItems.length === 0) {
+        return;
+    }
+
+    changedCartItems.forEach((item, index) => {
+
+        const isAdditional =
+            item.isAdditional === true ||
+            item.is_additional === true ||
+            item.optionType === "ADDITIONAL";
+
+        const $item = $("<div>")
+            .addClass("change-option-item")
+            .attr("data-index", index)
+            .attr("data-cart-items-id", item.cartItemsId)
+            .attr("data-product-option-id", item.productOptionId);
+
+        const $name = $("<div>")
+            .addClass("change-option-item-name");
+
+        const $nameText = $("<span>")
+            .text(
+                isAdditional
+                    ? "추가상품 - " + (item.optionName || item.productName || "")
+                    : (item.optionName || "")
+            );
+
+        const $remove = $("<button>")
+            .attr("type", "button")
+            .addClass("change-option-remove")
+            .text("×")
+            .attr("data-index", index);
+
+        $name.append($nameText, $remove);
+
+        const $bottom = $("<div>")
+            .addClass("change-option-item-bottom");
+
+        const $quantity = $("<div>")
+            .addClass("change-option-quantity");
+
+        const $minus = $("<button>")
+            .attr("type", "button")
+            .addClass("change-qty-minus")
+            .attr("data-index", index)
+            .text("−");
+
+        const $count = $("<span>")
+            .addClass("change-qty-count")
+            .text(item.quantity);
+
+        const $plus = $("<button>")
+            .attr("type", "button")
+            .addClass("change-qty-plus")
+            .attr("data-index", index)
+            .text("+");
+
+        $quantity.append(
+            $minus,
+            $count,
+            $plus
+        );
+
+        const $price = $("<strong>")
+            .text(
+                Number(item.price * item.quantity)
+                    .toLocaleString() + "원"
+            );
+
+        $bottom.append(
+            $quantity,
+            $price
+        );
+
+        $item.append(
+            $name,
+            $bottom
+        );
+
+        $preview.append($item);
+    });
+
+    updateChangeModalPrice();
+}
+
+/* =========================================================
+   모달 총액
+========================================================= */
+
+function updateChangeModalPrice() {
+
+    let total = 0;
+
+    changedCartItems.forEach(
+        function (item) {
+
+            total +=
+                Number(item.price || 0) *
+                Number(item.quantity || 0);
+        }
+    );
+
+    $("#changeOptionTotalPrice")
+        .text(
+            total.toLocaleString(
+                "ko-KR"
+            ) + "원"
+        );
+}
+
+/* =========================================================
+   모달 수량 +
+========================================================= */
+
+$(document).on(
+    "click",
+    ".change-plus",
+    function () {
+
+        const row =
+            $(this)
+                .closest(
+                    ".change-cart-item"
+                );
+
+        const index =
+            Number(
+                row.data("index")
+            );
+
+        if (!changedCartItems[index]) {
+            return;
+        }
+
+        changedCartItems[index]
+            .quantity++;
+
+        renderCurrentCartItems();
+    }
+);
+
+/* =========================================================
+   모달 수량 -
+========================================================= */
+
+$(document).on(
+    "click",
+    ".change-minus",
+    function () {
+
+        const row =
+            $(this)
+                .closest(
+                    ".change-cart-item"
+                );
+
+        const index =
+            Number(
+                row.data("index")
+            );
+
+        if (!changedCartItems[index]) {
+            return;
+        }
+
+        if (
+            changedCartItems[index]
+                .quantity <= 1
+        ) {
+            return;
+        }
+
+        changedCartItems[index]
+            .quantity--;
+
+        renderCurrentCartItems();
+    }
+);
+
+/* =========================================================
+   모달 수량 직접입력
+========================================================= */
+
+$(document).on(
+    "change",
+    ".change-quantity",
+    function () {
+
+        const row =
+            $(this)
+                .closest(
+                    ".change-cart-item"
+                );
+
+        const index =
+            Number(
+                row.data("index")
+            );
+
+        if (!changedCartItems[index]) {
+            return;
+        }
+
+        let quantity =
+            Number(this.value);
+
+        if (
+            !Number.isInteger(quantity) ||
+            quantity < 1
+        ) {
+            quantity = 1;
+        }
+
+        changedCartItems[index]
+            .quantity = quantity;
+
+        renderCurrentCartItems();
+    }
+);
+
+/* =========================================================
+   모달 항목 삭제
+========================================================= */
+
+$(document).on(
+    "click",
+    ".change-cart-item-remove",
+    function () {
+
+        const row =
+            $(this)
+                .closest(
+                    ".change-cart-item"
+                );
+
+        const index =
+            Number(
+                row.data("index")
+            );
+
+        if (!changedCartItems[index]) {
+            return;
+        }
+
+        const deletingItem =
+            changedCartItems[index];
+
+        if (
+            !deletingItem.isAdditional
+        ) {
+
+            const requiredCount =
+                changedCartItems.filter(
+                    function (item) {
+                        return !item.isAdditional;
+                    }
+                ).length;
+
+            if (requiredCount <= 1) {
+                alert(
+                    "필수 옵션은 최소 1개 이상 있어야 합니다."
+                );
+                return;
+            }
+        }
+
+        changedCartItems.splice(
+            index,
+            1
+        );
+
+        renderCurrentCartItems();
+    }
+);
+
+/* =========================================================
+   상품 옵션 목록 가져오기
+========================================================= */
+
+function loadCartOptionSelects(
+    productId
+) {
+
+    fetch(
+        "/productDetail.htm?product_id=" +
+        encodeURIComponent(productId)
+    )
+        .then(function (response) {
+
+            if (!response.ok) {
+                throw new Error(
+                    "HTTP " +
+                    response.status
+                );
+            }
+
+            return response.text();
+        })
+        .then(function (html) {
+
+            const parser =
+                new DOMParser();
+
+            const doc =
+                parser.parseFromString(
+                    html,
+                    "text/html"
+                );
+
+            const originalSelects =
+                doc.querySelectorAll(
+                    ".option-select"
+                );
+
+            const area =
+                document.getElementById(
+                    "changeOptionArea"
+                );
+
+            if (!area) {
+                console.error(
+                    "#changeOptionArea 없음"
+                );
+                return;
+            }
+
+            area.innerHTML = "";
+
+            originalSelects.forEach(
+                function (originalSelect) {
+
+                    const select =
+                        originalSelect.cloneNode(
+                            true
+                        );
+
+                    /*
+                     * 처음에는 모든 select를 비운다.
+                     * 필수 옵션은 첫 번째부터 선택 가능.
+                     * 추가상품은 항상 선택 가능.
+                     */
+                    select.value = "";
+
+                    area.appendChild(
+                        select
+                    );
+                }
+            );
+
+            initChangeOptions();
+
+            $("#optionModal")
+                .addClass("active");
+        })
+        .catch(function (error) {
+
+            console.error(
+                "옵션 목록 가져오기 오류:",
+                error
+            );
+
+            alert(
+                "상품 옵션 정보를 가져오지 못했습니다."
+            );
+        });
+}
+
+/* =========================================================
+   옵션 SELECT 초기화
+========================================================= */
+
+function initChangeOptions() {
+
+    const selects =
+        Array.from(
+            document.querySelectorAll(
+                "#changeOptionArea .option-select"
+            )
+        );
+
+    let firstRequired = true;
+
+    selects.forEach(
+        function (select) {
+
+            const required =
+                select.dataset.required;
+
+            /*
+             * required = 0
+             * → 추가상품
+             * → 항상 선택 가능
+             */
+            if (required === "0") {
+
+                select.disabled =
+                    false;
+
+                return;
+            }
+
+            /*
+             * required = 1
+             * → 필수 옵션
+             * → 첫 번째만 활성화
+             */
+            if (firstRequired) {
+
+                select.disabled =
+                    false;
+
+                firstRequired =
+                    false;
+
+            } else {
+
+                select.disabled =
+                    true;
+            }
+        }
+    );
+
+    bindChangeOptionEvents();
+}
+
+/* =========================================================
+   SELECT 이벤트
+========================================================= */
+
+function bindChangeOptionEvents() {
+
+    $(document)
+        .off(
+            "change.cartOption",
+            "#changeOptionArea .option-select"
+        )
+        .on(
+            "change.cartOption",
+            "#changeOptionArea .option-select",
+            function () {
+
+                handleChangeOption(
+                    this
+                );
+            }
+        );
+}
+
+/* =========================================================
+   SELECT 변경
+========================================================= */
+
+function handleChangeOption(
+    currentSelect
+) {
+
+    const selects =
+        Array.from(
+            document.querySelectorAll(
+                "#changeOptionArea .option-select"
+            )
+        );
+
+    const requiredSelects =
+        selects.filter(
+            function (select) {
+                return (
+                    select.dataset.required ===
+                    "1"
+                );
+            }
+        );
+
+    /*
+     * =========================
+     * 필수 옵션
+     * =========================
+     */
+
+    if (
+        currentSelect.dataset.required ===
+        "1"
+    ) {
+
+        const currentIndex =
+            requiredSelects.indexOf(
+                currentSelect
+            );
+
+        /*
+         * 현재 필수 옵션을 다시 빈 값으로 만들면
+         * 그 뒤의 필수 옵션도 초기화
+         */
+        if (
+            currentSelect.value === ""
+        ) {
+
+            for (
+                let i =
+                    currentIndex + 1;
+                i <
+                requiredSelects.length;
+                i++
+            ) {
+
+                requiredSelects[i]
+                    .value = "";
+
+                requiredSelects[i]
+                    .disabled = true;
+            }
+
+            changedOptionData =
+                null;
+
+            return;
+        }
+
+        /*
+         * 다음 필수 옵션 활성화
+         */
+        const nextRequired =
+            requiredSelects[
+            currentIndex + 1
+                ];
+
+        if (nextRequired) {
+            nextRequired.disabled =
+                false;
+        }
+
+        /*
+         * 필수 옵션이 모두 선택됐는지 확인
+         */
+        const allRequiredSelected =
+            requiredSelects.every(
+                function (select) {
+                    return (
+                        select.value !== ""
+                    );
+                }
+            );
+
+        if (!allRequiredSelected) {
+            return;
+        }
+
+        /*
+         * ★★★★★ 중요 ★★★★★
+         *
+         * 필수 옵션 1 + 2만
+         * product_option으로 조회한다.
+         *
+         * 추가상품(required=0)은 절대 넣지 않는다.
+         */
+        findChangedRequiredProductOption();
+
+        return;
+    }
+
+    /*
+     * =========================
+     * 추가상품
+     * =========================
+     */
+
+    if (
+        currentSelect.dataset.required ===
+        "0"
+    ) {
+
+        /*
+         * 선택 취소
+         */
+        if (
+            currentSelect.value === ""
+        ) {
+            return;
+        }
+
+        /*
+         * ★ 추가상품은
+         * ★ 자기 자신 하나만
+         * ★ product_option 조회
+         */
+        findChangedAdditionalProductOption(
+            currentSelect
+        );
+    }
+}
+
+/* =========================================================
+   필수 옵션 1 + 2 조합 조회
+========================================================= */
+
+function findChangedRequiredProductOption() {
+
+    if (!currentCartProduct) {
+        return;
+    }
+
+    const productId =
+        Number(
+            currentCartProduct.dataset
+                .productId
+        );
+
+    const requiredSelects =
+        Array.from(
+            document.querySelectorAll(
+                "#changeOptionArea .option-select"
+            )
+        ).filter(
+            function (select) {
+                return (
+                    select.dataset.required ===
+                    "1"
+                );
+            }
+        );
+
+    const optionValueIds =
+        requiredSelects.map(
+            function (select) {
+                return Number(
+                    select.value
+                );
+            }
+        );
+
+    fetch(
+        "/productOption.htm?product_id=" +
+        encodeURIComponent(productId) +
+        "&option_value_ids=" +
+        encodeURIComponent(
+            optionValueIds.join(",")
+        )
+    )
+        .then(function (response) {
+
+            if (!response.ok) {
+                throw new Error(
+                    "HTTP " +
+                    response.status
+                );
+            }
+
+            return response.json();
+        })
+        .then(function (data) {
+
+            if (!data) {
+                alert(
+                    "선택한 필수 옵션 조합이 없습니다."
+                );
+                return;
+            }
+
+            if (
+                data.status &&
+                data.status !== "ACTIVE"
+            ) {
+                alert(
+                    "판매할 수 없는 옵션입니다."
+                );
+                return;
+            }
+
+            if (
+                data.stock !== undefined &&
+                Number(data.stock) <= 0
+            ) {
+                alert(
+                    "품절된 옵션입니다."
+                );
+                return;
+            }
+
+            const optionNames =
+                requiredSelects.map(
+                    function (select) {
+
+                        const groupName =
+                            select.dataset.groupName ||
+                            select.dataset.group_name ||
+                            "";
+
+                        const valueName =
+                            select.options[
+                                select.selectedIndex
+                                ].text;
+
+                        return (
+                            groupName +
+                            ": " +
+                            valueName
+                        );
+                    }
+                );
+
+            changedOptionData = {
+                type: "required",
+
+                product_option_id:
+                    Number(
+                        data.product_option_id
+                    ),
+
+                product_id:
+                    Number(
+                        data.product_id ||
+                        productId
+                    ),
+
+                price:
+                    Number(
+                        data.price || 0
+                    ),
+
+                stock:
+                    Number(
+                        data.stock || 0
+                    ),
+
+                sku:
+                    data.sku || "",
+
+                option_names:
+                optionNames
+            };
+
+            /*
+             * ★ 기존 필수 CART_ITEM을
+             *   새로운 조합으로 변경한다.
+             *
+             * 추가상품은 건드리지 않는다.
+             */
+            const requiredItem =
+                changedCartItems.find(
+                    function (item) {
+                        return !item.isAdditional;
+                    }
+                );
+
+            if (!requiredItem) {
+                return;
+            }
+
+            requiredItem.productOptionId =
+                changedOptionData
+                    .product_option_id;
+
+            requiredItem.price =
+                changedOptionData.price;
+
+            requiredItem.sku =
+                changedOptionData.sku;
+
+            requiredItem.optionName =
+                optionNames.join(" / ");
+
+            renderCurrentCartItems();
+        })
+        .catch(function (error) {
+
+            console.error(
+                "필수 옵션 조합 조회 오류:",
+                error
+            );
+
+            alert(
+                "필수 옵션 정보를 가져오지 못했습니다."
+            );
+        });
+}
+
+/* =========================================================
+   추가상품 단독 조회
+========================================================= */
+
+function findChangedAdditionalProductOption(
+    select
+) {
+
+    if (!currentCartProduct) {
+        return;
+    }
+
+    const productId =
+        Number(
+            currentCartProduct.dataset
+                .productId
+        );
+
+    const optionValueId =
+        Number(
+            select.value
+        );
+
+    /*
+     * ★ 추가상품은 해당 값 하나만 보낸다.
+     *
+     * 1 + 2 + 3
+     * X
+     *
+     * 3
+     * O
+     */
+    fetch(
+        "/productOption.htm?product_id=" +
+        encodeURIComponent(productId) +
+        "&option_value_ids=" +
+        encodeURIComponent(
+            optionValueId
+        )
+    )
+        .then(function (response) {
+
+            if (!response.ok) {
+                throw new Error(
+                    "HTTP " +
+                    response.status
+                );
+            }
+
+            return response.json();
+        })
+        .then(function (data) {
+
+            if (!data) {
+                alert(
+                    "선택한 추가상품을 찾을 수 없습니다."
+                );
+                return;
+            }
+
+            if (
+                data.status &&
+                data.status !== "ACTIVE"
+            ) {
+                alert(
+                    "판매할 수 없는 추가상품입니다."
+                );
+                return;
+            }
+
+            if (
+                data.stock !== undefined &&
+                Number(data.stock) <= 0
+            ) {
+                alert(
+                    "품절된 추가상품입니다."
+                );
+                return;
+            }
+
+            const productOptionId =
+                Number(
+                    data.product_option_id
+                );
+
+            /*
+             * 이미 장바구니에 같은 추가상품이 있으면
+             * 중복으로 만들지 않는다.
+             */
+            const existing =
+                changedCartItems.find(
+                    function (item) {
+                        return (
+                            item.productOptionId ===
+                            productOptionId
+                        );
+                    }
+                );
+
+            if (existing) {
+
+                alert(
+                    "이미 장바구니에 담긴 추가상품입니다."
+                );
+
+                return;
+            }
+
+            /*
+             * 새 추가상품 CART_ITEM
+             */
+            changedCartItems.push({
+
+                cartItemsId:
+                    null,
+
+                productOptionId:
+                productOptionId,
+
+                price:
+                    Number(
+                        data.price || 0
+                    ),
+
+                quantity:
+                    1,
+
+                sku:
+                    data.sku || "",
+
+                optionName:
+                    getSelectOptionText(
+                        select
+                    ),
+
+                isAdditional:
+                    true,
+
+                isNew:
+                    true
+            });
+
+            renderCurrentCartItems();
+        })
+        .catch(function (error) {
+
+            console.error(
+                "추가상품 조회 오류:",
+                error
+            );
+
+            alert(
+                "추가상품 정보를 가져오지 못했습니다."
+            );
+        });
+}
+
+/* =========================================================
+   SELECT의 현재 옵션명
+========================================================= */
+
+function getSelectOptionText(
+    select
+) {
+
+    const selectedOption =
+        select.options[
+            select.selectedIndex
+            ];
+
+    if (!selectedOption) {
+        return "추가상품";
+    }
+
+    const groupName =
+        select.dataset.groupName ||
+        select.dataset.group_name ||
+        "추가상품";
+
+    const valueName =
+        selectedOption.text;
+
+    return (
+        groupName +
+        ": " +
+        valueName
+    );
+}
+
+/* =========================================================
+   옵션 변경 확인
+========================================================= */
+function applyChangedOption(data) {
+    if (!currentCartProduct) {
+        return;
+    }
+
+    const cartItem =
+        currentCartProduct.querySelector(".cart-item");
+
+    if (!cartItem) {
+        return;
+    }
+
+    cartItem.dataset.productOptionId =
+        data.product_option_id;
+
+    cartItem.dataset.price =
+        data.price;
+
+    const optionElement =
+        cartItem.querySelector(".option");
+
+    if (optionElement) {
+        optionElement.textContent =
+            data.option_names.join(" / ");
+    }
+
+    const quantity =
+        Number(
+            cartItem.querySelector(".quantity-input").value
+        ) || 1;
+
+    const priceElement =
+        cartItem.querySelector(".price");
+
+    if (priceElement) {
+        priceElement.textContent =
+            (
+                Number(data.price) * quantity
+            ).toLocaleString("ko-KR") + "원";
+    }
+
+    updatePrice();
+
+    closeOptionModal();
+}
+
+$("#optionChangeConfirm").on("click", async function () {
+    if (!currentCartProduct) {
+        return;
+    }
+
+    if (!changedOptionData) {
+        alert("변경할 옵션을 선택해주세요.");
+        return;
+    }
+
+    const cartItem =
+        currentCartProduct.querySelector(".cart-item");
+
+    if (!cartItem) {
+        alert("장바구니 상품을 찾을 수 없습니다.");
+        return;
+    }
+
+    const cartItemsId =
+        Number(cartItem.dataset.cartItemsId);
+
+    const quantity =
+        Number(
+            cartItem.querySelector(".quantity-input").value
+        );
+
+    const requestData = {
+        items: [
+            {
+                cart_items_id: cartItemsId,
+                product_option_id:
+                    Number(changedOptionData.product_option_id),
+                quantity: quantity
+
+            }
+        ]
+    };
+
+    console.log("옵션 변경 요청:", requestData);
+
+    try {
+        const response = await fetch("/cartOptionEdit.htm", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        const responseText = await response.text();
+
+        console.log("옵션 변경 응답:", response.status, responseText);
+
+        if (!response.ok) {
+            throw new Error(
+                "옵션 변경 실패: HTTP " + response.status
+            );
+        }
+
+        applyChangedOption(changedOptionData);
+
+    } catch (error) {
+        console.error("옵션 변경 오류:", error);
+        alert("옵션 변경에 실패했습니다.");
+    }
+});
+
+/* =========================================================
+   원래 CART_ITEM ID
+========================================================= */
+
+function getOriginalCartItemIds() {
+
+    const ids = [];
+
+    if (!currentCartProduct) {
+        return ids;
+    }
+
+    $(currentCartProduct)
+        .find(".cart-item")
+        .each(function () {
+
+            const id =
+                Number(
+                    this.dataset
+                        .cartItemsId
+                );
+
+            if (
+                Number.isInteger(id) &&
+                id > 0
+            ) {
+                ids.push(id);
+            }
+        });
+
+    return ids;
+}
+
+/* =========================================================
+   모달 닫기
+========================================================= */
+
+$(document).on(
+    "click",
+    "#optionModalClose",
+    function () {
+
+        closeOptionModal();
+    }
+);
+
+function closeOptionModal() {
+
+    $("#optionModal")
+        .removeClass("active");
+
+    currentCartProduct = null;
+    changedCartItems = [];
+    changedOptionData = null;
+
+    $("#changeOptionArea")
+        .empty();
+
+    $("#changeOptionPreview")
+        .empty()
+        .hide();
+}
+
+/* =========================================================
+   공통
+========================================================= */
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+}
