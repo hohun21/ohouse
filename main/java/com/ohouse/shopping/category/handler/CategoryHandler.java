@@ -28,6 +28,8 @@ public String process(
 	    System.out.println("===== CategoryHandler.process() 실행 =====");
 	
 	    String categoryId = request.getParameter("category_id");
+	    
+	    
 	
 	    Connection conn = null;
 	
@@ -72,6 +74,7 @@ public String process(
 	                        conn,
 	                        selectedCategoryId
 	                );
+	        
 	
 	        // 상품 조회에 사용할 카테고리 ID 목록
 	        List<Integer> categoryIds = new ArrayList<>();

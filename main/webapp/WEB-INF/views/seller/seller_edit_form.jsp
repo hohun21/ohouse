@@ -167,7 +167,8 @@ body {
 	<div class="form-container">
 		<h2>✏️ 상품 정보 수정</h2>
 
-		<form action="/seller/productList.htm" method="post" enctype="multipart/form-data">
+		<!-- 💡 목적지가 productList.htm 에서 editPro.htm 으로 변경되었습니다! -->
+		<form action="/seller/editPro.htm" method="post" enctype="multipart/form-data">
 			<input type="hidden" name="productId" value="${product.productId}">
 
 			<!-- 카테고리 선택 -->
@@ -176,9 +177,9 @@ body {
 				<select id="categoryId" name="categoryId" required>
 					<option value="">카테고리를 선택하세요</option>
 					<c:forEach var="cat" items="${categoryList}">
-						<option value="${cat.categoryId}"
-							${cat.categoryId == product.categoryId ? 'selected' : ''}>
-							${cat.categoryName}</option>
+						<option value="${cat.category_id}"
+							${cat.category_id == product.categoryId ? 'selected' : ''}>
+							${cat.category_name}</option>
 					</c:forEach>
 				</select>
 			</div>
@@ -440,6 +441,34 @@ body {
                 document.getElementById('extraTable').style.display = 'none';
             }
         }
+        
+        document.querySelector('form').addEventListener('submit', async function(e) {
+            e.preventDefault(); // 기본 폼 제출 동작을 잠시 막습니다.
+
+            const form = this;
+            const formData = new FormData(form);
+
+            try {
+                // 서버로 폼 데이터 전송 (ProductEditProHandler 실행)
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    // 성공 시 알림창 띄우기
+                    alert("상품이 정상적으로 수정되었습니다!");
+                    
+                    // 서버가 리다이렉트한 최종 상세 페이지 주소(response.url)로 이동
+                    window.location.href = response.url;
+                } else {
+                    alert("상품 수정에 실패했습니다. 입력값을 다시 확인해주세요.");
+                }
+            } catch (error) {
+                console.error("상품 수정 오류:", error);
+                alert("서버 통신 중 오류가 발생했습니다.");
+            }
+        });
     </script>
 </body>
 </html>

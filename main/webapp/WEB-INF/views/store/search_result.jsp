@@ -27,7 +27,7 @@
         margin: 0 auto;
         padding: 0 20px;
         box-sizing: border-box;
-       	padding-top : 20px;
+       	padding-top : 65px;
     }
 
     /* --- 검색 페이지 전용 서브 메뉴 (LNB) + 실시간 인기 검색어 바 --- */

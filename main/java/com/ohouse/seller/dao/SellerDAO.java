@@ -47,6 +47,7 @@ public interface SellerDAO {
     List<ProductOptionDTO> getProductOptions(int productId) throws SQLException;
     int updateProductOption(ProductOptionDTO dto) throws SQLException;
     int deleteProductOption(int productOptionId) throws SQLException;
+    int deleteProductOptionsByProductId(int productId) throws SQLException;
     
     int insertProductImage(ProductImageDTO imageDTO) throws SQLException;
     int deleteProductImages(int productId) throws SQLException;

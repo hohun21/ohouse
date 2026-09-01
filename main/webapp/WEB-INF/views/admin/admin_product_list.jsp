@@ -18,7 +18,7 @@
     .sidebar-menu li a:hover, .sidebar-menu li a.active { background-color: #ff4d4f; color: white; }
     
     .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-    .top-header { height: 60px; background-color: white; border-bottom: 1px solid #e1e4e6; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; }
+    .top-header { height: 60px; background-color: white; border-bottom: 1px solid #e1e4e6; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; padding-top: 20px; padding-bottom: 20px; }
     
     .content-body { padding: 30px; }
     .list-title { font-size: 20px; font-weight: bold; margin-bottom: 20px; }
