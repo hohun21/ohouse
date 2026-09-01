@@ -490,4 +490,23 @@ $(".buy").on("click", async function () {
     } catch (error) {
         console.error("주문 처리 오류:", error);
     }
+}
+
+
+
+);
+document.querySelectorAll('.tabs a').forEach(tab => {
+    tab.addEventListener('click', function(e) {
+        e.preventDefault(); // 화면 튀는 현상 방지
+
+        // 1. 탭 버튼 불 들어오는 위치 바꾸기
+        document.querySelectorAll('.tabs a').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+
+        // 2. 모든 내용 숨기고 누른 내용만 보이기
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        const targetId = this.getAttribute('href');
+        document.querySelector(targetId).classList.add('active');
+    });
 });

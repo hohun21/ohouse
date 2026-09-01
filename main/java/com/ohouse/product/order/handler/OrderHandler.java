@@ -1,5 +1,7 @@
 package com.ohouse.product.order.handler;
 
+import com.ohouse.address.dto.ShippingAddressDTO;
+import com.ohouse.address.service.ShippingAddressService;
 import com.ohouse.common.handler.CommandHandler;
 import com.ohouse.member.dto.AuthUserDTO;
 import com.ohouse.product.order.dto.OrderItemDTO;
@@ -43,8 +45,16 @@ public class OrderHandler implements CommandHandler {
                 request.setAttribute("clist", clist);
             }
         }
+        
+        AuthUserDTO authUser = (AuthUserDTO) session.getAttribute("authUser");
+        if (authUser != null) {
+        	ShippingAddressService addressService = new ShippingAddressService();
+        	
+            List<ShippingAddressDTO> addressList = addressService.getAddressList(authUser.getMemberId());
+            request.setAttribute("addressList", addressList);
+        }
 
 
-        return "/WEB-INF/views/shopping/order.jsp";
+        return "/WEB-INF/views/product/order.jsp";
     }
 }

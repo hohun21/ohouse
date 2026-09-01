@@ -34,5 +34,6 @@ public interface CartDAO {
 
     List<CartOptionDTO> selectCartOptions(Connection conn, long product_option_id) throws SQLException;
 
+    void createCart(Connection conn, int member_id) throws SQLException;
 
 }

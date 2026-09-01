@@ -316,8 +316,8 @@ public class CartDAOImpl implements CartDAO {
         int[] rowcountArr;
         boolean rowcount = false;
         try {
-                PreparedStatement pstmt = conn.prepareStatement(sql);
-             conn = ConnectionProvider.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            conn = ConnectionProvider.getConnection();
             for (CartItemDTO item : cartItemDTO) {
                 pstmt.setLong(1, item.getProduct_option_id());
                 pstmt.setInt(2, cart_id);
@@ -326,14 +326,25 @@ public class CartDAOImpl implements CartDAO {
             }
 
 
-                rowcountArr = pstmt.executeBatch();
+            rowcountArr = pstmt.executeBatch();
             if (rowcountArr.length > 0) {
                 rowcount = true;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
-        };
+        }
+        ;
 
         return rowcount;
+    }
+
+    @Override
+    public void createCart(Connection conn, int member_id) throws SQLException {
+        String sql = "INSERT INTO cart (member_id, total_price) VALUES (?, 0)";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, member_id);
+            pstmt.executeUpdate();
+        }
     }
 }
