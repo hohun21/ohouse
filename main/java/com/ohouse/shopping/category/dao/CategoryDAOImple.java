@@ -52,6 +52,47 @@ public class CategoryDAOImple implements CategoryDAO{
 	}
 	
 	@Override
+	public List<CategoryDTO> getRootCategories(Connection conn)
+	        throws SQLException {
+
+	    String sql = """
+	            SELECT category_id,
+	                   category_name,
+	                   parent_id,
+	                   sort_order
+	            FROM category
+	            WHERE parent_id IS NULL
+	            ORDER BY sort_order
+	            """;
+
+	    List<CategoryDTO> list = new ArrayList<>();
+
+	    try (PreparedStatement pstmt = conn.prepareStatement(sql);
+	         ResultSet rs = pstmt.executeQuery()) {
+
+	        while (rs.next()) {
+
+	            Integer parentId = null;
+
+	            if (rs.getObject("parent_id") != null) {
+	                parentId = rs.getInt("parent_id");
+	            }
+
+	            CategoryDTO cdto = CategoryDTO.builder()
+	                    .category_id(rs.getInt("category_id"))
+	                    .category_name(rs.getString("category_name"))
+	                    .parentId(parentId)
+	                    .sortOrder(rs.getInt("sort_order"))
+	                    .build();
+
+	            list.add(cdto);
+	        }
+	    }
+
+	    return list;
+	}
+	
+	@Override
 	public List<CategoryDTO> getLeafCategories(Connection conn ,int categoryId) throws SQLException {
 		String sql = """
 					 SELECT category_id,

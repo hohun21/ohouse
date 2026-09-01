@@ -40,29 +40,27 @@
                 <c:set var="mainOpen" value="false" />
 
                 <!-- 현재 선택된 카테고리가 대분류 자신인지 -->
-                <c:if test="${selectedcategory_id == main.category_id}">
+                <c:if test="${selectedCategoryId == main.category_id}">
                     <c:set var="mainOpen" value="true" />
                 </c:if>
-
-
+                
                 <!-- 현재 선택된 카테고리가
                      이 대분류의 중분류인지 확인 -->
                 <c:forEach var="middle" items="${categories}">
 
                     <c:if test="${middle.parentId == main.category_id}">
 
-                        <c:if test="${selectedcategory_id == middle.category_id}">
+                        <c:if test="${selectedCategoryId == middle.category_id}">
                             <c:set var="mainOpen" value="true" />
                         </c:if>
-
-
+                        
                         <!-- 현재 선택된 카테고리가
                              이 대분류의 소분류인지 확인 -->
                         <c:forEach var="sub" items="${categories}">
 
                             <c:if test="${sub.parentId == middle.category_id}">
 
-                                <c:if test="${selectedcategory_id == sub.category_id}">
+                                <c:if test="${selectedCategoryId == sub.category_id}">
                                     <c:set var="mainOpen" value="true" />
                                 </c:if>
 
@@ -125,7 +123,7 @@
                                         <div class="sidebar-item">
 
                                             <a href="${pageContext.request.contextPath}/shopping/category/category.htm?category_id=${middle.category_id}"
-                                               class="middle-category ${selectedcategory_id == middle.category_id ? 'selected' : ''}">
+                                               class="middle-category ${selectedCategoryId == middle.category_id ? 'selected' : ''}">
 
                                                 ${middle.category_name}
 
@@ -141,7 +139,7 @@
                                         <c:set var="middleOpen" value="false" />
 
                                         <!-- 중분류 자체가 선택된 경우 -->
-                                        <c:if test="${selectedcategory_id == middle.category_id}">
+                                        <c:if test="${selectedCategoryId == middle.category_id}">
                                             <c:set var="middleOpen" value="true" />
                                         </c:if>
 
@@ -150,7 +148,7 @@
                                         <c:forEach var="subCheck" items="${categories}">
 
                                             <c:if test="${subCheck.parentId == middle.category_id
-                                                       && selectedcategory_id == subCheck.category_id}">
+                                                       && selectedCategoryId == subCheck.category_id}">
 
                                                 <c:set var="middleOpen" value="true" />
 
@@ -167,7 +165,7 @@
                                                 <c:if test="${sub.parentId == middle.category_id}">
 
                                                     <a href="${pageContext.request.contextPath}/shopping/category/category.htm?category_id=${sub.category_id}"
-                                                       class="subcategory ${selectedcategory_id == sub.category_id ? 'selected' : ''}"
+                                                       class="subcategory ${selectedCategoryId == sub.category_id ? 'selected' : ''}"
                                                        data-category-id="${sub.category_id}">
 
                                                         ${sub.category_name}
@@ -403,7 +401,7 @@
         <c:forEach var="main" items="${categories}">
 
             <c:if test="${main.parentId == null
-                       && selectedcategory_id != main.category_id}">
+                       && selectedCategoryId != main.category_id}">
 
                 <a href="${pageContext.request.contextPath}/shopping/category/category.htm?category_id=${main.category_id}"
                    class="sidebar-other category-enabled">
@@ -437,17 +435,7 @@
 
     </div>
 
-</aside>
-    
-    <!-- 대분류 클릭 -->
-    <script>
-    	$(".category-enabled").click(function () {
-			const category_id = $(this).data("category-id");
-			location.href = "${pageContext.request.contextPath}/shopping/category/category.htm?category_id="+category_id;
-    	})
-		
-    </script>
-    
+</aside>   
 
     <!-- 우측 메인 컨텐츠 -->
     <div class="main-content">

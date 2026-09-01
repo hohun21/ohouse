@@ -59,13 +59,13 @@ public class ReviewListHandler implements CommandHandler {
         if (productId > 0) {
             // 3. DTO 생성 (ratings, options 필터 추가)
             ReviewPageDTO reqDTO = ReviewPageDTO.builder()
-                    .productId(productId)
+                    .product_id(productId)
                     .currentPage(currentPage)
                     .numberPerPage(numberPerPage)
                     .sort(sort)
                     .ratings(ratings)
                     .options(options)
-                    .memberId(memberId)
+                    .member_id(memberId)
                     .build();
 
             // 4. Service 연동

@@ -5,9 +5,14 @@
     boolean showSubHeaderAtTopValue = showSubHeaderAtTopParam == null
             || !"false".equalsIgnoreCase(showSubHeaderAtTopParam);
 
-    String enableSubHeaderParam = request.getParameter("enableSubHeader");
-    boolean enableSubHeaderValue = enableSubHeaderParam == null
-            || !"false".equalsIgnoreCase(enableSubHeaderParam);
+    String showHeaderPopularKeywordParam = request.getParameter("showHeaderPopularKeyword");
+    boolean showHeaderPopularKeywordValue = showHeaderPopularKeywordParam == null
+            || !"false".equalsIgnoreCase(showHeaderPopularKeywordParam);
+
+    // 헤더 인기 검색어를 숨기는 검색 페이지에서는 공통 서브 헤더를 hover 전용으로 사용한다.
+    if (!showHeaderPopularKeywordValue) {
+        showSubHeaderAtTopValue = false;
+    }
 %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -389,12 +394,13 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 .category-menu > li > a:hover img { transform: translateY(-3px); }
 @media (max-width: 900px) { .header-search, .realtime-keyword-box { display: none; }}
 </style>
+
 </head>
 <body>
-	<header>
-		<!-- 1. 최상단 배너 -->
-		<div class="top-event-banner">
-			<span class="coupon-icon">2만원</span> <span>첫 구매라면 누구나 최대 2만원
+<header>
+    <!-- 1. 최상단 배너 -->
+    <div class="top-event-banner">
+        <span class="coupon-icon">2만원</span> <span>첫 구매라면 누구나 최대 2만원
 				할인! &gt;</span> <span class="btn-close">✕</span>
 		</div>
 	</header>
@@ -526,69 +532,33 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 	                    <a href="${ pageContext.request.contextPath }/shopping/category/category.htm" class="category-tab">카테고리</a>
 	                    <div class="category-dropdown">
 	                        <ul class="category-menu">
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-533660207636544.png?w=1280"/><span>집요한세일</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634278838272.png?w=1280"/><span>가구</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634298495104.png?w=1280"/><span>가전·디지털</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634315501568.png?w=1280"/><span>패브릭</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634333909120.png?w=1280"/><span>주방용품</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634353033280.png?w=1280"/><span>식품</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634373091328.png?w=1280"/><span>데코·식물</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-485389660414080.png?w=1280"/><span>조명</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634412826752.png?w=1280"/><span>수납·정리</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634428547136.png?w=1280"/><span>생활용품</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634451369984.png?w=1280"/><span>생필품</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634472935424.png?w=1280"/><span>유아·아동</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-485353010577408.png?w=1280"/><span>반려동물</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634521288768.png?w=1280"/><span>캠핑·레저</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634541781120.png?w=1280"/><span>공구·DIY</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634560954368.png?w=1280"/><span>인테리어시공</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634580844544.png?w=1280"/><span>렌탈·구독</span></a>
-	                            </li>
-	                            <li><a href="#"><img
-	                                    src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634600026240.png?w=1280"/><span>장보기</span></a>
-	                            </li>
+	                            <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-533660207636544.png?w=1280"/><span>집요한세일</span></a></li>
+                            	<li><a href="${pageContext.request.contextPath}/shopping/category/category.htm?category_id=10000000"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634278838272.png?w=1280"/><span>가구</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634298495104.png?w=1280"/><span>가전·디지털</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634315501568.png?w=1280"/><span>패브릭</span></a></li>
+                            	<li><a href="${pageContext.request.contextPath}/shopping/category/category.htm?category_id=16000000"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634333909120.png?w=1280"/><span>주방용품</span></a></li>
+                           	 	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634353033280.png?w=1280"/><span>식품</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634373091328.png?w=1280"/><span>데코·식물</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-485389660414080.png?w=1280"/><span>조명</span></a></li>
+                            	<li><a href="${pageContext.request.contextPath}/shopping/category/category.htm?category_id=13000000"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634412826752.png?w=1280"/><span>수납·정리</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634428547136.png?w=1280"/><span>생활용품</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634451369984.png?w=1280"/><span>생필품</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634472935424.png?w=1280"/><span>유아·아동</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-485353010577408.png?w=1280"/><span>반려동물</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634521288768.png?w=1280"/><span>캠핑·레저</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634541781120.png?w=1280"/><span>공구·DIY</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634560954368.png?w=1280"/><span>인테리어시공</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634580844544.png?w=1280"/><span>렌탈·구독</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634600026240.png?w=1280"/><span>장보기</span></a></li>
 	                        </ul>
 	                    </div>
 	                </div>
 	                <a href="${ pageContext.request.contextPath }/best.htm">베스트</a>
 	                <a href="#">오늘의딜</a>
-	                <a href="only.htm">단독상품</a>
+	                <a href="${ pageContext.request.contextPath }/only.htm">단독상품</a>
 	                <a href="#">집요한세일</a>
 	                <a href="#">오마트</a>
-	                <a href="desiredDelivery.htm">원하는날도착</a>
+	                <a href="${ pageContext.request.contextPath }/desiredDelivery.htm">원하는날도착</a>
 	                <a href="#">오!쇼룸</a>
 	                <a href="#">기획전</a>
 	            </nav>
@@ -604,9 +574,11 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 	                <a href="#">아파트시공사례</a>
 	            </nav>
 	            <!-- 오른쪽 실시간 인기 검색어 박스 -->
+	            <% if (showHeaderPopularKeywordValue) { %>
 	            <div style="padding: 8px 0;">
 	                <jsp:include page="/WEB-INF/views/layout/popular_keyword.jsp"/>
 	            </div>
+	            <% } %>
 	        </div>
 	    </div>
 	</div>
@@ -629,13 +601,10 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 	         */
 	        /* 값을 생략하면 true, 명시적으로 false를 전달한 경우에만 false */
 	        const showSubHeaderAtTop = <%= showSubHeaderAtTopValue %>;
-	        /* false이면 로드/스크롤/hover에 관계없이 서브 헤더를 완전히 비활성화 */
-	        const enableSubHeader = <%= enableSubHeaderValue %>;
 	        let closeSubMenuTimer = null;
 	        let lastScrollTop = $(window).scrollTop();
 
 	        function showSubMenu(menuName) {
-	            if (!enableSubHeader) return;
 	            clearTimeout(closeSubMenuTimer);
 	            $allSubMenus.removeClass("is-visible");
 	            if (subMenuMap[menuName]) {
@@ -688,14 +657,6 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 	            const isPageTop = currentScrollTop === 0;
 	            const isScrollingDown = isScrollEvent && currentScrollTop > lastScrollTop;
 	            const isScrollingUp = isScrollEvent && currentScrollTop < lastScrollTop;
-
-	            if (!enableSubHeader) {
-	                $headerSubArea.removeClass("is-open");
-	                $stickyHeader.removeClass("sub-visible sub-open");
-	                $allSubMenus.removeClass("is-visible");
-	                lastScrollTop = currentScrollTop;
-	                return;
-	            }
 
 	            if (!showSubHeaderAtTop) {
 	                $headerSubArea.removeClass("is-open");
