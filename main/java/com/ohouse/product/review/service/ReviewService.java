@@ -15,7 +15,6 @@ import com.ohouse.product.review.dto.ReviewSummaryDTO;
 import com.ohouse.util.conn.ConnectionProvider;
 
 
-
 public class ReviewService {
 
     private ReviewDAO reviewDao = new ReviewDAOImpl(); 
