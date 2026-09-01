@@ -147,7 +147,9 @@
 <body>
 
     <!-- 1. 공통 헤더 Include -->
-    <jsp:include page="../layout/header.jsp" />
+    <jsp:include page="/WEB-INF/views/layout/header.jsp">
+      <jsp:param name="showSubHeaderAtTop" value="false"/>
+	</jsp:include>
 
     <!-- 2. 검색 페이지 전용 서브 메뉴바 + 실시간 인기 검색어 컴포넌트 -->
     <div class="search-sub-nav-area">
@@ -163,7 +165,7 @@
             </nav>
 
             <div style="padding: 8px 0;">
-                <jsp:include page="../layout/popular_keyword.jsp" />
+                <jsp:include page="/WEB-INF/views/layout/popular_keyword.jsp" />
             </div>
         </div>
     </div>

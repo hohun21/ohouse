@@ -65,7 +65,9 @@
 <body>
 
 <!-- 헤더 Include -->
-<jsp:include page="../layout/header.jsp" />
+<jsp:include page="/WEB-INF/views/layout/header.jsp">
+  <jsp:param name="showSubHeaderAtTop" value="false"/>
+</jsp:include>
 
 <div class="top-nav">
     <a href="#" class="active">프로필</a>

@@ -51,7 +51,9 @@
 </head>
 <body>
 
-    <jsp:include page="/WEB-INF/views/layout/header.jsp" />
+    <jsp:include page="/WEB-INF/views/layout/header.jsp">
+		<jsp:param name="showSubHeaderAtTop" value="false"/>
+	</jsp:include>
 
     <div class="top-nav">
         <a href="${pageContext.request.contextPath}/member/myPage.htm">프로필</a>
