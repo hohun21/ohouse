@@ -535,29 +535,35 @@
 
         // 2. 페이징 및 정렬 버튼 클릭 (💥 href="javascript:void(0)" 기본 동작 차단 추가!)
         // 2. 페이징 및 정렬 버튼 클릭
+       // 2. 페이징 및 정렬 버튼 클릭
+        // 2. 페이징 및 정렬 버튼 클릭
         var actionBtn = e.target.closest('.js-review-action');
         if (actionBtn) {
             e.stopPropagation();
             e.preventDefault(); 
             
-            // 정렬 버튼을 클릭한 경우 (베스트순 / 최신순)
-            if (actionBtn.hasAttribute('data-sort')) {
-                var sortButtons = parentContainer.querySelectorAll('.js-review-action[data-sort]');
+            // 정렬 탭을 클릭한 경우 (.filter-tabs 내부)
+            if (actionBtn.closest('.filter-tabs')) {
+                var sortVal = actionBtn.getAttribute('data-sort');
+                var sortButtons = parentContainer.querySelectorAll('.filter-tabs .js-review-action');
                 sortButtons.forEach(function(btn) {
                     btn.classList.remove('active');
                 });
                 actionBtn.classList.add('active');
+                
+                triggerReviewFetch('1', sortVal);
+                return;
             }
 
-            var page = actionBtn.getAttribute('data-page') || '1';
-            
-            // 👉 [핵심 수정] 만약 누른 버튼이 페이징 버튼(data-sort가 없음)이라면, 현재 활성화된 정렬값을 가져와서 유지합니다!
-            var sort = actionBtn.getAttribute('data-sort') || getCurrentSort();
-            
-            triggerReviewFetch(page, sort);
-            return;
+            // 페이징 번호 버튼을 클릭한 경우 (.pagination 내부)
+            if (actionBtn.closest('.pagination')) {
+                var pageVal = actionBtn.getAttribute('data-page');
+                var sort = getCurrentSort(); // 현재 활성화된 정렬 상태 유지
+                
+                triggerReviewFetch(pageVal, sort);
+                return;
+            }
         }
-
         // 3. 전체 필터 초기화 버튼
         var clearAllBtn = e.target.closest('.js-clear-all-filters');
         if (clearAllBtn) {
@@ -668,7 +674,8 @@
     });
 
     function getCurrentSort() {
-        var activeSortBtn = parentContainer.querySelector('.filter-tabs .active');
+    	var activeSortBtn = parentContainer.querySelector('.js-review-action.active[data-sort]:not([data-page])') 
+        || parentContainer.querySelector('.filter-tabs .active[data-sort]');
         return activeSortBtn ? activeSortBtn.getAttribute('data-sort') : 'best';
     }
 
@@ -712,8 +719,8 @@
                 }
                 
             
-                parentContainer.querySelectorAll('.js-review-action[data-sort]').forEach(function(btn) {
-                    if (btn.getAttribute('data-sort') === sort ) {//고정값 시도 
+                parentContainer.querySelectorAll('.js-review-action[data-sort]:not([data-page])').forEach(function(btn) {
+                    if (btn.getAttribute('data-sort') === sort) {
                         btn.classList.add('active');
                     } else {
                         btn.classList.remove('active');

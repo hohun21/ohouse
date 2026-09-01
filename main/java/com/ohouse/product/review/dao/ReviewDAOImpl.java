@@ -558,4 +558,69 @@ public class ReviewDAOImpl implements ReviewDAO {
             return pstmt.executeUpdate();
         }
     }
+    
+    @Override
+    public int updateReview(Connection conn, ReviewDTO reviewDTO) throws Exception {
+        String sql = "UPDATE REVIEW SET RATING = ?, CONTENT = ?, EDIT_DATE = SYSDATE WHERE REVIEW_ID = ? AND MEMBER_ID = ?";
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, reviewDTO.getRating());
+            pstmt.setString(2, reviewDTO.getContent());
+            pstmt.setInt(3, reviewDTO.getReviewId());
+            pstmt.setInt(4, reviewDTO.getMemberId());
+            
+            return pstmt.executeUpdate();
+        }
+    }
+    
+    @Override
+    public int updateReviewImage(Connection conn, int reviewId, String imageUrl) throws Exception {
+        // 1. 먼저 해당 리뷰의 이미지가 이미 존재하는지 업데이트 시도
+        String updateSql = "UPDATE REVIEW_IMAGE SET IMAGE_URL = ? WHERE REVIEW_ID = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(updateSql)) {
+            pstmt.setString(1, imageUrl);
+            pstmt.setInt(2, reviewId);
+            int affectedRows = pstmt.executeUpdate();
+            
+            // 2. 만약 기존 이미지 행이 없어서 업데이트된 게 없다면 새로 INSERT
+            if (affectedRows == 0) {
+                String insertSql = "INSERT INTO REVIEW_IMAGE (IMG_ID, REVIEW_ID, IMAGE_URL) VALUES (SEQ_REVIEW_IMAGE.NEXTVAL, ?, ?)";
+                try (PreparedStatement insertPstmt = conn.prepareStatement(insertSql)) {
+                    insertPstmt.setInt(1, reviewId);
+                    insertPstmt.setString(2, imageUrl);
+                    return insertPstmt.executeUpdate();
+                }
+            }
+            return affectedRows;
+        }
+    }
+    
+    @Override
+    public int deleteReviewLikes(Connection conn, int reviewId) throws Exception {
+        String sql = "DELETE FROM review_like WHERE review_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, reviewId);
+            return pstmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public int deleteReviewImages(Connection conn, int reviewId) throws Exception {
+        String sql = "DELETE FROM review_image WHERE review_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, reviewId);
+            return pstmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public int deleteReview(Connection conn, int reviewId) throws Exception {
+        String sql = "DELETE FROM review WHERE review_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, reviewId);
+            return pstmt.executeUpdate();
+        }
+    }
+    
+    
 }

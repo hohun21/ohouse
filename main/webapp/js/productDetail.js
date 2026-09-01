@@ -510,3 +510,39 @@ document.querySelectorAll('.tabs a').forEach(tab => {
         document.querySelector(targetId).classList.add('active');
     });
 });
+
+// 수정 모달 열기 (기존 리뷰 데이터를 가져와서 모달 폼에 채워주는 비동기 호출 등 연결)
+// 수정 모달 열기 및 기존 데이터 바인딩
+function openEditReviewModal(reviewId, rating, content, imageUrl) {
+    document.getElementById("editReviewId").value = reviewId;
+    document.getElementById("editRating").value = rating;
+    document.getElementById("editContent").value = content;
+    document.getElementById("editImageUrl").value = imageUrl;
+    
+    document.getElementById("reviewEditModal").style.display = "flex";
+}
+
+// 모달 닫기
+function closeEditReviewModal() {
+    document.getElementById("reviewEditModal").style.display = "none";
+}
+
+// 리뷰 삭제 요청 함수
+function deleteReview(reviewId, productId) {
+    if (confirm("정말 삭제하시겠습니까?")) {
+		location.href = "deleteReview.htm?reviewId=" + reviewId;
+       }
+}
+
+// 이벤트 위임 (data-* 속성 매칭)
+document.addEventListener("click", function(event) {
+    const editBtn = event.target.closest(".js-edit-review-btn");
+    if (editBtn) {
+        const reviewId = editBtn.getAttribute("data-review-id");
+        const rating = editBtn.getAttribute("data-rating");
+        const content = editBtn.getAttribute("data-content");
+		const imageUrl = editBtn.getAttribute("date-image-url");
+        
+        openEditReviewModal(reviewId, rating, content);
+    }
+});

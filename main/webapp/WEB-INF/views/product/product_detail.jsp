@@ -585,6 +585,10 @@ html, body {
 <jsp:include page="/WEB-INF/views/product/review/reviewFormModal.jsp" >
 	<jsp:param name="productId" value="${pdto.productDTO.product_id}" />
 </jsp:include>
+<jsp:include page="/WEB-INF/views/product/review/reviewEditModal.jsp">
+    <jsp:param name="productId" value="${pdto.productDTO.product_id}" />
+</jsp:include>
+
 <script>
 $(".link-category").on("click", function (e) {
 

@@ -61,7 +61,7 @@
 											</div>
 											<img
 												<%-- src="${pageContext.request.contextPath}${review.reviewImage.imageUrl}" --%>
-												src = "${review.reviewImage.imageUrl}"
+												src="${review.reviewImage.imageUrl}"
 												alt="리뷰 이미지" class="review-img-thumb blind-preview" />
 										</c:if>
 
@@ -77,7 +77,7 @@
 									<c:otherwise>
 										<img
 											<%-- src="${pageContext.request.contextPath}${review.reviewImage.imageUrl}" --%>
-											src = "${review.reviewImage.imageUrl}"
+											src="${review.reviewImage.imageUrl}"
 											alt="리뷰 이미지" class="review-img-thumb" />
 									</c:otherwise>
 								</c:choose>
@@ -187,6 +187,27 @@
 								<span>도움돼요</span> <span class="count"
 									style="font-weight: bold; color: #35c5f0;">${not empty review.helpCount ? review.helpCount : 0}</span>
 							</button>
+							<!-- 1. 작성자 이름 및 수정/삭제 버튼 영역 -->
+							<div class="user-profile"
+								style="display: flex; justify-content: space-between; align-items: center;">
+								<span class="user-name"
+									style="font-weight: bold; font-size: 13px;">${review.writerName}</span>
+
+								<!-- 💥 본인인 경우에만 수정/삭제 버튼 노출 -->
+								<c:if
+									test="${not empty authUser and authUser.memberId eq review.memberId}">
+									<div class="review-owner-actions" style="font-size: 12px;">
+										<a href="javascript:void(0);" class="js-edit-review-btn"
+											data-review-id="${review.reviewId}"
+											data-rating="${review.rating}"
+											data-content="${review.content}"
+											data-image-url="${review.reviewImage.imageUrl}">
+											수정
+										</a>
+										<a href="javascript:void(0);" onclick="deleteReview(${review.reviewId})" style="color: #f44336; text-decoration: none;">삭제</a>
+									</div>
+								</c:if>
+							</div>
 						</div>
 					</div>
 				</c:forEach>
@@ -218,6 +239,7 @@
 					data-sort="${currentSort}" class="page-btn js-review-action"
 					style="padding: 6px 12px; border: 1px solid #e0e0e0; border-radius: 4px; color: #424242; text-decoration: none;">&gt;</a>
 			</c:if>
+
 		</div>
 	</c:if>
 

@@ -164,5 +164,72 @@ public class ReviewService {
             }
         }
     }
+    public boolean modifyReview(ReviewDTO reviewDTO, String imageUrl) {
+        Connection conn = null;
+        try {
+            conn = ConnectionProvider.getConnection();
+            conn.setAutoCommit(false); // 트랜잭션 시작
+
+            // 1. 리뷰 본문(내용, 별점) 수정
+            int updateCount = reviewDao.updateReview(conn, reviewDTO);
+            if (updateCount <= 0) {
+                conn.rollback();
+                return false;
+            }
+
+            // 2. 새 이미지가 첨부된 경우에만 이미지 갱신/등록 처리
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                reviewDao.updateReviewImage(conn, reviewDTO.getReviewId(), imageUrl);
+            }
+
+            conn.commit();
+            return true;
+            
+        } catch (Exception e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
+            }
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (conn != null) {
+                try { conn.close(); } catch (Exception e) { e.printStackTrace(); }
+            }
+        }
+    }
+    public boolean removeReview(int reviewId) {
+        Connection conn = null;
+        try {
+            conn = ConnectionProvider.getConnection();
+            conn.setAutoCommit(false);
+
+            // 1. 연관된 좋아요 데이터 삭제
+            reviewDao.deleteReviewLikes(conn, reviewId);
+
+            // 2. 연관된 이미지 데이터 삭제
+            reviewDao.deleteReviewImages(conn, reviewId);
+
+            // 3. 메인 리뷰 데이터 삭제
+            int affectedRows = reviewDao.deleteReview(conn, reviewId);
+
+            if (affectedRows > 0) {
+                conn.commit();
+                return true;
+            } else {
+                conn.rollback();
+                return false;
+            }
+        } catch (Exception e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
+            }
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (conn != null) {
+                try { conn.close(); } catch (Exception e) { e.printStackTrace(); }
+            }
+        }
+    }
     
 }

@@ -36,4 +36,14 @@ public interface ReviewDAO {
 	int insertReviewImage(Connection conn, int reviewId, String imageUrl) throws Exception;
 
 	int insertReview(Connection conn, ReviewDTO reviewDTO) throws Exception;
+
+	int updateReview(Connection conn, ReviewDTO reviewDTO) throws Exception;
+
+	int updateReviewImage(Connection conn, int reviewId, String imageUrl) throws Exception;
+
+	int deleteReviewLikes(Connection conn, int reviewId) throws Exception;
+
+	int deleteReviewImages(Connection conn, int reviewId) throws Exception;
+
+	int deleteReview(Connection conn, int reviewId) throws Exception;
 }
