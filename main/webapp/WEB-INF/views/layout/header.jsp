@@ -438,7 +438,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 								</svg>
 							</button>
 							<!-- 장바구니 아이콘 -->
-							<button class="header-icon-btn" title="장바구니">
+							<button class="header-icon-btn" title="장바구니" id="cart-icon">
 								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 									<circle cx="9" cy="21" r="1"></circle>
 									<circle cx="20" cy="21" r="1"></circle>
@@ -658,6 +658,10 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 		});
 		updateStickyHeaderState();
 	});
+
+	$("#cart-icon").on("click",function(){
+		location.href="/cart.htm"
+	})
 	</script>
 </body>
 </html>

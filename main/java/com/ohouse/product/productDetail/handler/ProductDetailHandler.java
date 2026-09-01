@@ -76,7 +76,7 @@ public class ProductDetailHandler implements CommandHandler {
     		request.setAttribute("product_id", pId);
     		request.setAttribute("optionFilterList", reviewService.getOptionFilterList(pId));
             
-            return "/WEB-INF/views/shopping/product_detail.jsp";
+            return "/WEB-INF/views/product/product_detail.jsp";
         }
 
         return null;

@@ -45,6 +45,6 @@ public class OrderHandler implements CommandHandler {
         }
 
 
-        return "/WEB-INF/views/shopping/order.jsp";
+        return "/WEB-INF/views/product/order.jsp";
     }
 }
