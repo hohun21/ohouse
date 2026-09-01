@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.ohouse.shopping.category.dto.CategoryDTO;
-import com.ohouse.util.conn.JdbcUtil;
 
 public class CategoryDAOImple implements CategoryDAO{
 	

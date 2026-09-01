@@ -872,23 +872,109 @@ function updateTotalPrice() {
 /* =====================================================
 결제
 ===================================================== */
-
 function payment() {
 
     const agreement = document.querySelector("#agreement");
 
-
     if (!agreement.checked) {
-
         alert("주문 내용 확인 및 결제 동의가 필요합니다.");
-
         agreement.focus();
-
         return;
-
     }
 
+    const addressIdInput = document.getElementById("selectedAddressId");
+    
+    if (!addressIdInput) {
+        alert("배송지를 먼저 등록해주세요.");
+        return;
+    }
 
-    alert("결제 페이지로 이동합니다.");
+    const addressId = addressIdInput.value;
+    const requestMsg = document.getElementById("orderRequestMsg").value;
 
+    console.log("결제할 배송지 ID :", addressId);
+    console.log("배송 요청사항 :", requestMsg);
+    
+    alert("결제 페이지로 이동합니다. (콘솔창에서 배송지 데이터를 확인해보세요!)");
 }
+
+
+/* =====================================================
+할인쿠폰 이동 이벤트
+===================================================== */
+document.addEventListener("DOMContentLoaded", function() {
+    const discountBtn = document.querySelector(".discount-btn");
+    if (discountBtn) {
+        discountBtn.addEventListener("click", function (e) {
+            location.href = "/couponlist.htm";
+        });
+    }
+
+    /* =====================================================
+       배송지 모달 제어 및 실시간 갱신 스크립트
+       ===================================================== */
+    const modal = document.getElementById("addressModal");
+    const btnOpenModal = document.getElementById("btnOpenAddressModal");
+    const btnCloseModal = document.getElementById("btnCloseModal");
+
+    if (btnOpenModal) {
+        btnOpenModal.addEventListener("click", () => {
+            if (modal) modal.classList.add("show");
+        });
+    }
+
+    if (btnCloseModal) {
+        btnCloseModal.addEventListener("click", () => {
+            if (modal) modal.classList.remove("show");
+        });
+    }
+
+    if (modal) {
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+                modal.classList.remove("show");
+            }
+        });
+    }
+
+    document.querySelectorAll(".select-address-btn").forEach(button => {
+        button.addEventListener("click", function() {
+            const id = this.dataset.id;
+            const name = this.dataset.name;
+            const zip = this.dataset.zip;
+            const base = this.dataset.base;
+            const detail = this.dataset.detail;
+            const phone = this.dataset.phone;
+            const msg = this.dataset.msg;
+            const isDefault = this.dataset.isdefault;
+
+            // 1. 숨겨진 주소 ID 변경
+            const selectedAddressId = document.getElementById("selectedAddressId");
+            if (selectedAddressId) selectedAddressId.value = id;
+
+            // 2. 수령인 이름 및 뱃지 갱신 (문자열 결합 방식)
+            const nameArea = document.querySelector(".address-top div");
+            let badgeHTML = (isDefault === 'Y') ? '<span class="default-label">기본배송지</span>' : '';
+            if (nameArea) {
+                nameArea.innerHTML = '<span class="address-name">' + name + '</span>' + badgeHTML;
+            }
+
+            // 3. 주소 및 전화번호 갱신 (문자열 결합 방식)
+            const addressArea = document.querySelector(".address-box .address");
+            if (addressArea) {
+                addressArea.innerHTML = "[" + zip + "] " + base + "<br>" + detail + "<br>" + phone;
+            }
+
+            // 4. 요청사항 select 박스 동기화
+            const requestSelect = document.getElementById("orderRequestMsg");
+            if (requestSelect) {
+                requestSelect.value = msg ? msg : "";
+            }
+
+            // 5. 모달 닫기
+            if (modal) modal.classList.remove("show");
+            
+            alert("배송지가 변경되었습니다.");
+        });
+    });
+});

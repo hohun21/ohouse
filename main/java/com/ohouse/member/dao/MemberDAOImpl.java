@@ -28,7 +28,7 @@ public class MemberDAOImpl implements MemberDAO {
             pstmt = conn.prepareStatement("SELECT * FROM member WHERE id = ?");
             pstmt.setString(1, email);
             rs = pstmt.executeQuery();
-            
+
             MemberDTO member = null;
             if (rs.next()) {
                 member = MemberDTO.builder()
@@ -49,17 +49,28 @@ public class MemberDAOImpl implements MemberDAO {
     }
 
     @Override
-    public void insert(Connection conn, MemberDTO mem) throws SQLException {
+    public int insert(Connection conn, MemberDTO mem) throws SQLException {
         String sql = "INSERT INTO member " +
-                     "(member_id, id, password, name, reg_date, rank, role) " +
-                     "VALUES (seq_member.NEXTVAL, ?, ?, ?, SYSDATE, 'NORMAL', 'USER')";
-                     
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, mem.getId());       
+                "(member_id, id, password, name, reg_date, rank, role) " +
+                "VALUES (seq_member.NEXTVAL, ?, ?, ?, SYSDATE, 'NORMAL', 'USER')";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(
+                sql, new String[]{"MEMBER_ID"})) {
+
+            pstmt.setString(1, mem.getId());
             pstmt.setString(2, mem.getPassword());
-            pstmt.setString(3, mem.getName());     
+            pstmt.setString(3, mem.getName());
+
             pstmt.executeUpdate();
+
+            try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
         }
+
+        throw new SQLException("회원 ID를 가져오지 못했습니다.");
     }
 
     @Override
@@ -74,22 +85,22 @@ public class MemberDAOImpl implements MemberDAO {
 
     @Override
     public String nameCheck(Connection conn, String name) {
-        String sql = "SELECT COUNT(*) cnt FROM member WHERE name = ?"; 
-        ResultSet rs = null; 
-        String jsonResult = null; 
+        String sql = "SELECT COUNT(*) cnt FROM member WHERE name = ?";
+        ResultSet rs = null;
+        String jsonResult = null;
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, name); 
-            rs = pstmt.executeQuery(); 
-            if(rs.next()){
-                int cnt = rs.getInt("cnt"); 
-                jsonResult = String.format("{ \"count\":%d }", cnt); 
+            pstmt.setString(1, name);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                int cnt = rs.getInt("cnt");
+                jsonResult = String.format("{ \"count\":%d }", cnt);
             }
-        } catch(Exception e){ 
-            e.printStackTrace(); 
-        } finally{ 
-            JdbcUtil.close(rs); 
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JdbcUtil.close(rs);
         }
-        return jsonResult; 
+        return jsonResult;
     }
 
     @Override
@@ -97,11 +108,11 @@ public class MemberDAOImpl implements MemberDAO {
         String sql = "SELECT COUNT(*) cnt FROM member WHERE id = ?";
         ResultSet rs = null;
         String jsonResult = null;
-        
+
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, id);
             rs = pstmt.executeQuery();
-            
+
             if (rs.next()) {
                 int count = rs.getInt("cnt");
                 jsonResult = String.format("{\"count\":%d}", count);

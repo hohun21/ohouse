@@ -4,6 +4,16 @@
 
 <jsp:include page="/WEB-INF/views/layout/header.jsp"/>
 <style>
+/* 기본적으로 내용 다 숨기기 */
+.tab-content {
+    display: none;
+    margin-bottom: 80px;
+}
+
+/* active 붙은 내용만 보이기 */
+.tab-content.active {
+    display: block;
+}
     html,
     body {
         min-width: 1200px;
@@ -568,18 +578,35 @@
         <div class="product-info-detail">
             <div class="tabs">
                 <a class="active" href="#detail">상품정보</a>
-                <a href="#review">리뷰</a>
+                <a href="#detail-review">리뷰</a>
                 <a href="#qna">문의</a>
                 <a href="#delivery">배송/환불</a>
             </div>
+<!-- 1. 상품정보 (기본으로 보임: active) -->
+    <section id="detail" class="tab-content active">
+        <h2>상품정보</h2>
+        <div class="detail-empty">상품 상세 정보 내용</div>
+    </section>
 
-            <section id="detail" class="detail-section">
-                <h2>상품정보</h2>
-                <div class="detail-empty">
-                    상품
-                </div>
-            </section>
+    <!-- 2. 리뷰 -->
+    <section id="detail-review" class="tab-content">
+        <jsp:include page="/WEB-INF/views/product/review/reviewList.jsp">
+            <jsp:param name="product_id" value="${pdto.productDTO.product_id}" />
+            <jsp:param name="member_id" value="${memberId != null ? memberId : 2}" />
+        </jsp:include>
+    </section>
+
+    <!-- 3. 문의 -->
+    <section id="qna" class="tab-content">
+        <h2>문의</h2>
+    </section>
+
+    <!-- 4. 배송/환불 -->
+    <section id="delivery" class="tab-content">
+        <h2>배송/환불</h2>
+    </section>
         </div>
+        
 
     </div>
 </div>

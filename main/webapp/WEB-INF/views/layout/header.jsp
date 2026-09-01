@@ -438,13 +438,18 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 								</svg>
 							</button>
 							<!-- 장바구니 아이콘 -->
-							<button class="header-icon-btn" title="장바구니">
+
+
+
+							<a href="${pageContext.request.contextPath}/cart.htm" class="header-icon-btn" title="장바구니">
+
 								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 									<circle cx="9" cy="21" r="1"></circle>
 									<circle cx="20" cy="21" r="1"></circle>
 									<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
 								</svg>
-							</button>
+							</a>
+
 							<div class="header-profile-wrap">
 								<button class="header-profile-btn" id="profileToggleBtn" title="마이페이지">
 									<svg viewBox="0 0 24 24" fill="currentColor">
@@ -464,13 +469,13 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 						<%-- 2. 비로그인 상태일 때 --%>
 						<c:otherwise>
 							<!-- 장바구니 아이콘 -->
-							<button class="header-icon-btn" title="장바구니">
+							<a href="${pageContext.request.contextPath}/cart.htm" class="header-icon-btn" title="장바구니">
 								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 									<circle cx="9" cy="21" r="1"></circle>
 									<circle cx="20" cy="21" r="1"></circle>
 									<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
 								</svg>
-							</button>
+							</a>
 							<div class="header-auth-nav">
 								<a href="${pageContext.request.contextPath}/login.htm">로그인</a>
 								<a href="${pageContext.request.contextPath}/signup.htm">회원가입</a>

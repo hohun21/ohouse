@@ -12,7 +12,8 @@ import com.ohouse.product.review.dto.OptionFilterDTO;
 import com.ohouse.product.review.dto.ReviewDTO;
 import com.ohouse.product.review.dto.ReviewPageDTO;
 import com.ohouse.product.review.dto.ReviewSummaryDTO;
-import com.util.conn.ConnectionProvider;
+import com.ohouse.util.conn.ConnectionProvider;
+
 
 
 public class ReviewService {
@@ -21,13 +22,14 @@ public class ReviewService {
 
     public List<ReviewDTO> getReviewList(ReviewPageDTO reqDTO) {
         try (Connection conn = ConnectionProvider.getConnection()) {
+        	System.out.println("getReviewList");
             return reviewDao.selectReviewList(conn, reqDTO);
         } catch (Exception e) {
             throw new RuntimeException("리뷰 목록 조회 중 에러 발생", e);
         }
     }
 
-    public ReviewSummaryDTO getReviewSummary(int productId) {
+    public ReviewSummaryDTO getReviewSummary(long productId) {
         try (Connection conn = ConnectionProvider.getConnection()) {
             return reviewDao.selectReviewSummary(conn, productId);
         } catch (Exception e) {
@@ -41,7 +43,7 @@ public class ReviewService {
             return reviewDao.getTotalRecords(conn, reqDTO);
         }
     }
-    public List<OptionFilterDTO> getOptionFilterList(int productId) throws Exception {
+    public List<OptionFilterDTO> getOptionFilterList(long productId) throws Exception {
         try (Connection conn = ConnectionProvider.getConnection()) { 
             return reviewDao.selectOptionFilterList(conn, productId);
         }
