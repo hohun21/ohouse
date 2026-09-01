@@ -400,7 +400,7 @@
     <!-- 카테고리 경로: DB 데이터만 사용 -->
     <div class="breadcrumb">
         <c:forEach var="category" items="${pdto.categoryDTOList}" varStatus="s">
-            <button class="link-category" data-category_id="${category.category_id}">
+            <button class="link-category" data-category-id="${category.category_id}">
                 <span>${category.category_name}</span>
             </button>
             <c:if test="${!s.last}">
@@ -408,7 +408,7 @@
             </c:if>
         </c:forEach>
     </div>
-
+   
     <div class="product-main">
 
         <!-- 왼쪽 이미지 -->
@@ -585,9 +585,15 @@
 </div>
 <script src="${pageContext.request.contextPath}/js/productDetail.js"></script>
 <script>
-    $(".link-category").on("click", function (e) {
-        const category_id = $(this).data("category_id");
-        location.href = `${pageContext.request.contextPath}/category.htm?category_id=\${category_id}`;
-    })
+$(".link-category").on("click", function (e) {
+
+    const category_id = $(this).attr("data-category-id");
+
+    const url =
+        "${pageContext.request.contextPath}/shopping/category/category.htm"
+        + "?category_id=" + category_id;
+
+    location.href = url;
+});
 </script>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

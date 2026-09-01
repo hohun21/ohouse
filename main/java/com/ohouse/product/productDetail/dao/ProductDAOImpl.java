@@ -239,17 +239,18 @@ public class ProductDAOImpl implements ProductDAO {
 
     public List<CategoryDTO> viewCategory(Connection conn, long category_id) throws SQLException {
 
-        String sql = """
-                
-                 SELECT CATEGORY_ID, CATEGORY_NAME
-                FROM CATEGORY
-                START WITH CATEGORY_ID = (
-                    SELECT CATEGORY_ID
-                    FROM PRODUCT
-                    WHERE PRODUCT_ID = ?
-                )
-                CONNECT BY PRIOR PARENT_ID = CATEGORY_ID
-                """;
+    	String sql = """
+    	        SELECT CATEGORY_ID,
+    	               CATEGORY_NAME
+    	        FROM CATEGORY
+    	        START WITH CATEGORY_ID = (
+    	            SELECT CATEGORY_ID
+    	            FROM PRODUCT
+    	            WHERE PRODUCT_ID = ?
+    	        )
+    	        CONNECT BY PRIOR PARENT_ID = CATEGORY_ID
+    	        ORDER BY LEVEL DESC
+    	        """;
         List<CategoryDTO> list = null;
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
 

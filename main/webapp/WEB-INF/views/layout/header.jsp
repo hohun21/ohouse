@@ -510,14 +510,14 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 		              <div class="category-dropdown">
 		              	<ul class="category-menu">
 				         <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-533660207636544.png?w=1280"/><span>집요한세일</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634278838272.png?w=1280"/><span>가구</span></a></li>
+				          <li><a href="${pageContext.request.contextPath}/shopping/category/category.htm?category_id=10000000"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634278838272.png?w=1280"/><span>가구</span></a></li>
 				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634298495104.png?w=1280"/><span>가전·디지털</span></a></li>
 				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634315501568.png?w=1280"/><span>패브릭</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634333909120.png?w=1280"/><span>주방용품</span></a></li>
+				          <li><a href="${pageContext.request.contextPath}/shopping/category/category.htm?category_id=16000000"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634333909120.png?w=1280"/><span>주방용품</span></a></li>
 				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634353033280.png?w=1280"/><span>식품</span></a></li>
 				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634373091328.png?w=1280"/><span>데코·식물</span></a></li>
 				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-485389660414080.png?w=1280"/><span>조명</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634412826752.png?w=1280"/><span>수납·정리</span></a></li>
+				          <li><a href="${pageContext.request.contextPath}/shopping/category/category.htm?category_id=13000000"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634412826752.png?w=1280"/><span>수납·정리</span></a></li>
 				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634428547136.png?w=1280"/><span>생활용품</span></a></li>
 				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634451369984.png?w=1280"/><span>생필품</span></a></li>
 				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634472935424.png?w=1280"/><span>유아·아동</span></a></li>
