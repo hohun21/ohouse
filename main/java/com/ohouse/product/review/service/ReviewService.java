@@ -12,7 +12,8 @@ import com.ohouse.product.review.dto.OptionFilterDTO;
 import com.ohouse.product.review.dto.ReviewDTO;
 import com.ohouse.product.review.dto.ReviewPageDTO;
 import com.ohouse.product.review.dto.ReviewSummaryDTO;
-import com.util.conn.ConnectionProvider;
+import com.ohouse.util.conn.ConnectionProvider;
+
 
 
 public class ReviewService {

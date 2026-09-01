@@ -1,4 +1,4 @@
-package com.ohouse.filter;
+package com.ohouse.util.filter;
 
 
 
@@ -12,7 +12,10 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
-@WebFilter(urlPatterns = {"/order.htm", "/couponlist.htm", "/cart.htm", "/cartAdd.htm"})
+@WebFilter(urlPatterns = {
+	    "/order.htm", "/couponlist.htm", "/cart.htm", "/cartAdd.htm",
+	    "/addressList.htm", "/addressAddPro.htm", "/addressSetDefault.htm", "/addressDelete.htm"
+	})
 public class LoginFilter extends HttpFilter implements Filter {
     public LoginFilter() {
         super();

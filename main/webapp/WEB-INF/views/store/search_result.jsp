@@ -27,6 +27,7 @@
         margin: 0 auto;
         padding: 0 20px;
         box-sizing: border-box;
+       	padding-top : 20px;
     }
 
     /* --- 검색 페이지 전용 서브 메뉴 (LNB) + 실시간 인기 검색어 바 --- */
@@ -148,25 +149,6 @@
 
     <!-- 1. 공통 헤더 Include -->
     <jsp:include page="../layout/header.jsp" />
-
-    <!-- 2. 검색 페이지 전용 서브 메뉴바 + 실시간 인기 검색어 컴포넌트 -->
-    <div class="search-sub-nav-area">
-        <div class="search-sub-nav">
-            <nav class="sub-nav-list">
-                <a href="#">통합</a>
-                <a href="#" class="active">쇼핑</a>
-                <a href="#">이미지</a>
-                <a href="#">콘텐츠</a>
-                <a href="#">커뮤니티</a>
-                <a href="#">시공업체</a>
-                <a href="#">유저</a>
-            </nav>
-
-            <div style="padding: 8px 0;">
-                <jsp:include page="../layout/popular_keyword.jsp" />
-            </div>
-        </div>
-    </div>
 
     <!-- 3. 메인 검색 결과 컨텐츠 영역 -->
     <main class="container">
