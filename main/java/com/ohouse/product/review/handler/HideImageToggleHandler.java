@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 import com.ohouse.common.handler.CommandHandler;
+import com.ohouse.member.dto.AuthUserDTO;
 import com.ohouse.product.review.service.ReviewService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +18,23 @@ public class HideImageToggleHandler implements CommandHandler {
 
     @Override
     public String process(HttpServletRequest req, HttpServletResponse res) throws Exception {
+    	
+    	 AuthUserDTO authUser = (AuthUserDTO) req.getSession().getAttribute("authUser");
+         Integer memberId = 0;
+         String id = "";
+         String name = "";
+         String role = "";
+         
+         if(authUser != null) {
+         	memberId=authUser.getMemberId();
+         	id=authUser.getId();
+         	name=authUser.getName();
+         	role = authUser.getRole();
+         }
+         
+ 		boolean isAdmin = role.equals("ADMIN");
+ 	     req.setAttribute("isAdmin", isAdmin);
+ 		System.out.println(memberId+"&"+ id+"&"+  name+"&"+  role+"&"+ isAdmin);
         if (!"POST".equalsIgnoreCase(req.getMethod())) {
             res.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             return null;

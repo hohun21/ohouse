@@ -37,7 +37,7 @@ public class ProductDetailHandler implements CommandHandler {
 
             System.out.println("5. JSP forward");
 
-            
+            //review 보여주는 데 필요함 --
             System.out.println("reviewservice 호출");
 
             AuthUserDTO authUser = (AuthUserDTO) request.getSession().getAttribute("authUser");

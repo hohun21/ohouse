@@ -674,11 +674,8 @@
 
     // 리뷰 AJAX Fetch
     function triggerReviewFetch(page, sort) {
-        var productId = '${product_id}';
-        if (!productId || productId === '0' || productId === 'null') {
-            var params = new URLSearchParams(window.location.search);
-            productId = params.get('product_id') || '3377041';
-        }
+        var productId = `${product_id}`;
+       	console.log("reviewList.jsp line 678:", productId);
 
         var reqUrl = '${pageContext.request.contextPath}/review.htm?product_id=' + productId + '&sort=' + sort + '&page=' + page;
 
@@ -716,7 +713,7 @@
                 
             
                 parentContainer.querySelectorAll('.js-review-action[data-sort]').forEach(function(btn) {
-                    if (btn.getAttribute('data-sort') === currentSort) {
+                    if (btn.getAttribute('data-sort') === sort ) {//고정값 시도 
                         btn.classList.add('active');
                     } else {
                         btn.classList.remove('active');

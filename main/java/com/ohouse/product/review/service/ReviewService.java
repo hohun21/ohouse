@@ -21,7 +21,7 @@ public class ReviewService {
 
     public List<ReviewDTO> getReviewList(ReviewPageDTO reqDTO) {
         try (Connection conn = ConnectionProvider.getConnection()) {
-        	System.out.println("getReviewList");
+        	System.out.println("getReviewList, " + reqDTO.getMember_id());
             return reviewDao.selectReviewList(conn, reqDTO);
         } catch (Exception e) {
             throw new RuntimeException("리뷰 목록 조회 중 에러 발생", e);

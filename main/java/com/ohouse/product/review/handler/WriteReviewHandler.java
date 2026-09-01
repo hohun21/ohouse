@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.UUID;
 
 import com.ohouse.common.handler.CommandHandler;
+import com.ohouse.member.dto.AuthUserDTO;
 import com.ohouse.product.review.dto.ReviewDTO;
 import com.ohouse.product.review.service.ReviewService;
 
@@ -14,27 +15,42 @@ import jakarta.servlet.http.Part;
 
 @MultipartConfig(
     fileSizeThreshold = 1024 * 1024 * 2,  
-    maxFileSize = 1024 * 1024 * 10,       
-    maxRequestSize = 1024 * 1024 * 50     
+    maxFileSize = 1024 * 1024 * 10,        
+    maxRequestSize = 1024 * 1024 * 50      
 )
 public class WriteReviewHandler implements CommandHandler {
 
     private ReviewService reviewService = new ReviewService();
+    
+    // 👉 외부 고정 경로 설정 (C드라이브에 폴더가 미리 생성되어 있어야 함)
+    private static final String UPLOAD_DIR = "C:/ohouse_uploads/review";
 
     @Override
     public String process(HttpServletRequest request, HttpServletResponse response) throws Exception {
         request.setCharacterEncoding("UTF-8");
-
-        int memberId = 3; // 로그인 세션 연동 전 임시 회원 ID
+        AuthUserDTO authUser = (AuthUserDTO) request.getSession().getAttribute("authUser");
+        Integer memberId = 0;
+        String id = "";
+        String name = "";
+        String role = "";
+        
+        if(authUser != null) {
+            memberId = authUser.getMemberId();
+            id = authUser.getId();
+            name = authUser.getName();
+            role = authUser.getRole();
+        }
+        boolean isAdmin = role.equals("ADMIN");
+        System.out.println(memberId + "&" + id + "&" + name + "&" + role + "&" + isAdmin);
 
         try {
-        	String productIdStr = request.getParameter("productId");
-        	String ratingStr = request.getParameter("rating");
-        	String content = request.getParameter("content");
+            String productIdStr = request.getParameter("productId");
+            String ratingStr = request.getParameter("rating");
+            String content = request.getParameter("content");
 
-        	System.out.println(">>> productIdStr: " + productIdStr);
-        	System.out.println(">>> ratingStr: " + ratingStr);
-        	System.out.println(">>> content: " + content);
+            System.out.println(">>> productIdStr: " + productIdStr);
+            System.out.println(">>> ratingStr: " + ratingStr);
+            System.out.println(">>> content: " + content);
 
             int productId = Integer.parseInt(productIdStr);
             int rating = Integer.parseInt(ratingStr);
@@ -43,24 +59,23 @@ public class WriteReviewHandler implements CommandHandler {
             Part filePart = request.getPart("reviewImage"); 
 
             if (filePart != null && filePart.getSize() > 0) {
-                String originalFileName = filePart.getSubmittedFileName(); // 최신 내장 메서드로 변경
+                String originalFileName = filePart.getSubmittedFileName();
                 
                 if (originalFileName != null && !originalFileName.isEmpty()) {
                     String savedFileName = UUID.randomUUID().toString() + "_" + originalFileName;
                     
-                    // 👉 폴더 경로를 /upload/review 로 수정 완료
-                    String uploadPath = request.getServletContext().getRealPath("/upload/review");
-                    
-                    File uploadDir = new File(uploadPath);
+                    // 👉 외부 경로 객체 생성
+                    File uploadDir = new File(UPLOAD_DIR);
                     if (!uploadDir.exists()) {
                         uploadDir.mkdirs();
                     }
 
-                    String filePath = uploadPath + File.separator + savedFileName;
+                    // 👉 외부 폴더에 파일 저장
+                    String filePath = UPLOAD_DIR + File.separator + savedFileName;
                     filePart.write(filePath);
 
-                    // 👉 DB에 저장될 웹 경로도 /upload/review 로 수정 완료
-                    imageUrl = "/upload/review/" + savedFileName;
+                    // 👉 DB에 저장될 웹 경로 (server.xml의 /uploads 매핑과 일치)
+                    imageUrl = "/uploads/review/" + savedFileName;
                 }
             }
 
@@ -73,7 +88,7 @@ public class WriteReviewHandler implements CommandHandler {
             boolean success = reviewService.registerReview(reviewDTO, imageUrl);
 
             if (success) {
-                return "redirect:" + request.getContextPath() + "/product_detail.htm?productId=" + productId;
+                return "redirect:" + request.getContextPath() + "/productDetail.htm?product_id=" + productId;
             } else {
                 request.setAttribute("errorMessage", "리뷰 등록에 실패했습니다.");
                 return "/WEB-INF/views/common/error.jsp";

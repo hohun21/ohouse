@@ -14,10 +14,10 @@
             
             <!-- 상품 정보 요약 Box -->
             <div style="display: flex; align-items: center; background: #f7f9fa; padding: 12px; border-radius: 6px; margin-bottom: 24px;">
-                <img src="${product.imageUrl}" alt="상품 이미지" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; margin-right: 12px; border: 1px solid #e0e0e0;">
+                <img src="${pdto.imageDTOList[0].image_url}" alt="상품 이미지" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; margin-right: 12px; border: 1px solid #e0e0e0;">
                 <div>
-                    <div style="font-size: 11px; color: #828282; font-weight: bold;">${product.brandName}</div>
-                    <div style="font-size: 13px; color: #212121; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 380px;">${product.productName}</div>
+                    <div style="font-size: 11px; color: #828282; font-weight: bold;">${pdto.productDTO.brand_name}</div>
+                    <div style="font-size: 13px; color: #212121; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 380px;">${pdto.productDTO.product_name}</div>
                 </div>
             </div>
 
@@ -77,7 +77,7 @@
                 저장하기
             </button>
 			<!-- 핸들러로 productId -->
-			<input type="hidden" name="productId" value="3377041">
+			<input type="hidden" name="productId" value="${param.product_id}">
         </form>
     </div>
 </div>
