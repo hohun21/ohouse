@@ -1,6 +1,12 @@
 package com.ohouse.product.productDetail.dao;
 
 
+import com.ohouse.product.productDetail.dto.OptionDTO;
+import com.ohouse.product.productDetail.dto.ProductDTO;
+import com.ohouse.product.productDetail.dto.ProductImageDTO;
+import com.ohouse.product.productDetail.dto.ProductOptionDTO;
+import com.ohouse.shopping.category.dto.CategoryDTO;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,15 +14,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ohouse.shopping.category.dto.CategoryDTO;
-import com.ohouse.product.productDetail.dto.OptionDTO;
-import com.ohouse.product.productDetail.dto.ProductDTO;
-import com.ohouse.product.productDetail.dto.ProductImageDTO;
-import com.ohouse.product.productDetail.dto.ProductOptionDTO;
-
 public class ProductDAOImpl implements ProductDAO {
 
-	private ProductImageDAOImple imageDAO = new ProductImageDAOImple();
+
+    ProductImageDAO imageDAO = new ProductImageDAOImple();
 
 	public ProductDTO viewProduct(Connection conn, long product_id) throws SQLException {
 
@@ -140,28 +141,38 @@ public class ProductDAOImpl implements ProductDAO {
 						)
 				);
 
-		String sql = """
-				SELECT
-				    po.product_option_id,
-				    po.product_id,
-				    po.sku,
-				    po.price,
-				    po.stock,
-				    po.status
-				FROM product_option po
-				JOIN product_option_value pov
-				    ON po.product_option_id = pov.product_option_id
-				WHERE po.product_id = ?
-				  AND pov.option_value_id IN (%s)
-				GROUP BY
-				    po.product_option_id,
-				    po.product_id,
-				    po.sku,
-				    po.price,
-				    po.stock,
-				    po.status
-				HAVING COUNT(DISTINCT pov.option_value_id) = ?
-				""".formatted(placeholders);
+
+        String sql = """
+                
+                SELECT
+                   po.product_option_id,
+                   po.product_id,
+                   po.sku,
+                   po.price,
+                   po.stock,
+                                                                  po.status,
+                                                                  p.brand_id,
+                                                                  b.brand_name
+                                                              FROM product_option po
+                                                              JOIN product_option_value pov
+                                                                  ON po.product_option_id = pov.product_option_id
+                                                              JOIN product p
+                                                                  ON po.product_id = p.product_id
+                                                              JOIN brand b
+                                                                  ON p.brand_id = b.brand_id
+                                                              WHERE po.product_id = ?
+                                                                AND pov.option_value_id IN (%s)
+                                                              GROUP BY
+                                                                  po.product_option_id,
+                                                                  po.product_id,
+                                                                  po.sku,
+                                                                  po.price,
+                                                                  po.stock,
+                                                                  po.status,
+                                                                  p.brand_id,
+                                                                  b.brand_name
+                                                              HAVING COUNT(DISTINCT pov.option_value_id) = ?
+                """.formatted(placeholders);
 
 		try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
@@ -180,18 +191,21 @@ public class ProductDAOImpl implements ProductDAO {
 
 			try (ResultSet rs = pstmt.executeQuery()) {
 
-				if (rs.next()) {
-					return new ProductOptionDTO(
-							rs.getLong("product_option_id"),
-							rs.getLong("product_id"),
-							rs.getString("sku"),
-							rs.getLong("price"),
-							rs.getLong("stock"),
-							rs.getString("status")
-							);
-				}
-			}
-		}
+                if (rs.next()) {
+                    return new ProductOptionDTO(
+                            rs.getLong("brand_id"),
+                            rs.getString("brand_name"),
+                            rs.getLong("product_option_id"),
+                            rs.getLong("product_id"),
+                            rs.getString("sku"),
+                            rs.getLong("price"),
+                            rs.getLong("stock"),
+                            rs.getString("status")
+                    );
+                }
+            }
+        }
+
 
 		return null;
 	}

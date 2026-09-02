@@ -414,7 +414,7 @@
             </header>
 			<div class="product-grid" id="onlyProductGrid">
 			    <c:forEach var="product" items="${ products }" begin="0" end="8">
-			      <article class="product-card">
+			      <article class="product-card"  onclick="location.href='${pageContext.request.contextPath}/productDetail.htm?product_id=${product.productId}'">
 			        <div class="product-image">
                       <img src="${ product.imageUrl }" alt="${ product.productName }">
                       <span class="only-badge">Only</span>
@@ -436,7 +436,7 @@
                         <section class="all-product-group">
                             <div class="all-product-grid">
                              <c:forEach var="product" items="${ products }" begin="9">
-                                    <article class="product-card">
+                                    <article class="product-card"  onclick="location.href='${pageContext.request.contextPath}/productDetail.htm?product_id=${product.productId}'">
                                         <div class="product-image">
                                             <img src="${ product.imageUrl }" alt="${ product.productName }">
                                             <span class="only-badge">Only</span>

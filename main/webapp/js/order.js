@@ -1,6 +1,14 @@
 /* =====================================================
    결제수단
    ===================================================== */
+let orderPriceData = {
+    productTotal: 0,
+    deliveryFee: 3000,
+    couponDiscount: 0,
+    pointDiscount: 0,
+    finalPrice: 0,
+    memberCouponId: null
+};
 updateTotalPrice();
 const paymentMethods = document.querySelectorAll(".payment-method");
 
@@ -789,6 +797,7 @@ document.getElementById("optionModal")
 총 상품금액 갱신
 ===================================================== */
 
+
 function updateTotalPrice() {
     let productTotal = 0;
 
@@ -866,13 +875,31 @@ function updateTotalPrice() {
 
     document.getElementById("finalPrice").textContent =
         finalPrice.toLocaleString("ko-KR") + "원";
+    orderPriceData.productTotal = productTotal;
+    orderPriceData.deliveryFee = deliveryFee;
+    orderPriceData.couponDiscount = couponDiscount;
+    orderPriceData.pointDiscount = pointDiscount;
+    orderPriceData.finalPrice = finalPrice;
+    orderPriceData.memberCouponId =
+        selectedCoupon && selectedCoupon.value !== ""
+            ? Number(selectedCoupon.value)
+            : null;
 }
 
 
 /* =====================================================
 결제
 ===================================================== */
-function payment() {
+const clientKey = "test_ck_EP59LybZ8B69EwLGwdnB86GYo7pR";
+const customerKey = "customer_" + member_id;
+
+const tossPayments = TossPayments(clientKey);
+const paymentInstance = tossPayments.payment({
+    customerKey: customerKey
+});
+
+async function payment() {
+    console.log("order.js orderPriceData 선언 확인 =", orderPriceData);
 
     const agreement = document.querySelector("#agreement");
 
@@ -883,7 +910,7 @@ function payment() {
     }
 
     const addressIdInput = document.getElementById("selectedAddressId");
-    
+
     if (!addressIdInput) {
         alert("배송지를 먼저 등록해주세요.");
         return;
@@ -894,15 +921,89 @@ function payment() {
 
     console.log("결제할 배송지 ID :", addressId);
     console.log("배송 요청사항 :", requestMsg);
-    
+
     alert("결제 페이지로 이동합니다. (콘솔창에서 배송지 데이터를 확인해보세요!)");
+
+    const finalPriceElement = document.getElementById("finalPrice");
+
+    const finalPrice = Number(
+        finalPriceElement.textContent.replace(/[^0-9]/g, "")
+    );
+
+    console.log("최종 결제금액: ", finalPrice);
+    const orderDetails = [];
+
+    document.querySelectorAll(".order-item").forEach(function (item) {
+        orderDetails.push({
+            brandId : Number(item.dataset.brandId),
+            productId: Number(item.dataset.productId),
+            productOptionId: Number(item.dataset.productOptionId),
+            productName: item.querySelector(".product-name").textContent.trim(),
+            optionName: item.querySelector(".product-option").textContent.trim(),
+            price: Number(item.dataset.price),
+            quantity: Number(
+                item.querySelector(".quantity-number").textContent.trim()
+            )
+        });
+    });
+
+    const orderData = {
+        totalPrice: orderPriceData.productTotal,
+        couponDiscount: orderPriceData.couponDiscount,
+        deliveryFee: orderPriceData.deliveryFee,
+        paymentPrice: orderPriceData.finalPrice,
+        memberCouponId: orderPriceData.memberCouponId,
+        addressId: addressId,
+        requestMsg: requestMsg,
+        orderDetails: orderDetails
+
+    };
+
+    console.log("===== 주문 데이터 =====");
+    console.log(orderData);
+
+    const response = await fetch("/order/payment/create.htm", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(orderData)
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+        alert("주문 정보 저장 실패");
+        return;
+    }
+    console.log(result);
+    console.log("orderDetails:", JSON.stringify(orderDetails, null, 2));
+    const tossOrderId = "ORDER-" + Date.now();
+    const orderName = orderDetails.length === 1
+        ? orderDetails[0].productName
+        : orderDetails[0].productName + " 외 " + (orderDetails.length - 1) + "건";
+    try {
+        await paymentInstance.requestPayment({
+            method: "CARD",
+            amount: {
+                currency: "KRW",
+                value: finalPrice
+            },
+            orderId: tossOrderId,
+            orderName: orderName,
+            successUrl: window.location.origin + "/order/payment/success.htm",
+            failUrl: window.location.origin + "/order/payment/fail.htm"
+        });
+    } catch (e) {
+        console.error("결제 실패", e);
+    }
 }
 
 
 /* =====================================================
 할인쿠폰 이동 이벤트
 ===================================================== */
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const discountBtn = document.querySelector(".discount-btn");
     if (discountBtn) {
         discountBtn.addEventListener("click", function (e) {
@@ -938,7 +1039,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     document.querySelectorAll(".select-address-btn").forEach(button => {
-        button.addEventListener("click", function() {
+        button.addEventListener("click", function () {
             const id = this.dataset.id;
             const name = this.dataset.name;
             const zip = this.dataset.zip;
@@ -973,7 +1074,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             // 5. 모달 닫기
             if (modal) modal.classList.remove("show");
-            
+
             alert("배송지가 변경되었습니다.");
         });
     });

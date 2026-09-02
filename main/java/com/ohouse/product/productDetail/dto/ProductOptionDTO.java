@@ -8,6 +8,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class ProductOptionDTO {
+    private long brand_id;
+    private String brand_name;
     private long product_option_id;
     private long product_id;
     private String sku;

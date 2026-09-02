@@ -240,7 +240,12 @@ function createSelectedOption(data,
     const productName =
         document.querySelector(".product-name").textContent.trim();
     const productImage = document.querySelector("#mainProductImage").src;
+    console.log("data 전체:", data);
+    console.log("brand_id:", data.brand_id);
+    console.log("brand_name:", data.brand_name);
     const optionData = {
+        brand_id : data.brand_id,
+        brand_name: data.brand_name,
         product_option_id: data.product_option_id,
         product_id: data.product_id,
         sku: data.sku,
@@ -466,10 +471,10 @@ $(".buy").on("click", async function () {
         showToast("옵션 선택 후에 버튼을 클릭해주세요.");
         return;
     }
-
-    try {
         console.log("selectOptionData 객체:", selectOptionData);
         console.log("JSON:", JSON.stringify(selectOptionData, null, 2));
+    try {
+
 
         const response = await fetch("/productOrder.htm", {
             method: "POST",

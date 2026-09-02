@@ -75,7 +75,7 @@
     </div>
     <section class="product-grid" id="productGrid" aria-live="polite">
     <c:forEach var="product" items="${ bestProducts }">
-      <article class="product-card">
+      <article class="product-card"  onclick="location.href='${pageContext.request.contextPath}/productDetail.htm?product_id=${product.productId}'">
             <a href="#" aria-label="${ product.productName }">
                 <div class="image-wrap">
                     <img src="${ product.imageUrl }" alt="${ product.productName }" loading="lazy">
