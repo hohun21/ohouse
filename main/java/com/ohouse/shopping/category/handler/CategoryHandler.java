@@ -11,6 +11,8 @@ import com.ohouse.shopping.category.dao.CategoryDAO;
 import com.ohouse.shopping.category.dao.CategoryDAOImple;
 import com.ohouse.shopping.category.dto.CategoryDTO;
 import com.ohouse.shopping.category.service.CategoryService;
+import com.ohouse.shopping.only.dto.OnlyDTO;
+import com.ohouse.shopping.only.service.OnlyService;
 import com.ohouse.util.conn.ConnectionProvider;
 import com.ohouse.util.conn.JdbcUtil;
 
@@ -56,6 +58,7 @@ public String process(
 	        CategoryDAO dao = new CategoryDAOImple();
 	        CategoryService categoryService = new CategoryService(dao);
 	        ProductService productService = new ProductService();
+	        OnlyService onlyService = new OnlyService();
 	
 	        // 전체 카테고리 조회
 	        List<CategoryDTO> categories =
@@ -83,6 +86,10 @@ public String process(
 	            }
 	        }
 
+	        String view = request.getParameter("view");
+
+	        boolean isOnly = "only".equals(view);
+	        
 	        CategoryDTO mainCategory = currentCategory;
 
 	        // 부모를 따라가면서 대분류까지 올라가기
@@ -108,7 +115,12 @@ public String process(
 	                        : "";
 
 	        request.setAttribute("mainCategoryName", mainCategoryName);
-	
+	        
+	        request.setAttribute("mainCategoryId",
+	                mainCategory != null
+	                        ? mainCategory.getCategory_id()
+	                        : null);
+	        
 	        // 현재 카테고리 아래의 leaf 카테고리 조회
 	        List<CategoryDTO> leafCategories =
 	                categoryService.getLeafCategories(
@@ -132,10 +144,21 @@ public String process(
 	                        sort
 	                );
 	        
+	     // 오늘의집 ONLY 상품 조회
+	        List<OnlyDTO> onlyProducts = new ArrayList<>();
+
+	        if (isOnly) {
+	            onlyProducts =
+	                    onlyService.getOnlyProductsByMainCategory(
+	                            conn,
+	                            mainCategory.getCategory_id()
+	                    );
+	        }
+	        
 	     // 상단 배너용 상품 3개
-	        List<ProductDTO> bannerProducts = products.size() > 3
-	                ? products.subList(0, 3)
-	                : products;
+	        List<ProductDTO> bannerProducts = products.size() > 2
+	                ? products.subList(2, Math.min(5, products.size()))
+	                : new ArrayList<>();
 	
 	        // JSP 전달
 	        request.setAttribute("categories", categories);
@@ -143,7 +166,9 @@ public String process(
 	        request.setAttribute("products", products);
 	        request.setAttribute("selectedCategoryId", selectedCategoryId);
 	        request.setAttribute("bannerProducts", bannerProducts);
-	
+	        request.setAttribute("onlyProducts", onlyProducts);
+	        request.setAttribute("isOnly", isOnly);
+	        
 	        System.out.println("현재 카테고리 = " + selectedCategoryId);
 	        System.out.println("전체 카테고리 수 = " + categories.size());
 	        System.out.println("Leaf 카테고리 수 = " + leafCategories.size());

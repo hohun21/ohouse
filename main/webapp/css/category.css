@@ -246,7 +246,7 @@
 /* =========================================================
    9. 상품 필터
 ========================================================= */
-
+/* 
 .filter-section {
     margin-bottom: 30px;
 }
@@ -279,7 +279,8 @@
 
 .filter-btn:hover {
     background: #F7F9FA;
-}
+} 
+*/
 
 .filter-btn.active {
     border-color: #35C5F0;
@@ -365,29 +366,6 @@
 
 .product-card:hover .product-img-wrap img {
     transform: scale(1.05);
-}
-
-
-/* =========================================================
-   13. 상품 Only 배지
-========================================================= */
-
-.only-badge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-
-    z-index: 10;
-
-    padding: 4px 6px;
-
-    border-radius: 4px;
-
-    background: #2F3438;
-    color: #fff;
-
-    font-size: 10px;
-    font-weight: 700;
 }
 
 
@@ -480,6 +458,52 @@
 .badge-special {
     background-color: #FF7777;
     color: #fff;
+}
+
+/* 오늘의집 ONLY */
+.only-badge {
+    display: inline-block;
+    margin-top: 2px;
+
+    color: #35A8E0;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.only-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #757575;
+}
+
+.only-breadcrumb a {
+    color: #757575;
+    text-decoration: none;
+}
+
+.only-breadcrumb a:hover {
+    color: #35A8E0;
+}
+
+.only-breadcrumb span:last-child {
+    color: #2F3438;
+}
+
+.only-banner {
+    width: 100%;
+    margin-bottom: 40px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.only-banner img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
 }
 
 /* 카테고리 상단 상품 3개 */
