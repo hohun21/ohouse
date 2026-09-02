@@ -49,4 +49,11 @@ public class CategoryService {
 
         return dao.viewCategory(conn, productId);
     }
+    
+
+    public List<CategoryDTO> getAllLeafCategories() throws Exception {
+        try (Connection conn = ConnectionProvider.getConnection()) {
+            return dao.getAllLeafCategories(conn);
+        }
+    }
 }

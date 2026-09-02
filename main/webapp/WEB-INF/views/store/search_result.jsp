@@ -31,7 +31,10 @@
     .container {
         max-width: 1136px;
         margin: 0 auto;
-        padding: 20px 20px 0;
+        padding: 0 20px;
+        box-sizing: border-box;
+       	padding-top : 65px;
+
     }
 
     /* 검색결과 탭은 메인 헤더 바로 아래에 고정한다. */
@@ -257,6 +260,15 @@
                            class="product-card">
                             <div class="product-img-wrap">
                                 <img src="${product.imageUrl}" alt="${product.productName}">
+                                
+                                <!-- 💡 품절 뱃지 추가 (status가 SOLD_OUT일 경우 노출) -->
+                                <c:if test="${product.status == 'SOLD_OUT'}">
+                                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+                                                background: rgba(0,0,0,0.5); color: white; display: flex; 
+                                                justify-content: center; align-items: center; font-size: 18px; font-weight: bold; z-index: 10;">
+                                        품절
+                                    </div>
+                                </c:if>
                             </div>
                             <div class="brand-name">${product.brandName}</div>
                             <div class="product-name">${product.productName}</div>
@@ -280,7 +292,6 @@
             </c:otherwise>
         </c:choose>
     </main>
-
     <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 </body>
 </html>

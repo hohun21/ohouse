@@ -1,7 +1,7 @@
 package com.ohouse.seller.handler;
 
 import com.ohouse.common.handler.CommandHandler;
-import com.ohouse.seller.dto.ProductFormDTO; // 💡 DTO 임포트
+import com.ohouse.seller.dto.ProductFormDTO; 
 import com.ohouse.seller.service.SellerService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -71,10 +71,10 @@ public class ProductAddProHandler implements CommandHandler {
                 .build();
 
         SellerService service = new SellerService();
-        boolean result = service.registerProduct(formDTO);
+        int productId = service.registerProduct(formDTO);
 
-        if (result) {
-        	return "redirect:" + request.getContextPath() + "/seller/productList.htm";
+        if (productId > 0) {
+            return "redirect:" + request.getContextPath() + "/productDetail.htm?product_id=" + productId;
         } else {
             request.setAttribute("errorMessage", "상품 등록에 실패했습니다.");
             return "/WEB-INF/views/seller/seller_add.jsp";

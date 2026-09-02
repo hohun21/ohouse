@@ -19,6 +19,19 @@ public class MemberDAOImpl implements MemberDAO {
     private java.sql.Date toDate(java.sql.Timestamp date) {
         return date == null ? null : new java.sql.Date(date.getTime());
     }
+    
+    @Override
+    public int delete(Connection conn, int memberId) throws SQLException {
+        String sql = """
+                DELETE FROM member
+                WHERE member_id = ?
+                """;
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, memberId);
+            return pstmt.executeUpdate();
+        }
+    }
 
     @Override
     public MemberDTO selectByEmail(Connection conn, String email) throws SQLException {

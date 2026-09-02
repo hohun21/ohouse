@@ -512,7 +512,9 @@ html, body {
 							<option value="" selected disabled>
 								${option.group_name}을 선택해주세요</option>
 
-							<c:forEach var="value" items="${pdto.optionDTOList}">
+							<c:forEach var="value"
+                                       items="${pdto.optionDTOList}">
+
 
 								<c:if test="${value.option_group_id == option.option_group_id}">
 

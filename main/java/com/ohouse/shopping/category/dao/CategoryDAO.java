@@ -21,4 +21,6 @@ public interface CategoryDAO {
 	
 	List<CategoryDTO> getRootCategories(Connection conn)
 	        throws SQLException;
+	
+	List<CategoryDTO> getAllLeafCategories(Connection conn) throws SQLException;
 }

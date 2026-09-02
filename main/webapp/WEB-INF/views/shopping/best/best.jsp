@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core"%>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt"%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -90,7 +91,7 @@
                 <div class="info">
                     <div class="brand">${ product.brandName }</div>
                     <p class="name">${ product.productName }</p>
-                    <div class="price"><span class="discount">${ product.discountRate }%</span>${ product.price }</div>
+                    <div class="price"><span class="discount">${ product.discountRate }%</span><fmt:formatNumber value="${product.price}" pattern="#,###"/></div>
                     <div class="rating">
                         <span class="star">★</span><span class="score">${ product.reviewScore }</span><span class="review-count">${ product.reviewCount }</span>
                     </div>

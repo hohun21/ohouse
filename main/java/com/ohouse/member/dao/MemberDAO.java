@@ -10,6 +10,7 @@ public interface MemberDAO {
     MemberDTO selectByEmail(Connection conn, String email) throws SQLException;
     int insert(Connection conn, MemberDTO mem) throws SQLException;
     void update(Connection conn, MemberDTO member) throws SQLException;
+    int delete(Connection conn, int memberId) throws SQLException;
     
     // 중복 체크
     String nameCheck(Connection conn, String name);

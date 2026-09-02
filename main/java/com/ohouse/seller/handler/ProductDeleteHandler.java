@@ -17,7 +17,7 @@ public class ProductDeleteHandler implements CommandHandler {
         boolean result = service.deleteProduct(productId);
         
         if (result) {
-            return "redirect:/seller/detailTest.htm";
+        	return "redirect:" + request.getContextPath() + "/seller/productList.htm";
         } else {
             response.setContentType("text/html; charset=UTF-8");
             java.io.PrintWriter out = response.getWriter();
