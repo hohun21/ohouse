@@ -213,11 +213,12 @@ body {
 
 			<!-- 카테고리 선택 -->
 			<div class="form-group">
-				<label for="categoryId">카테고리</label> <select id="categoryId"
-					name="categoryId" required>
+				<label for="categoryId">카테고리</label> 
+                <select id="categoryId" name="categoryId" required>
 					<option value="">카테고리를 선택하세요</option>
 					<c:forEach var="cat" items="${categoryList}">
-						<option value="${cat.categoryId}">${cat.categoryName}</option>
+                        <!-- 💡 cat.categoryId -> cat.category_id / cat.categoryName -> cat.category_name 으로 변경! -->
+						<option value="${cat.category_id}">${cat.category_name}</option>
 					</c:forEach>
 				</select>
 			</div>

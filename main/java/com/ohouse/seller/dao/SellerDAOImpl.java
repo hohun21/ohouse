@@ -158,7 +158,7 @@ public class SellerDAOImpl implements SellerDAO {
     @Override
     public int insertProduct(ProductDTO dto) throws SQLException {
         String sql = "INSERT INTO product (product_id, category_id, brand_id, product_name, price, description, original_price, discount_rate, created, updated, status) "
-                   + "VALUES (product_seq.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, SYSDATE, NULL, 'ACTIVE')";
+                   + "VALUES (product_seq.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, SYSDATE, SYSDATE, 'ACTIVE')";
         
         try (PreparedStatement pstmt = this.conn.prepareStatement(sql, new String[] {"product_id"})) {
             pstmt.setInt(1, dto.getCategoryId());
@@ -444,13 +444,28 @@ public class SellerDAOImpl implements SellerDAO {
     @Override
     public List<ProductDTO> getProductListByBrandId(int brandId) throws SQLException {
         List<ProductDTO> list = new ArrayList<>();
-        String sql = "SELECT product_id, category_id, brand_id, product_name, price, description, original_price, discount_rate, status, created, updated " +
-                     "FROM product WHERE brand_id = ? ORDER BY product_id DESC";
+        
+        String sql = "SELECT p.product_id, p.category_id, p.brand_id, p.product_name, p.price, p.description, " +
+                     "       p.original_price, p.discount_rate, p.status, p.created, p.updated, " +
+                     "       NVL(SUM(po.stock), 0) AS total_stock " +
+                     "FROM product p " +
+                     "LEFT JOIN product_option po ON p.product_id = po.product_id " +
+                     "WHERE p.brand_id = ? " +
+                     "GROUP BY p.product_id, p.category_id, p.brand_id, p.product_name, p.price, " +
+                     "         p.description, p.original_price, p.discount_rate, p.status, p.created, p.updated " +
+                     "ORDER BY p.product_id DESC";
         
         try (PreparedStatement pstmt = this.conn.prepareStatement(sql)) {
             pstmt.setInt(1, brandId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
+                    int totalStock = rs.getInt("total_stock");
+                    
+                    String currentStatus = rs.getString("status");
+                    if (totalStock <= 0) {
+                        currentStatus = "SOLD_OUT";
+                    }
+
                     list.add(ProductDTO.builder()
                             .productId(rs.getInt("product_id"))
                             .categoryId(rs.getInt("category_id"))
@@ -460,7 +475,7 @@ public class SellerDAOImpl implements SellerDAO {
                             .description(rs.getString("description"))
                             .originalPrice(rs.getInt("original_price"))
                             .discountRate(rs.getInt("discount_rate"))
-                            .status(rs.getString("status"))
+                            .status(currentStatus)
                             .created(rs.getDate("created"))
                             .updated(rs.getDate("updated"))
                             .build());
@@ -491,5 +506,43 @@ public class SellerDAOImpl implements SellerDAO {
             }
         }
         return list;
+    }
+    
+    @Override
+    public int deleteProductOptionsByProductId(int productId) throws SQLException {
+        String sql1 = "DELETE FROM cart_items WHERE product_option_id IN "
+                    + "(SELECT product_option_id FROM product_option WHERE product_id = ?)";
+        try (PreparedStatement pstmt1 = this.conn.prepareStatement(sql1)) {
+            pstmt1.setInt(1, productId);
+            pstmt1.executeUpdate();
+        }
+
+        String sql2 = "DELETE FROM product_option WHERE product_id = ?";
+        try (PreparedStatement pstmt2 = this.conn.prepareStatement(sql2)) {
+            pstmt2.setInt(1, productId);
+            return pstmt2.executeUpdate();
+        }
+    }
+    
+    @Override
+    public int updateProductStatus(int productId, String status) throws SQLException {
+        String sql = "UPDATE product SET status = ? WHERE product_id = ?";
+        try (PreparedStatement pstmt = this.conn.prepareStatement(sql)) {
+            pstmt.setString(1, status);
+            pstmt.setInt(2, productId);
+            return pstmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public int getStopProductCount(int brandId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM product WHERE brand_id = ? AND status = 'STOP'";
+        try (PreparedStatement pstmt = this.conn.prepareStatement(sql)) {
+            pstmt.setInt(1, brandId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        }
+        return 0;
     }
 }

@@ -1,7 +1,7 @@
 package com.ohouse.seller.handler;
 
 import com.ohouse.common.handler.CommandHandler;
-import com.ohouse.seller.dto.ProductFormDTO; // 💡 DTO 임포트
+import com.ohouse.seller.dto.ProductFormDTO; 
 import com.ohouse.seller.service.SellerService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +22,6 @@ public class ProductEditProHandler implements CommandHandler {
         
         request.setCharacterEncoding("UTF-8");
 
-        // 1. 이미지 처리
         File uploadDir = new File(UPLOAD_DIR);
         if (!uploadDir.exists()) uploadDir.mkdirs(); 
 
@@ -74,7 +73,7 @@ public class ProductEditProHandler implements CommandHandler {
         boolean isSuccess = service.updateProduct(formDTO);
 
         if (isSuccess) {
-            return "redirect:" + request.getContextPath() + "/seller/detailTest.htm?productId=" + formDTO.getProductId();
+            return "redirect:" + request.getContextPath() + "/productDetail.htm?product_id=" + formDTO.getProductId();
         } else {
             return "redirect:" + request.getContextPath() + "/seller/editForm.htm?productId=" + formDTO.getProductId() + "&error=1";
         }

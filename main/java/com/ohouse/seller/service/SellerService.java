@@ -53,11 +53,11 @@ public class SellerService {
         return optionList;
     }
 
-    // 2. 상품 등록 로직
-    public boolean registerProduct(ProductFormDTO form) {
+    // 2. 상품 등록 로직 (성공 시 생성된 productId 반환, 실패 시 -1 반환)
+    public int registerProduct(ProductFormDTO form) {
         
         Connection conn = null;
-        boolean isSuccess = false;
+        int generatedProductId = -1;
 
         try {
             conn = ConnectionProvider.getConnection();
@@ -194,7 +194,7 @@ public class SellerService {
             }
 
             conn.commit();
-            isSuccess = true;
+            generatedProductId = productId; // 성공 시 생성된 상품 번호 저장
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -202,7 +202,7 @@ public class SellerService {
         } finally {
             if (conn != null) { try { conn.setAutoCommit(true); conn.close(); } catch (Exception e) {} }
         }
-        return isSuccess;
+        return generatedProductId;
     }
 
     // 3. 상품 수정 로직
@@ -233,9 +233,9 @@ public class SellerService {
                     .build();
             dao.updateProduct(productDTO);
 
-            dao.deleteProductImages(form.getProductId());
-            
+            // 새 이미지를 선택해서 업로드했을 때만 기존 이미지를 지우고 교체합니다!
             if (form.getImageUrls() != null && !form.getImageUrls().isEmpty()) {
+                dao.deleteProductImages(form.getProductId());
                 for (int i = 0; i < form.getImageUrls().size(); i++) {
                     ProductImageDTO imageDTO = ProductImageDTO.builder()
                             .productId(form.getProductId())
@@ -247,6 +247,8 @@ public class SellerService {
                 }
             }
 
+            // 기존 옵션 그룹 및 상품 옵션 데이터 전체 삭제 (장바구니 제약조건 고려한 DAO 사용)
+            dao.deleteProductOptionsByProductId(form.getProductId());
             dao.deleteOptionGroupsByProductId(form.getProductId());
 
             Map<String, Integer> optionValueIdMap = new HashMap<>();
@@ -324,60 +326,32 @@ public class SellerService {
                 }
             }
 
-            List<ProductOptionDTO> dbOptions = dao.getProductOptions(form.getProductId());
-            Map<String, ProductOptionDTO> dbOptionMap = new HashMap<>();
-            for (ProductOptionDTO opt : dbOptions) {
-                dbOptionMap.put(opt.getSku(), opt);
-            }
-
+            // 필수 옵션 SKU 재등록
             if (form.getSkuNames() != null) {
                 for (int i = 0; i < form.getSkuNames().length; i++) {
                     String currentSku = form.getSkuNames()[i];
                     int skuPrice = Integer.parseInt(form.getSkuPrices()[i]);
                     int skuStock = Integer.parseInt(form.getSkuStocks()[i]);
 
-                    if (dbOptionMap.containsKey(currentSku)) {
-                        ProductOptionDTO existingOpt = dbOptionMap.get(currentSku);
-                        existingOpt.setPrice(skuPrice);
-                        existingOpt.setStock(skuStock);
-                        dao.updateProductOption(existingOpt);
+                    ProductOptionDTO skuDTO = ProductOptionDTO.builder()
+                            .productId(form.getProductId())
+                            .sku(currentSku)
+                            .price(skuPrice)
+                            .stock(skuStock)
+                            .build();
+                
+                    int productOptionId = dao.insertProductOption(skuDTO);
 
-                        for (String optName : optionValueIdMap.keySet()) {
-                            if (currentSku.contains(optName)) {
-                                ProductOptionValueDTO mappingDTO = ProductOptionValueDTO.builder()
-                                        .productOptionId(existingOpt.getProductOptionId()) 
-                                        .optionValueId(optionValueIdMap.get(optName))  
-                                        .build();
-                                dao.insertProductOptionValue(mappingDTO);
-                            }
-                        }
-                        dbOptionMap.remove(currentSku);
-                    } else {
-                        ProductOptionDTO skuDTO = ProductOptionDTO.builder()
-                                .productId(form.getProductId())
-                                .sku(currentSku)
-                                .price(skuPrice)
-                                .stock(skuStock)
-                                .build();
-                    
-                        int productOptionId = dao.insertProductOption(skuDTO);
-
-                        for (String optName : optionValueIdMap.keySet()) {
-                            if (currentSku.contains(optName)) {
-                                ProductOptionValueDTO mappingDTO = ProductOptionValueDTO.builder()
-                                        .productOptionId(productOptionId)
-                                        .optionValueId(optionValueIdMap.get(optName))
-                                        .build();
-                                dao.insertProductOptionValue(mappingDTO);
-                            }
+                    for (String optName : optionValueIdMap.keySet()) {
+                        if (currentSku.contains(optName)) {
+                            ProductOptionValueDTO mappingDTO = ProductOptionValueDTO.builder()
+                                    .productOptionId(productOptionId) 
+                                    .optionValueId(optionValueIdMap.get(optName))  
+                                    .build();
+                            dao.insertProductOptionValue(mappingDTO);
                         }
                     }
                 }
-            }
-
-            for (String deletedSku : dbOptionMap.keySet()) {
-                ProductOptionDTO optToDelete = dbOptionMap.get(deletedSku);
-                dao.deleteProductOption(optToDelete.getProductOptionId());
             }
 
             conn.commit();
@@ -427,6 +401,10 @@ public class SellerService {
             List<OptionGroupDTO> groups = dao.getOptionGroups(productId);
             
             for (OptionGroupDTO group : groups) {
+                if ("추가상품".equals(group.getGroupName())) {
+                    continue;
+                }
+                
                 List<OptionValueDTO> values = dao.getOptionValues(group.getOptionGroupId());
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < values.size(); i++) {
@@ -448,7 +426,7 @@ public class SellerService {
         return optionItems;
     }
     
-    // 6. 판매자 대시보드 통계
+    // 6. 판매자 대시보드 통계 (💡 판매중지 카운트 연동 및 계산식 수정)
     public Map<String, Integer> getDashboardStats(String brandName) {
         Map<String, Integer> stats = new HashMap<>();
         Connection conn = null;
@@ -461,13 +439,16 @@ public class SellerService {
             
             int totalCount = dao.getTotalProductCount(brandId);
             int soldOutCount = dao.getSoldOutProductCount(brandId);
-            int onSaleCount = totalCount - soldOutCount;
+            int stopCount = dao.getStopProductCount(brandId); // DB에서 판매중지 카운트 가져오기
+            
+            // 판매중 = 전체 - (품절 + 판매중지)
+            int onSaleCount = totalCount - soldOutCount - stopCount;
             if (onSaleCount < 0) onSaleCount = 0;
             
             stats.put("totalCount", totalCount);
             stats.put("soldOutCount", soldOutCount);
             stats.put("onSaleCount", onSaleCount);
-            stats.put("stopCount", 0);
+            stats.put("stopCount", stopCount); // 변수로 교체
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -508,6 +489,23 @@ public class SellerService {
         return result;
     }
     
+    // 💡 관리자: 상품 상태(판매중지/판매재개) 변경 기능 추가
+    public boolean updateProductStatus(int productId, String status) {
+        Connection conn = null;
+        boolean result = false;
+        try {
+            conn = ConnectionProvider.getConnection();
+            SellerDAO dao = new SellerDAOImpl(conn);
+            int count = dao.updateProductStatus(productId, status);
+            if (count > 0) result = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (conn != null) try { conn.close(); } catch (Exception e) {}
+        }
+        return result;
+    }
+    
     public List<ProductDTO> getProductListByBrandName(String brandName) {
         List<ProductDTO> list = new ArrayList<>();
         Connection conn = null;
@@ -518,6 +516,7 @@ public class SellerService {
             
             int brandId = dao.getBrandId(brandName);
             
+            int totalCount = dao.getTotalProductCount(brandId); 
             if (brandId != -1) {
                 list = dao.getProductListByBrandId(brandId);
             }
