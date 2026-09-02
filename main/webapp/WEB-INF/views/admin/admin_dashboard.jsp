@@ -10,19 +10,19 @@
     body { font-family: 'Malgun Gothic', sans-serif; background-color: #f7f9fa; color: #333; display: flex; height: 100vh; overflow: hidden; }
     
     /* 관리자 사이드바 스타일 */
-    .sidebar { width: 240px; background-color: #2b333b; color: white; display: flex; flex-direction: column; }
+    .sidebar { width: 240px; background-color: #2b333b; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
     .sidebar-brand { padding: 20px; font-size: 18px; font-weight: bold; background-color: #1e242b; text-align: center; }
     .sidebar-menu { list-style: none; padding: 20px 0; }
     .sidebar-menu li a { display: block; padding: 12px 20px; color: #b0c4de; text-decoration: none; font-size: 14px; transition: 0.2s; }
     .sidebar-menu li a:hover, .sidebar-menu li a.active { background-color: #ff4d4f; color: white; }
     
-    .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-    .top-header { height: 60px; background-color: white; border-bottom: 1px solid #e1e4e6; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; }
+    .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; }
+    .top-header { height: 60px; background-color: white; border-bottom: 1px solid #e1e4e6; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; flex-shrink: 0; }
     
-    .dashboard-body { padding: 30px; display: flex; flex-direction: column; gap: 25px; }
+    .dashboard-body { padding: 30px; display: flex; flex-direction: column; gap: 25px; max-width: 1200px; }
     
-    /* 관리 메뉴 카드 그리드 스타일 */
-    .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    /* 💡 3열에서 2열(2x2 구조)로 변경 */
+    .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
     .menu-card { background: white; border-radius: 8px; padding: 30px; border: 1px solid #e1e4e6; text-decoration: none; color: #333; box-shadow: 0 2px 4px rgba(0,0,0,0.04); transition: 0.2s; display: flex; flex-direction: column; gap: 10px; }
     .menu-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #ff4d4f; }
     .menu-card-icon { font-size: 28px; }
@@ -40,6 +40,7 @@
             <li><a href="${pageContext.request.contextPath}/admin/memberList.htm">👥 전체 일반회원 조회</a></li>
             <li><a href="${pageContext.request.contextPath}/admin/sellerList.htm">🤝 전체 판매자 관리</a></li>
             <li><a href="${pageContext.request.contextPath}/admin/productList.htm">📦 전체 상품 관리</a></li>
+            <li><a href="${pageContext.request.contextPath}/admin/settlementList.htm">💰 판매자 정산 관리</a></li>
         </ul>
     </div>
 
@@ -71,9 +72,15 @@
                     <div class="menu-card-title">전체 상품 관리</div>
                     <div class="menu-card-desc">플랫폼에 등록된 모든 상품을 모니터링하고 제재할 수 있습니다.</div>
                 </a>
+
+                <a href="${pageContext.request.contextPath}/admin/settlementList.htm" class="menu-card">
+                    <div class="menu-card-icon">💰</div>
+                    <div class="menu-card-title">판매자 정산 관리</div>
+                    <div class="menu-card-desc">구매 확정된 판매자별 정산 대기 내역을 확인하고 정산을 실행합니다.</div>
+                </a>
             </div>
         </div>
     </div>
 
 </body>
-</html>
+</html> 

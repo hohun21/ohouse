@@ -5,7 +5,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>관리자 - 전체 일반회원 목록</title>
+<title>관리자 - 판매자 정산 관리</title>
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Malgun Gothic', sans-serif; background-color: #f7f9fa; color: #333; display: flex; height: 100vh; overflow: hidden; }
@@ -36,6 +36,7 @@
         color: #2b333b;
         font-size: 20px;
     }
+    
     table {
         width: 100%;
         background: white;
@@ -51,12 +52,41 @@
         text-align: center;
         border-bottom: 1px solid #e1e4e6;
         font-size: 14px;
+        vertical-align: middle;
     }
     th {
         background-color: #f8f9fa;
         font-weight: bold;
         color: #555;
     }
+    .product-name-cell { text-align: left !important; }
+
+    /* 정산 버튼 스타일 */
+    .btn-settle {
+        padding: 6px 12px;
+        background-color: #ff4d4f;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .btn-settle:hover { background-color: #d9363e; }
+    
+    /* 정산 완료 뱃지 스타일 */
+    .badge-completed {
+        display: inline-block;
+        padding: 6px 12px;
+        background-color: #f6ffed;
+        color: #52c41a;
+        border: 1px solid #b7eb8f;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
     /* 페이징 스타일 */
     .pagination {
         display: flex;
@@ -76,7 +106,7 @@
     .pagination a:hover {
         background-color: #f1f3f5;
     }
-    .pagination strong {
+    .pagination strong, .pagination a.active {
         background-color: #ff4d4f;
         color: white;
         border-color: #ff4d4f;
@@ -87,6 +117,14 @@
         color: #888;
     }
 </style>
+<script>
+    // 관리자가 정산 실행 버튼을 눌렀을 때
+    function executeSettlement(orderDetailId) {
+        if(confirm("해당 주문 건에 대해 판매자 정산을 실행하시겠습니까?")) {
+            location.href = "${pageContext.request.contextPath}/admin/executeSettlement.htm?orderDetailId=" + orderDetailId;
+        }
+    }
+</script>
 </head>
 <body>
 
@@ -95,10 +133,10 @@
         <div class="sidebar-brand">🛡️ O-House Admin</div>
         <ul class="sidebar-menu">
             <li><a href="${pageContext.request.contextPath}/admin/dashboard.htm">📊 대시보드 홈</a></li>
-            <li><a href="${pageContext.request.contextPath}/admin/memberList.htm" class="active">👥 전체 일반회원 조회</a></li>
+            <li><a href="${pageContext.request.contextPath}/admin/memberList.htm">👥 전체 일반회원 조회</a></li>
             <li><a href="${pageContext.request.contextPath}/admin/sellerList.htm">🤝 전체 판매자 관리</a></li>
             <li><a href="${pageContext.request.contextPath}/admin/productList.htm">📦 전체 상품 관리</a></li>
-            <li><a href="${pageContext.request.contextPath}/admin/settlementList.htm">💰 판매자 정산 관리</a></li>
+            <li><a href="${pageContext.request.contextPath}/admin/settlementList.htm" class="active">💰 판매자 정산 관리</a></li>
         </ul>
     </div>
 
@@ -111,40 +149,57 @@
 
         <div class="content-body">
             <div class="header-area">
-                <h2>전체 일반회원 목록</h2>
+                <h2>💰 판매자 정산 관리 및 이력 조회</h2>
             </div>
 
             <table>
                 <thead>
                     <tr>
-                        <th>회원번호</th>
-                        <th>아이디</th>
-                        <th>이름</th>
-                        <th>권한(Role)</th>
-                        <th>가입일(RegDate)</th>
-                        <th>삭제</th>
+                        <th width="8%">상세번호</th>
+                        <th width="12%">주문일시</th>
+                        <th width="12%">브랜드명</th>
+                        <th width="25%">상품 정보 (옵션)</th>
+                        <th width="8%">수량</th>
+                        <th width="12%">주문 금액</th>
+                        <th width="12%">정산 예정금액(98%)</th>
+                        <th width="11%">정산 관리</th>
                     </tr>
                 </thead>
                 <tbody>
                     <c:choose>
-                        <c:when test="${empty memberList}">
+                        <c:when test="${empty settlementList}">
                             <tr>
-                                <td colspan="6" class="empty-msg">가입된 회원이 없습니다.</td>
+                                <td colspan="8" class="empty-msg">정산 내역이 없습니다.</td>
                             </tr>
                         </c:when>
                         <c:otherwise>
-                            <c:forEach var="member" items="${memberList}">
+                            <c:forEach var="item" items="${settlementList}">
                                 <tr>
-                                    <td>${member.memberId}</td>
-                                    <td>${member.id}</td>
-                                    <td>${member.name}</td>
-                                    <td>${member.role}</td>
-                                    <td><fmt:formatDate value="${member.regDate}" pattern="yyyy-MM-dd"/></td>
+                                    <td>${item.orderDetailId}</td>
+                                    <td><fmt:formatDate value="${item.orderDate}" pattern="yyyy-MM-dd HH:mm"/></td>
+                                    <td><strong>${item.brandName}</strong></td>
+                                    <td class="product-name-cell">
+                                        <strong>${item.productName}</strong><br>
+                                        <span style="font-size: 12px; color: #757575;">[옵션] ${item.optionName}</span>
+                                    </td>
+                                    <td>${item.quantity}개</td>
                                     <td>
-                                        <button type="button" onclick="confirmDelete(${member.memberId})" 
-                                            style="background-color: #ff4d4f; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;">
-                                               X
-                                        </button>
+                                        <fmt:formatNumber value="${item.price * item.quantity}" pattern="#,###"/>원
+                                    </td>
+                                    <td style="color: #ff4d4f; font-weight: bold;">
+                                        <fmt:formatNumber value="${item.price * item.quantity * 0.98}" pattern="#,###"/>원
+                                    </td>
+                                    
+                                    <!-- 상태에 따른 버튼 또는 정산완료 뱃지 출력 -->
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${item.deliveryStatus == 5}">
+                                                <button type="button" class="btn-settle" onclick="executeSettlement(${item.orderDetailId})">정산하기</button>
+                                            </c:when>
+                                            <c:when test="${item.deliveryStatus == 12}">
+                                                <span class="badge-completed">정산완료</span>
+                                            </c:when>
+                                        </c:choose>
                                     </td>
                                 </tr>
                             </c:forEach>
@@ -152,36 +207,8 @@
                     </c:choose>
                 </tbody>
             </table>
-
-            <div class="pagination">
-                <c:if test="${startPage > 1}">
-                    <a href="${pageContext.request.contextPath}/admin/memberList.htm?page=${startPage - 1}">◀ 이전</a>
-                </c:if>
-                
-                <c:forEach var="i" begin="${startPage}" end="${endPage}">
-                    <c:choose>
-                        <c:when test="${i == currentPage}">
-                            <strong>${i}</strong>
-                        </c:when>
-                        <c:otherwise>
-                            <a href="${pageContext.request.contextPath}/admin/memberList.htm?page=${i}">${i}</a>
-                        </c:otherwise>
-                    </c:choose>
-                </c:forEach>
-
-                <c:if test="${endPage < totalPage}">
-                    <a href="${pageContext.request.contextPath}/admin/memberList.htm?page=${endPage + 1}">다음 ▶</a>
-                </c:if>
-            </div>
         </div>
     </div>
 
-<script>
-function confirmDelete(memberId) {
-    if (confirm("회원번호 " + memberId + "번 회원을 삭제하시겠습니까?")) {
-        location.href = "${pageContext.request.contextPath}/admin/deleteMember.htm?memberId=" + memberId;
-    }
-}
-</script>
 </body>
 </html>

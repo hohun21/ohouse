@@ -80,6 +80,7 @@ html, body {
 	margin-bottom: 24px;
 	color: #828c94;
 	font-size: 13px;
+	padding-top: 50px;
 }
 
 .breadcrumb span {
