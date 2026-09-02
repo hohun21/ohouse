@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.ohouse.shopping.category.dao.CategoryDAO;
 import com.ohouse.shopping.category.dto.CategoryDTO;
+import com.ohouse.util.conn.ConnectionProvider;
 
 public class CategoryService {
 
@@ -23,7 +24,13 @@ public class CategoryService {
         return dao.getAllCategories(conn);
     }
     
-    
+    public List<CategoryDTO> getRootCategories()
+            throws Exception {
+
+        try (Connection conn = ConnectionProvider.getConnection()) {
+            return dao.getRootCategories(conn);
+        }
+    }
 
     // 현재 카테고리 하위의 leaf 카테고리 조회
     public List<CategoryDTO> getLeafCategories(
@@ -41,5 +48,12 @@ public class CategoryService {
     ) throws SQLException {
 
         return dao.viewCategory(conn, productId);
+    }
+    
+
+    public List<CategoryDTO> getAllLeafCategories() throws Exception {
+        try (Connection conn = ConnectionProvider.getConnection()) {
+            return dao.getAllLeafCategories(conn);
+        }
     }
 }

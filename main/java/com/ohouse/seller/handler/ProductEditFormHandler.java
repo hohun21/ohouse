@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.ohouse.category.dto.CategoryDTO;
-import com.ohouse.category.service.CategoryService;
+// 💡 1. Import 경로를 조원분 패키지(shopping.category)로 싹 변경!
+import com.ohouse.shopping.category.dto.CategoryDTO;
+import com.ohouse.shopping.category.service.CategoryService;
+import com.ohouse.shopping.category.dao.CategoryDAOImple;
+
 import com.ohouse.common.handler.CommandHandler;
 import com.ohouse.seller.dto.ProductDTO;
 import com.ohouse.seller.dto.ProductOptionDTO;
@@ -22,7 +25,8 @@ public class ProductEditFormHandler implements CommandHandler {
         int productId = Integer.parseInt(request.getParameter("productId"));
         
         SellerService sellerService = new SellerService(); 
-        CategoryService categoryService = new CategoryService();
+        
+        CategoryService categoryService = new CategoryService(new CategoryDAOImple());
         
         ProductDTO product = sellerService.getProductById(productId);
         
@@ -42,7 +46,7 @@ public class ProductEditFormHandler implements CommandHandler {
             }
         }
         
-        List<CategoryDTO> categoryList = categoryService.getLeafCategories();
+        List<CategoryDTO> categoryList = categoryService.getAllLeafCategories();
         
         request.setAttribute("product", product);
         request.setAttribute("optionItems", optionItems);

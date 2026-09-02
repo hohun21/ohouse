@@ -12,4 +12,5 @@ public class ProductSearchDTO {
     private Integer price;
     private Integer discountRate;
     private String imageUrl;
+    private String status;
 }

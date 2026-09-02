@@ -9,7 +9,6 @@ import java.util.List;
 
 import com.ohouse.shopping.category.dto.CategoryDTO;
 
-
 public class CategoryDAOImple implements CategoryDAO{
 	
 	// 전체 카테고리 정렬 순
@@ -23,6 +22,47 @@ public class CategoryDAOImple implements CategoryDAO{
 	                   sort_order
 	            FROM category
 	            ORDER BY parent_id NULLS FIRST, sort_order
+	            """;
+
+	    List<CategoryDTO> list = new ArrayList<>();
+
+	    try (PreparedStatement pstmt = conn.prepareStatement(sql);
+	         ResultSet rs = pstmt.executeQuery()) {
+
+	        while (rs.next()) {
+
+	            Integer parentId = null;
+
+	            if (rs.getObject("parent_id") != null) {
+	                parentId = rs.getInt("parent_id");
+	            }
+
+	            CategoryDTO cdto = CategoryDTO.builder()
+	                    .category_id(rs.getInt("category_id"))
+	                    .category_name(rs.getString("category_name"))
+	                    .parentId(parentId)
+	                    .sortOrder(rs.getInt("sort_order"))
+	                    .build();
+
+	            list.add(cdto);
+	        }
+	    }
+
+	    return list;
+	}
+	
+	@Override
+	public List<CategoryDTO> getRootCategories(Connection conn)
+	        throws SQLException {
+
+	    String sql = """
+	            SELECT category_id,
+	                   category_name,
+	                   parent_id,
+	                   sort_order
+	            FROM category
+	            WHERE parent_id IS NULL
+	            ORDER BY sort_order
 	            """;
 
 	    List<CategoryDTO> list = new ArrayList<>();
@@ -154,5 +194,43 @@ public class CategoryDAOImple implements CategoryDAO{
 
 	    return list;
 	}
+	
+	@Override
+    public List<CategoryDTO> getAllLeafCategories(Connection conn) throws SQLException {
+        String sql = """
+                     SELECT category_id,
+                            parent_id,
+                            category_name,
+                            sort_order
+                     FROM category
+                     WHERE CONNECT_BY_ISLEAF = 1
+                     START WITH parent_id IS NULL
+                     CONNECT BY PRIOR category_id = parent_id
+                     ORDER BY sort_order
+                     """;
+        
+        List<CategoryDTO> list = new ArrayList<>();
+    
+        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+                         
+            while (rs.next()) {
+                Integer parentId = null;
+                
+                if (rs.getObject("parent_id") != null) {
+                    parentId = rs.getInt("parent_id");
+                }
+                
+                CategoryDTO cdto = CategoryDTO.builder()
+                                  .category_id(rs.getInt("category_id"))
+                                  .category_name(rs.getString("category_name"))
+                                  .parentId(parentId)
+                                  .sortOrder(rs.getInt("sort_order"))
+                                  .build();
+                list.add(cdto);
+            }
+        }
+        return list;
+    }
 	
 }

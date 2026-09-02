@@ -36,24 +36,39 @@ public class SearchDAOImpl implements SearchDAO {
                      "       b.brand_name, " +
                      "       p.product_name, " +
                      "       p.price, " +
-                     "       img.image_url " +
+                     "       img.image_url, " +
+                     "       p.status, " +
+                     "       COUNT(po.product_id) AS option_count, " + 
+                     "       NVL(SUM(po.stock), 0) AS total_stock " +
                      "FROM product p " +
                      "JOIN brand b ON p.brand_id = b.brand_id " +
                      "LEFT JOIN product_image img ON p.product_id = img.product_id AND img.image_type = 'THUMBNAIL' " +
+                     "LEFT JOIN product_option po ON p.product_id = po.product_id " +
                      "WHERE p.product_name LIKE '%' || ? || '%' " +
+                     "  AND p.status != 'STOP' " +
+                     "GROUP BY p.product_id, b.brand_name, p.product_name, p.price, img.image_url, p.status " +
                      "ORDER BY p.product_id DESC";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, keyword);	
+            pstmt.setString(1, keyword);    
             
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
+                    int optionCount = rs.getInt("option_count");
+                    int totalStock = rs.getInt("total_stock");
+                    String currentStatus = rs.getString("status");
+
+                    if (optionCount > 0 && totalStock <= 0) {
+                        currentStatus = "SOLD_OUT";
+                    }
+
                     ProductSearchDTO product = ProductSearchDTO.builder()
                             .productId(rs.getInt("product_id"))
                             .brandName(rs.getString("brand_name"))
                             .productName(rs.getString("product_name"))
                             .price(rs.getInt("price"))
                             .imageUrl(rs.getString("image_url"))
+                            .status(currentStatus)
                             .build();
                     
                     productList.add(product);
