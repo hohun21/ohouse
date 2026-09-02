@@ -18,26 +18,21 @@ public class BestDAOImpl implements BestDAO {
 		
 		String sql = """
 				WITH sales AS (
-				    SELECT
-				        po.product_id,
-				        SUM(od.quantity) AS sales_quantity
-				    FROM orders_detail od
-				    JOIN product_option po
-				      ON po.product_option_id = od.product_option_id
+				    SELECT po.product_id, SUM(od.quantity) AS sales_quantity
+				    FROM orders_detail od JOIN product_option po ON po.product_option_id = od.product_option_id
+                    JOIN orders o ON o.order_id = od.order_id
+                    WHERE o.order_status = 'CONFIRM'
 				    GROUP BY po.product_id
 				),
 				review_score AS (
-				    SELECT
-				        r.product_id,
+				    SELECT r.product_id,
 				        ROUND(AVG(r.rating), 1) AS review_score,
 				        COUNT(*) AS review_count
 				    FROM review r
 				    GROUP BY r.product_id
 				),
 				main_image AS (
-				    SELECT
-				        product_id,
-				        image_url
+				    SELECT product_id, image_url
 				    FROM product_image
 				    WHERE image_type = 'THUMBNAIL'
 				)
@@ -46,11 +41,7 @@ public class BestDAOImpl implements BestDAO {
 				        ORDER BY s.sales_quantity DESC
 				    ) AS rank,
 				
-				    p.product_id,
-				    b.brand_name,
-				    p.product_name,
-				    p.discount_rate,
-				    p.price,
+				    p.product_id, b.brand_name, p.product_name, p.discount_rate, p.price,
 				
 				    NVL(rs.review_score, 0) AS review_score,
 				    NVL(rs.review_count, 0) AS review_count,
