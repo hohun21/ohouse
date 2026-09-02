@@ -51,7 +51,9 @@
 </head>
 <body>
 
-    <jsp:include page="/WEB-INF/views/layout/header.jsp" />
+    <jsp:include page="/WEB-INF/views/layout/header.jsp">
+		<jsp:param name="showSubHeaderAtTop" value="false"/>
+	</jsp:include>
 
     <div class="top-nav">
         <a href="${pageContext.request.contextPath}/member/myPage.htm">프로필</a>
@@ -67,7 +69,7 @@
         <a href="${pageContext.request.contextPath}/addressList.htm">배송지 설정</a>
         <a href="${pageContext.request.contextPath}/changePwd.htm" class="active">비밀번호 변경</a>
         <a href="#">추천코드</a>
-        <a href="#">회원 탈퇴</a>
+        <a href="${pageContext.request.contextPath}/member/withdraw.htm">회원 탈퇴</a>
     </div>
 
     <div class="container">
