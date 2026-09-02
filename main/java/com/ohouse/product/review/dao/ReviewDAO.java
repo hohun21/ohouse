@@ -9,10 +9,8 @@ import com.ohouse.product.review.dto.ReviewPageDTO;
 import com.ohouse.product.review.dto.ReviewSummaryDTO;
 
 public interface ReviewDAO {
-    // 1. 특정 상품의 페이징/정렬 처리된 리뷰 목록 (이미지, 작성자 정보 JOIN)
-    List<ReviewDTO> selectReviewList2(Connection conn, ReviewPageDTO reqDTO) throws Exception;
     
-    // 2. 특정 상품의 리뷰 통계 (평균 별점, 개수)
+    // 1. 특정 상품의 리뷰 통계 (평균 별점, 개수)
     ReviewSummaryDTO selectReviewSummary(Connection conn, long productId) throws Exception;
 
 	int getTotalRecords(Connection conn, ReviewPageDTO reqDTO) throws Exception;
@@ -50,4 +48,8 @@ public interface ReviewDAO {
 	int selectMyReviewTotalCount(Connection conn, int memberId) throws Exception;
 
 	List<ReviewDTO> selectMyReviewList(Connection conn, ReviewPageDTO reqDTO) throws Exception;
+
+	boolean hasUserPurchased(Connection conn, int memberId, long productId) throws Exception;
+
+	int insertReview2(Connection conn, ReviewDTO reviewDTO) throws Exception; //backup
 }

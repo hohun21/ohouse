@@ -392,6 +392,7 @@
     var selectedOptionsSet = new Set();
 
     // UI 동기화 함수
+    // UI 동기화 함수
     function syncFilterUIState() {
         if (!currentActiveTabTarget) {
             var firstTab = parentContainer.querySelector('.left-tab-item');
@@ -456,16 +457,24 @@
 
         if (tagBar) tagBar.innerHTML = tagHtml;
 
+        // 전체 필터 초기화 버튼 노출 여부 판정
+        var checkedRatingsCount = parentContainer.querySelectorAll('.js-rating-checkbox:checked').length;
+        var checkedOptionsCount = parentContainer.querySelectorAll('.js-option-checkbox:checked').length;
+        var hasFilter = (checkedRatingsCount > 0 || checkedOptionsCount > 0);
+
         var clearAllBtn = document.getElementById('js-btn-clear-all');
         if (clearAllBtn) {
-            var hasFilter = (selectedRatingsSet.size > 0 || selectedOptionsSet.size > 0);
             clearAllBtn.style.display = hasFilter ? 'inline-flex' : 'none';
         }
         
+        // 옵션 드롭다운 내부 초기화 버튼 활성화 클래스 조작
         var resetBtn = parentContainer.querySelector('.js-reset-options');
         if (resetBtn) {
-            if (hasAnyCheckedOption) resetBtn.classList.add('active');
-            else resetBtn.classList.remove('active');
+            if (checkedOptionsCount > 0) {
+                resetBtn.classList.add('active');
+            } else {
+                resetBtn.classList.remove('active');
+            }
         }
 
         if (activeDropdownId) {
@@ -654,14 +663,28 @@
         }
 
         // 7. 옵션 드롭다운 초기화 버튼
-        var resetBtn = e.target.closest('.js-reset-options.active');
+        // 7. 옵션 드롭다운 초기화 버튼
+        var resetBtn = e.target.closest('.js-reset-options');
         if (resetBtn) {
             e.stopPropagation();
+            if (!resetBtn.classList.contains('active')) return;
+            
+            // 1. 메모리 셋 비우기
             selectedOptionsSet.clear();
+            
+            // 2. 해당 옵션 메뉴 내의 모든 체크박스 및 전체선택 체크 해제 (태그바 소멸을 위해 필수)
+            var optionMenu = resetBtn.closest('.option-menu');
+            if (optionMenu) {
+                optionMenu.querySelectorAll('.js-option-checkbox, .js-select-all-group').forEach(function(chk) {
+                    chk.checked = false;
+                });
+            }
+            
+            // 3. UI 동기화 호출 및 서버 리스트 갱신
+            syncFilterUIState();
             triggerReviewFetch('1', getCurrentSort());
             return;
         }
-
         // 8. 바깥 클릭 시 드롭다운 닫기
         if (!e.target.closest('.custom-dropdown')) {
             parentContainer.querySelectorAll('.dropdown-menu-box').forEach(function(m) { m.style.display = 'none'; });
@@ -669,31 +692,57 @@
         }
     });
 
-    // 체크박스 변경 이벤트
+ // 체크박스 변경 이벤트 수정
     document.addEventListener('change', function(e) {
+        // 1. 전체 선택 체크박스 조작 시
         if (e.target.classList.contains('js-select-all-group')) {
             var isChecked = e.target.checked;
             var group = e.target.closest('.sub-option-group');
             if (group) {
                 group.querySelectorAll('.js-option-checkbox').forEach(function(chk) {
-                    if (isChecked) selectedOptionsSet.add(chk.value);
-                    else selectedOptionsSet.delete(chk.value);
+                    chk.checked = isChecked; // 화면상 체크박스 상태 즉시 반영
+                    if (isChecked) {
+                        selectedOptionsSet.add(chk.value);
+                    } else {
+                        selectedOptionsSet.delete(chk.value);
+                    }
                 });
             }
+            syncFilterUIState(); // 태그 및 UI 즉시 갱신
             triggerReviewFetch('1', getCurrentSort());
             return;
         }
 
+        // 2. 별점 체크박스 조작 시
         if (e.target.classList.contains('js-rating-checkbox')) {
             if (e.target.checked) selectedRatingsSet.add(e.target.value);
             else selectedRatingsSet.delete(e.target.value);
+            
+            syncFilterUIState();
             triggerReviewFetch('1', getCurrentSort());
             return;
         }
 
+        // 3. 개별 옵션 체크박스 조작 시
         if (e.target.classList.contains('js-option-checkbox')) {
-            if (e.target.checked) selectedOptionsSet.add(e.target.value);
-            else selectedOptionsSet.delete(e.target.value);
+            if (e.target.checked) {
+                selectedOptionsSet.add(e.target.value);
+            } else {
+                selectedOptionsSet.delete(e.target.value);
+            }
+            
+            // 개별 체크박스가 해제되면 해당 그룹의 '전체선택' 체크박스 상태도 즉시 해제
+            var group = e.target.closest('.sub-option-group');
+            if (group) {
+                var selectAllCheckbox = group.querySelector('.js-select-all-group');
+                var optionCheckboxes = group.querySelectorAll('.js-option-checkbox');
+                var checkedOptions = group.querySelectorAll('.js-option-checkbox:checked');
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.checked = (optionCheckboxes.length === checkedOptions.length);
+                }
+            }
+
+            syncFilterUIState(); // 태그바 및 UI 즉시 갱신
             triggerReviewFetch('1', getCurrentSort());
             return;
         }
@@ -705,11 +754,9 @@
         return activeSortBtn ? activeSortBtn.getAttribute('data-sort') : 'best';
     }
 
-    // 리뷰 AJAX Fetch
+ // 리뷰 AJAX Fetch 수정
     function triggerReviewFetch(page, sort) {
         var productId = `${product_id}`;
-       	console.log("reviewList.jsp line 678:", productId);
-
         var reqUrl = '${pageContext.request.contextPath}/review.htm?product_id=' + productId + '&sort=' + sort + '&page=' + page;
 
         selectedRatingsSet.forEach(function(val) {
@@ -719,32 +766,28 @@
         selectedOptionsSet.forEach(function(val) {
             reqUrl += '&options=' + encodeURIComponent(val);
         });
-        console.log(" 서버로 보내는 최종 요청 URL:", reqUrl); // 이 줄 추가
+
         fetch(reqUrl)
             .then(function(res) {
                 if (!res.ok) throw new Error('Network error');
                 return res.text();
             })
             .then(function(html) {
-            
-            	//서블리 HTML 전체에서 리뷰 리스트와 페이징 영역을 모두 포함하는 부모 컨테이너를 안전하게 교체
                 var parser = new DOMParser();
                 var doc = parser.parseFromString(html, 'text/html');
                 
-                // 서버가 준 응답에서 새로운 리뷰 리스트 + 페이징이 담긴 박스를 찾음
-                var newReviewListArea = doc.querySelector('.review-container-wrapper') || doc.body;
+                // 서버 응답에서 리뷰 리스트 컨테이너만 추출
+                var newReviewList = doc.querySelector('#reviewListContainer');
+                var currentReviewList = parentContainer.querySelector('#reviewListContainer');
                 
-                // 현재 화면의 리뷰 리스트 박스 찾기
-                var currentReviewListArea = parentContainer.querySelector('.review-container-wrapper');
-                
-                if (currentReviewListArea && newReviewListArea) {
-                    // 리스트와 페이징 영역 전체를 서버가 준 최신 상태로 통째로 갈아끼움 (중첩 방지)
-                    currentReviewListArea.innerHTML = newReviewListArea.innerHTML;
+                if (currentReviewList && newReviewList) {
+                    // 필터 바를 건드리지 않고 오직 리뷰 목록 영역만 교체
+                    currentReviewList.innerHTML = newReviewList.innerHTML;
                 } else {
                     parentContainer.innerHTML = html;
                 }
                 
-            
+                // 정렬 버튼 활성화 상태 갱신
                 parentContainer.querySelectorAll('.js-review-action[data-sort]:not([data-page])').forEach(function(btn) {
                     if (btn.getAttribute('data-sort') === sort) {
                         btn.classList.add('active');
@@ -753,13 +796,13 @@
                     }
                 });
                 
+                // 드롭다운을 닫지 않고 UI 태그 및 체크박스 상태만 동기화
                 syncFilterUIState();
-			})
+            })
             .catch(function(err) {
                 console.error('리뷰 조회 실패:', err);
             });
     }
-
     // 초기 서버 세팅 로드
     <c:if test="${not empty selectedRatings}">
         <c:forEach var="r" items="${selectedRatings}">

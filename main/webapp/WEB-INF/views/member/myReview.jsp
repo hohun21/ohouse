@@ -603,8 +603,8 @@ a {
 
 		<a href="${pageContext.request.contextPath}/member/myPage.htm">
 			프로필 </a> <a href="#"> 나의 쇼핑 </a> <a
-			href="${pageContext.request.contextPath}/member/myReview.htm">
-			나의 리뷰 </a> <a href="${pageContext.request.contextPath}/changePwd.htm">
+			href="${pageContext.request.contextPath}/member/myReview.htm"> 나의
+			리뷰 </a> <a href="${pageContext.request.contextPath}/changePwd.htm">
 			설정 </a>
 
 	</div>
@@ -625,277 +625,169 @@ a {
 			<!-- 1. 정렬 탭 (베스트순 / 최신순) -->
 			<div class="review-filter-tabs"
 				style="display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid #e0e0e0; padding-bottom: 12px;">
-				<button type="button"
-					style="padding: 6px 14px; background: #fff; border: 1px solid #dbdbdb; border-radius: 4px; font-size: 13px; cursor: pointer;">베스트순</button>
-				<button type="button"
-					style="padding: 6px 14px; background: #fff; border: 1px solid #35c5f0; color: #35c5f0; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer;">최신순</button>
+
+				<!-- 베스트순 버튼 -->
+				<button type="button" class="sort-btn" data-sort="best"
+					style="padding: 6px 14px; border-radius: 4px; font-size: 13px; cursor: pointer; 
+        			${currentSort eq 'best' ? 'background: #fff; border: 1px solid #35c5f0; color: #35c5f0; font-weight: bold;' : 'background: #fff; border: 1px solid #dbdbdb; color: #757575;'}">
+					베스트순</button>
+
+				<!-- 최신순 버튼 -->
+				<button type="button" class="sort-btn" data-sort="recent"
+					style="padding: 6px 14px; border-radius: 4px; font-size: 13px; cursor: pointer; 
+        			${currentSort eq 'recent' or empty currentSort ? 'background: #fff; border: 1px solid #35c5f0; color: #35c5f0; font-weight: bold;' : 'background: #fff; border: 1px solid #dbdbdb; color: #757575;'}">
+					최신순</button>
 			</div>
 
-			<!-- 2. 리뷰 리스트 영역 (하드코딩 레이아웃) -->
+			<!-- 2. 리뷰 리스트 영역 -->
 			<div class="review-list">
-        <c:choose>
-            <c:when test="${empty reviewList}">
-                <div style="text-align: center; padding: 50px 0; color: #757575;">
-                    작성한 리뷰가 없습니다.
-                </div>
-            </c:when>
-            <c:otherwise>
-                <c:forEach var="review" items="${reviewList}">
-                    <div class="review-item" style="padding: 20px 0; border-bottom: 1px solid #f0f0f0;">
-                        
-                        <!-- 상단: 상품명 & 수정/삭제 버튼 -->
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                            <!-- 상품명 클릭 시 해당 상품 상세 페이지로 이동 -->
-                            <a href="${pageContext.request.contextPath}/product/detail.htm?product_id=${review.productId}" 
-                               style="font-weight: bold; font-size: 15px; color: #292929; text-decoration: none;">
-                                ${review.productName}
-                            </a>
-                            <div>
-                                <!-- 본인이 쓴 리뷰이므로 수정 버튼 노출 -->
-                                <a href="javascript:void(0);" class="js-edit-review-btn"
-                                   data-review-id="${review.reviewId}"
-                                   data-rating="${review.rating}"
-                                   data-content="${review.content}"
-                                   data-image-url="${review.reviewImage.imageUrl}"
-                                   style="font-size: 12px; color: #757575; text-decoration: none;">수정</a>
-                            </div>
-                        </div>
+				<c:choose>
+					<c:when test="${empty reviewList}">
+						<div style="text-align: center; padding: 50px 0; color: #757575;">
+							작성한 리뷰가 없습니다.</div>
+					</c:when>
+					<c:otherwise>
+						<c:forEach var="review" items="${reviewList}">
+							<div class="review-item"
+								style="padding: 20px 0; border-bottom: 1px solid #f0f0f0;">
 
-                        <!-- 메인 컨텐츠 레이아웃 -->
-                        <div style="display: flex; justify-content: space-between; gap: 16px;">
-                            <div style="flex: 1;">
-                                <!-- 별점 및 작성일/구매여부 -->
-                                <div style="font-size: 12px; color: #9e9e9e; margin-bottom: 6px;">
-                                    <span style="color: #35c5f0; font-size: 14px;">
-                                        <c:forEach begin="1" end="${review.rating}">★</c:forEach>
-                                    </span> 
-                                    <span style="margin-left: 6px;">${review.regDate}</span> 
-                                    <span style="margin-left: 4px; color: #35c5f0; font-weight: bold;">| 오늘의집 구매</span>
-                                </div>
+								<div
+									style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+									<a
+										href="${pageContext.request.contextPath}/productDetail.htm?product_id=${review.productId}"
+										style="font-weight: bold; font-size: 15px; color: #292929; text-decoration: none;">
+										${review.productName} </a>
+									<div>
+										<a href="javascript:void(0);" class="js-edit-review-btn"
+											data-review-id="${review.reviewId}"
+											data-rating="${review.rating}"
+											data-content="${review.content}"
+											data-image-url="${review.reviewImage.imageUrl}"
+											data-product-id="${review.productId}"
+											style="font-size: 12px; color: #757575; text-decoration: none;">수정</a>
+									</div>
+								</div>
 
-                                <!-- 옵션 정보 (있는 경우에만) -->
-                                <c:if test="${not empty review.optionName}">
-                                    <div style="font-size: 12px; color: #757575; margin-bottom: 8px;">
-                                        ${review.optionName}
-                                    </div>
-                                </c:if>
+								<div
+									style="display: flex; justify-content: space-between; gap: 16px;">
+									<div style="flex: 1;">
+										<div
+											style="font-size: 12px; color: #9e9e9e; margin-bottom: 6px;">
+											<span style="color: #35c5f0; font-size: 14px;"> <c:forEach
+													begin="1" end="${review.rating}">★</c:forEach>
+											</span> <span style="margin-left: 6px;">${review.regDate}</span> <span
+												style="margin-left: 4px; color: #35c5f0; font-weight: bold;">|
+												오늘의집 구매</span>
+										</div>
 
-                                <!-- 리뷰 본문 -->
-                                <div style="font-size: 14px; color: #424242; line-height: 1.5;">
-                                    ${review.content}
-                                </div>
-                            </div>
+										<c:if test="${not empty review.optionName}">
+											<div
+												style="font-size: 12px; color: #757575; margin-bottom: 8px;">
+												${review.optionName}</div>
+										</c:if>
 
-                            <!-- 우측 이미지 영역 (있는 경우) -->
-                            <c:if test="${not empty review.reviewImage and not empty review.reviewImage.imageUrl}">
-                                <div style="width: 80px; height: 80px; flex-shrink: 0;">
-                                    <img src="${review.reviewImage.imageUrl}" alt="리뷰 이미지"
-                                         style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;" />
-                                </div>
-                            </c:if>
-                        </div>
+										<div
+											style="font-size: 14px; color: #424242; line-height: 1.5;">
+											${review.content}</div>
+									</div>
 
-                        <!-- 관리자 답변 영역 (답변이 있는 경우) -->
-                        <c:if test="${not empty review.adminReply}">
-                            <div style="margin-top: 12px; padding: 12px; background-color: #f7f9fa; border-radius: 6px;">
-                                <div style="font-size: 12px; font-weight: bold; color: #424242; margin-bottom: 4px;">
-                                    오늘의집 고객센터
-                                </div>
-                                <div style="font-size: 13px; color: #757575;">
-                                    ${review.adminReply}
-                                </div>
-                            </div>
-                        </c:if>
+									<c:if
+										test="${not empty review.reviewImage and not empty review.reviewImage.imageUrl}">
+										<div style="width: 80px; height: 80px; flex-shrink: 0;">
+											<img src="${review.reviewImage.imageUrl}" alt="리뷰 이미지"
+												style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;" />
+										</div>
+									</c:if>
+								</div>
 
-                    </div>
-                </c:forEach>
-            </c:otherwise>
-        </c:choose>
-    </div>
+								<c:if test="${not empty review.adminReply}">
+									<div
+										style="margin-top: 12px; padding: 12px; background-color: #f7f9fa; border-radius: 6px;">
+										<div
+											style="font-size: 12px; font-weight: bold; color: #424242; margin-bottom: 4px;">
+											오늘의집 고객센터</div>
+										<div style="font-size: 13px; color: #757575;">
+											${review.adminReply}</div>
+									</div>
+								</c:if>
 
-    <!-- 페이징 영역 -->
-    <c:if test="${not empty pageDTO and pageDTO.totalPages > 0}">
-        <div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 24px;">
-            <c:if test="${pageDTO.prev}">
-                <a href="?page=${pageDTO.currentPage - 1}&sort=${currentSort}" 
-                   style="padding: 6px 12px; border: 1px solid #e0e0e0; border-radius: 4px; text-decoration: none; color: #424242;">&lt;</a>
-            </c:if>
-
-            <c:forEach var="i" begin="${pageDTO.startPage}" end="${pageDTO.endPage}">
-                <a href="?page=${i}&sort=${currentSort}" 
-                   style="padding: 6px 12px; border-radius: 4px; text-decoration: none; ${pageDTO.currentPage eq i ? 'background-color: #35c5f0; color: #fff; font-weight: bold;' : 'color: #424242; border: 1px solid #e0e0e0;'}">
-                    ${i}
-                </a>
-            </c:forEach>
-
-            <c:if test="${pageDTO.next}">
-                <a href="?page=${pageDTO.currentPage + 1}&sort=${currentSort}" 
-                   style="padding: 6px 12px; border: 1px solid #e0e0e0; border-radius: 4px; text-decoration: none; color: #424242;">&gt;</a>
-            </c:if>
-        </div>
-    </c:if>
-			
-		</div>
-
-	</div>
-
-
-	<!-- 탈퇴 확인 모달 -->
-	<div id="withdrawModal" class="withdraw-modal">
-
-		<div class="withdraw-modal-content">
-
-			<button type="button" id="closeWithdraw" class="modal-close">
-				×</button>
-
-			<h2>회원 탈퇴</h2>
-
-			<p>포인트·쿠폰이 모두 소멸되며 복구할 수 없어요.</p>
-
-			<p class="modal-warning">정말 탈퇴하시겠어요?</p>
-
-			<div class="modal-buttons">
-
-				<button type="button" id="cancelWithdraw" class="cancel-btn">
-					취소</button>
-
-				<form method="post"
-					action="${pageContext.request.contextPath}/member/withdrawPro.htm">
-
-					<button type="submit" class="confirm-withdraw-btn">탈퇴하기</button>
-
-				</form>
-
+							</div>
+						</c:forEach>
+					</c:otherwise>
+				</c:choose>
 			</div>
 
+			<!-- 3. 페이징 영역 -->
+			<c:if test="${not empty pageDTO and pageDTO.totalPages > 0}">
+				<div class="pagination"
+					style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 24px;">
+					<c:if test="${pageDTO.prev}">
+						<a href="?page=${pageDTO.currentPage - 1}&sort=${currentSort}"
+							style="padding: 6px 12px; border: 1px solid #e0e0e0; border-radius: 4px; text-decoration: none; color: #424242;">&lt;</a>
+					</c:if>
+
+					<c:forEach var="i" begin="${pageDTO.startPage}"
+						end="${pageDTO.endPage}">
+						<a href="?page=${i}&sort=${currentSort}"
+							style="padding: 6px 12px; border-radius: 4px; text-decoration: none; ${pageDTO.currentPage eq i ? 'background-color: #35c5f0; color: #fff; font-weight: bold;' : 'color: #424242; border: 1px solid #e0e0e0;'}">
+							${i} </a>
+					</c:forEach>
+
+					<c:if test="${pageDTO.next}">
+						<a href="?page=${pageDTO.currentPage + 1}&sort=${currentSort}"
+							style="padding: 6px 12px; border: 1px solid #e0e0e0; border-radius: 4px; text-decoration: none; color: #424242;">&gt;</a>
+					</c:if>
+				</div>
+			</c:if>
+
 		</div>
 
 	</div>
 
 
-<script>
 
-$(function() {
-
-    const $noticeDescription = $(".withdraw-description");
-    const $noticeArea = $(".withdraw-confirm-area");
-    const $noticeCheck = $("#noticeCheck");
-    const $noticeError = $("#noticeError");
-
-    const $reasonSection = $(".reason-section");
-    const $reasonChecks = $("input[name='withdrawReason']");
-    const $reasonError = $("#reasonError");
-
-    const $withdrawBtn = $("#withdrawBtn");
-    const $withdrawModal = $("#withdrawModal");
-
-
-    // 안내사항 체크
-    $noticeCheck.on("change", function() {
-
-        if ($(this).is(":checked")) {
-
-            $noticeDescription.removeClass("error");
-            $noticeArea.removeClass("error");
-            $noticeError.removeClass("show");
-
-        }
-
-    });
-
-
-    // 탈퇴 사유 체크
-    $reasonChecks.on("change", function() {
-
-        if ($reasonChecks.filter(":checked").length > 0) {
-
-            $reasonSection.removeClass("error");
-            $reasonError.removeClass("show");
-
-        }
-
-    });
-
-
-    // 탈퇴신청
-    $withdrawBtn.on("click", function() {
-
-        const noticeChecked = $noticeCheck.is(":checked");
-
-        const reasonChecked =
-            $reasonChecks.filter(":checked").length > 0;
-
-        let hasError = false;
-
-
-        // 안내사항 미확인
-        if (!noticeChecked) {
-
-            $noticeDescription.addClass("error");
-            $noticeArea.addClass("error");
-            $noticeError.addClass("show");
-
-            hasError = true;
-        }
-
-
-        // 탈퇴 사유 미선택
-        if (!reasonChecked) {
-
-            $reasonSection.addClass("error");
-            $reasonError.addClass("show");
-
-            hasError = true;
-        }
-
-
-        // 하나라도 조건을 만족하지 못하면 모달 X
-        if (hasError) {
-
-            const $firstError =
-                $(".withdraw-error.show").first();
-
-            $("html, body").animate({
-                scrollTop: $firstError.offset().top - 120
-            }, 300);
-
-            return;
-        }
-
-
-        // 필수 조건 모두 만족
-        $withdrawModal.css("display", "flex");
-
-    });
-
-
-    // 모달 취소
-    $("#cancelWithdraw").on("click", function() {
-        $withdrawModal.hide();
-    });
-
-
-    // 모달 X
-    $("#closeWithdraw").on("click", function() {
-        $withdrawModal.hide();
-    });
-
-
-    // 모달 바깥 클릭
-    $withdrawModal.on("click", function(e) {
-
-        if (e.target === this) {
-            $withdrawModal.hide();
-        }
-
-    });
-
-});
-
-</script>
 
 	<jsp:include page="/WEB-INF/views/layout/footer.jsp" />
 
 </body>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const wrapper = document.querySelector(".review-container-wrapper");
+
+        document.addEventListener("click", function (e) {
+            if (e.target.classList.contains("sort-btn")) {
+                let sortValue = e.target.getAttribute("data-sort");
+
+                fetch(`${pageContext.request.contextPath}/member/myReview.htm?page=1&sort=` + sortValue + `&ajax=true`)
+                .then(response => response.text())
+                .then(html => {
+                    document.querySelector(".review-container-wrapper").innerHTML = html;
+                    window.history.pushState({}, "", `?page=1&sort=` + sortValue);
+                })
+                .catch(error => console.error("정렬 에러:", error));
+            }
+            
+            
+         // 2. [여기 추가] 마이페이지에서 '수정' 버튼을 눌렀을 때 상세 페이지로 이동하며 데이터 전달
+            if (e.target.classList.contains("js-edit-review-btn")) {
+                let reviewId = e.target.getAttribute("data-review-id");
+                let productId = e.target.getAttribute("data-product-id");
+                let rating = e.target.getAttribute("data-rating");
+                let content = e.target.getAttribute("data-content");
+                let imageUrl = e.target.getAttribute("data-image-url");
+
+                location.href = `${pageContext.request.contextPath}/productDetail.htm?product_id=` + productId + 
+                                `&openEdit=true` +
+                                `&reviewId=` + reviewId + 
+                                `&rating=` + rating + 
+                                `&imageUrl=` + encodeURIComponent(imageUrl) + 
+                                `&content=` + encodeURIComponent(content);
+            }
+            
+        });
+        
+        
+    });
+</script>
 </html>

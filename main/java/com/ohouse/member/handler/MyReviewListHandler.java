@@ -60,6 +60,14 @@ public class MyReviewListHandler implements CommandHandler {
         request.setAttribute("currentSort", sort);
         request.setAttribute("isAdmin", "ADMIN".equals(authUser.getRole()));
 
-        return "/WEB-INF/views/member/myReview.jsp";
+     // 헤더 대신 쿼리 파라미터로 AJAX 여부 확인
+        String ajaxParam = request.getParameter("ajax");
+        boolean isAjax = "true".equals(ajaxParam);
+
+        if (isAjax) {
+            return "/WEB-INF/views/member/ajaxMyReview.jsp"; // 탭 + 리스트 + 페이징 조각 파일
+        }
+
+        return "/WEB-INF/views/member/myReview.jsp"; // 최초 페이지 진입 시
     }
 }

@@ -19,129 +19,6 @@ import com.ohouse.product.review.dto.SubOptionDTO;
 public class ReviewDAOImpl implements ReviewDAO {
 
     @Override
-    public List<ReviewDTO> selectReviewList2(Connection conn, ReviewPageDTO reqDTO) throws Exception {
-        List<ReviewDTO> list = new ArrayList<>();
-        
-        // 1. 정렬 조건 설정
-        String orderBy = "r.REG_DATE DESC, r.REVIEW_ID DESC";
-        if ("best".equals(reqDTO.getSort())) {
-            orderBy = "r.RATING DESC, r.HELP_COUNT DESC, r.REG_DATE DESC";
-        }
-
-        // 2. 동적 IN 절 생성 (별점 및 옵션 필터)
-        String ratingInClause = "";
-        if (reqDTO.getRatings() != null && !reqDTO.getRatings().isEmpty()) {
-            ratingInClause = " AND r.RATING IN (" + 
-                reqDTO.getRatings().stream().map(r -> "?").collect(Collectors.joining(",")) + ")";
-        }
-
-        String optionInClause = "";
-        if (reqDTO.getOptions() != null && !reqDTO.getOptions().isEmpty()) {
-            optionInClause = " AND r.PRODUCT_OPTION_ID IN (" + 
-                reqDTO.getOptions().stream().map(o -> "?").collect(Collectors.joining(",")) + ")";
-        }
-
-        // 3. Text Block 기반 쿼리 작성 (PRODUCT_OPTION_ID IS NOT NULL 포함)
-        String sql = """
-            SELECT * FROM (
-                SELECT ROWNUM rnum, b.* FROM (
-                    SELECT r.REVIEW_ID, r.PRODUCT_ID, r.MEMBER_ID, r.PRODUCT_OPTION_ID, r.IS_HIDE_IMAGE
-                           NVL(m.NAME, '더미사용자' || r.REVIEW_ID) AS WRITER_NAME,
-                           r.RATING, r.CONTENT,
-                           TO_CHAR(r.REG_DATE, 'YYYY-MM-DD') AS REG_DATE,
-                           TO_CHAR(r.EDIT_DATE, 'YYYY-MM-DD') AS EDIT_DATE,
-                           r.HELP_COUNT, r.ADMIN_REPLY, r.IS_PURCHASED,
-                           img.IMG_ID, img.IMAGE_URL,
-                           opt.OPTION_NAME AS OPTION_NAME
-                    FROM REVIEW r
-                    LEFT JOIN MEMBER m ON r.MEMBER_ID = m.MEMBER_ID
-                    LEFT JOIN REVIEW_IMAGE img ON r.REVIEW_ID = img.REVIEW_ID
-                    LEFT JOIN (
-                        SELECT pov.PRODUCT_OPTION_ID,
-                               LISTAGG(ov.OPTION_NAME, ' / ') WITHIN GROUP (ORDER BY ov.SORT_ORDER, ov.OPTION_VALUE_ID) AS OPTION_NAME
-                        FROM PRODUCT_OPTION_VALUE pov
-                        JOIN OPTION_VALUE ov ON pov.OPTION_VALUE_ID = ov.OPTION_VALUE_ID
-                        GROUP BY pov.PRODUCT_OPTION_ID
-                    ) opt ON r.PRODUCT_OPTION_ID = opt.PRODUCT_OPTION_ID
-                    WHERE r.PRODUCT_ID = ?
-                      AND r.PRODUCT_OPTION_ID IS NOT NULL
-                      %s
-                      %s
-                    ORDER BY %s
-                ) b WHERE ROWNUM <= ?
-            ) WHERE rnum >= ?
-            """.formatted(ratingInClause, optionInClause, orderBy);
-
-        int endRow = reqDTO.getCurrentPage() * reqDTO.getNumberPerPage();
-        int startRow = endRow - reqDTO.getNumberPerPage() + 1;
-
-        // 4. PreparedStatement 생성 및 파라미터 바인딩
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            int paramIdx = 1;
-            
-            // [필수] 상품 ID
-            pstmt.setLong(paramIdx++, reqDTO.getProduct_id());
-
-            // [동적] 별점 목록 (Integer)
-            if (reqDTO.getRatings() != null && !reqDTO.getRatings().isEmpty()) {
-                for (Integer rating : reqDTO.getRatings()) {
-                    pstmt.setInt(paramIdx++, rating);
-                }
-            }
-
-            // [동적] 옵션 ID 목록 (Integer 또는 Long)
-            if (reqDTO.getOptions() != null && !reqDTO.getOptions().isEmpty()) {
-                for (Integer optionId : reqDTO.getOptions()) {
-                    pstmt.setInt(paramIdx++, optionId);
-                }
-            }
-
-            // [필수] 페이징
-            pstmt.setInt(paramIdx++, endRow);
-            pstmt.setInt(paramIdx++, startRow);
-
-            // 5. ResultSet 매핑
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    ReviewImageDTO imageDTO = null;
-                    if (rs.getObject("IMG_ID") != null) {
-                        imageDTO = ReviewImageDTO.builder()
-                                .imgId(rs.getInt("IMG_ID"))
-                                .reviewId(rs.getInt("REVIEW_ID"))
-                                .imageUrl(rs.getString("IMAGE_URL"))
-                                .build();
-                    }
-
-                    Integer memberId = rs.getObject("MEMBER_ID") != null ? rs.getInt("MEMBER_ID") : 0;
-                    Integer optionId = rs.getObject("PRODUCT_OPTION_ID") != null ? rs.getInt("PRODUCT_OPTION_ID") : 0;
-                    Integer isHideImage = rs.getObject("IS_HIDE_IMAGE") != null ? rs.getInt("IS_HIDE_IMAGE") : 0;
-                    
-                    ReviewDTO reviewDTO = ReviewDTO.builder()
-                            .reviewId(rs.getInt("REVIEW_ID"))
-                            .productId(rs.getInt("PRODUCT_ID"))
-                            .memberId(memberId)
-                            .productOptionId(optionId)
-                            .writerName(rs.getString("WRITER_NAME"))
-                            .rating(rs.getInt("RATING"))
-                            .content(rs.getString("CONTENT"))
-                            .regDate(rs.getString("REG_DATE"))
-                            .editDate(rs.getString("EDIT_DATE"))
-                            .helpCount(rs.getInt("HELP_COUNT"))
-                            .adminReply(rs.getString("ADMIN_REPLY"))
-                            .isPurchased(rs.getInt("IS_PURCHASED"))
-                            .optionName(rs.getString("OPTION_NAME"))
-                            .reviewImage(imageDTO)
-                            .isHideImage(isHideImage) // 💥 추가
-                            .build();
-
-                    list.add(reviewDTO);
-                }
-            }
-        }
-        return list;
-    }
-
-    @Override
     public List<ReviewDTO> selectReviewList(Connection conn, ReviewPageDTO reqDTO) throws Exception {
         List<ReviewDTO> list = new ArrayList<>();
         
@@ -522,7 +399,7 @@ public class ReviewDAOImpl implements ReviewDAO {
         }
     }
     @Override
-    public int insertReview(Connection conn, ReviewDTO reviewDTO) throws Exception {
+    public int insertReview2(Connection conn, ReviewDTO reviewDTO) throws Exception {
         String sql = "INSERT INTO REVIEW (REVIEW_ID, PRODUCT_ID, MEMBER_ID, RATING, CONTENT, REG_DATE, IS_PURCHASED, IS_HIDE_IMAGE) " +
                      "VALUES (SEQ_REVIEW.NEXTVAL, ?, ?, ?, ?, SYSDATE, 1, 0)";
         
@@ -547,6 +424,90 @@ public class ReviewDAOImpl implements ReviewDAO {
         return generatedReviewId;
     }
 
+    
+    @Override
+    public int insertReview(Connection conn, ReviewDTO reviewDTO) throws Exception {
+        // 1. 해당 상품을 주문한 이력 중 가장 최근의 PRODUCT_OPTION_ID 조회 및 구매 여부 판정
+        String findLatestSql = """
+            SELECT PRODUCT_OPTION_ID 
+            FROM (
+                SELECT od.PRODUCT_OPTION_ID
+                FROM ORDERS o
+                JOIN ORDERS_DETAIL od ON o.ORDER_ID = od.ORDER_ID
+                JOIN PRODUCT_OPTION po ON od.PRODUCT_OPTION_ID = po.PRODUCT_OPTION_ID
+                WHERE o.MEMBER_ID = ? 
+                  AND po.PRODUCT_ID = ?
+                ORDER BY o.ORDER_DATE DESC
+            )
+            WHERE ROWNUM = 1
+            """;
+        
+        Integer resolvedOptionId = null;
+        boolean isPurchased = false;
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(findLatestSql)) {
+            pstmt.setInt(1, reviewDTO.getMemberId());
+            pstmt.setLong(2, reviewDTO.getProductId());
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    resolvedOptionId = rs.getInt("PRODUCT_OPTION_ID");
+                    isPurchased = true; // 주문 내역이 있으므로 구매자 확정
+                }
+            }
+        }
+        
+        // 사용자가 폼에서 직접 선택한 옵션 ID가 있다면 우선 적용, 없으면 최신 주문 옵션 ID 사용
+        Integer finalOptionId = (reviewDTO.getProductOptionId() != null && reviewDTO.getProductOptionId() > 0) 
+                                ? reviewDTO.getProductOptionId() 
+                                : resolvedOptionId;
+
+        // 2. INSERT 쿼리 실행
+        String sql = """
+            INSERT INTO REVIEW (
+                REVIEW_ID, PRODUCT_ID, MEMBER_ID, PRODUCT_OPTION_ID, 
+                RATING, CONTENT, REG_DATE, IS_PURCHASED, IS_HIDE_IMAGE
+            )
+            VALUES (
+                SEQ_REVIEW.NEXTVAL, ?, ?, ?, 
+                ?, ?, SYSDATE, ?, 0
+            )
+            """;
+        
+        int generatedReviewId = 0;
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sql, new String[]{"REVIEW_ID"})) {
+            int paramIdx = 1;
+            
+            pstmt.setInt(paramIdx++, reviewDTO.getProductId());
+            pstmt.setInt(paramIdx++, reviewDTO.getMemberId());
+            
+            // 옵션 ID 처리 (최신 주문에서 가져왔거나 선택된 값, 없으면 NULL)
+            if (finalOptionId != null && finalOptionId > 0) {
+                pstmt.setInt(paramIdx++, finalOptionId);
+            } else {
+                pstmt.setNull(paramIdx++, java.sql.Types.INTEGER);
+            }
+            
+            pstmt.setInt(paramIdx++, reviewDTO.getRating());
+            pstmt.setString(paramIdx++, reviewDTO.getContent());
+            
+            // 동적으로 판정된 IS_PURCHASED 값 바인딩 (1 또는 0)
+            pstmt.setInt(paramIdx++, isPurchased ? 1 : 0);
+            
+            int affectedRows = pstmt.executeUpdate();
+            
+            if (affectedRows > 0) {
+                try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        generatedReviewId = rs.getInt(1);
+                    }
+                }
+            }
+        }
+        return generatedReviewId;
+    }
+    
     @Override
     public int insertReviewImage(Connection conn, int reviewId, String imageUrl) throws Exception {
         String sql = "INSERT INTO REVIEW_IMAGE (IMG_ID, REVIEW_ID, IMAGE_URL) VALUES (SEQ_REVIEW_IMAGE.NEXTVAL, ?, ?)";
@@ -737,5 +698,71 @@ public class ReviewDAOImpl implements ReviewDAO {
         return list;
     }
     
+    @Override
+    public boolean hasUserPurchased(Connection conn, int memberId, long productId) throws Exception {
+        String sql = """
+            SELECT COUNT(*) 
+            FROM ORDERS o
+            JOIN ORDERS_DETAIL od ON o.ORDER_ID = od.ORDER_ID
+            JOIN PRODUCT_OPTION po ON od.PRODUCT_OPTION_ID = po.PRODUCT_OPTION_ID
+            WHERE o.MEMBER_ID = ? 
+              AND po.PRODUCT_ID = ?
+            """;
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, memberId);
+            pstmt.setLong(2, productId);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0; // 결과가 1건 이상이면 true (구매자)
+                }
+            }
+        }
+        return false;
+    }
     
+    public ReviewDTO findLatestOrderInfo(Connection conn, int memberId, long productId) throws Exception {
+        String sql = """
+            SELECT PRODUCT_OPTION_ID, ORDER_DATE
+            FROM (
+                SELECT od.PRODUCT_OPTION_ID, o.ORDER_DATE
+                FROM ORDERS o
+                JOIN ORDERS_DETAIL od ON o.ORDER_ID = od.ORDER_ID
+                JOIN PRODUCT_OPTION po ON od.PRODUCT_OPTION_ID = po.PRODUCT_OPTION_ID
+                WHERE o.MEMBER_ID = ? 
+                  AND po.PRODUCT_ID = ?
+                ORDER BY o.ORDER_DATE DESC
+            )
+            WHERE ROWNUM = 1
+            """;
+
+        // 기본값 설정 (주문 이력이 없으면 productOptionId와 orderDate는 null/0 처리)
+        ReviewDTO orderInfo = ReviewDTO.builder()
+                .memberId(memberId)
+                .productId((int) productId)
+                .productOptionId(null)
+                .isPurchased(0)
+                .orderDate(null)
+                .build();
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, memberId);
+            pstmt.setLong(2, productId);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    orderInfo.setProductOptionId(rs.getInt("PRODUCT_OPTION_ID"));
+                    orderInfo.setIsPurchased(1);
+                    
+                    // 주문 날짜 가져오기 (null 안전 처리)
+                    java.sql.Date dbDate = rs.getDate("ORDER_DATE");
+                    if (dbDate != null) {
+                        orderInfo.setOrderDate(dbDate.toLocalDate().toString());
+                    }
+                }
+            }
+        }
+        return orderInfo;
+    }
 }

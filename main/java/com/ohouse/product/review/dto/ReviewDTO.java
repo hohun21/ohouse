@@ -40,4 +40,6 @@ public class ReviewDTO {
     private boolean liked; //좋아요체크여부 
     
     private Integer isHideImage;		//사진 숨김 처리 여부, 관리자 권한.
+    
+    private String orderDate;			//주문했나 안했나 여부
 }
