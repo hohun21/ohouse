@@ -447,7 +447,7 @@
         <!-- 오른쪽 상품 정보 -->
         <div class="product-info">
 
-            <div class="brand">
+            <div class="brand" data-brand-id="${pdto.productDTO.brand_id}" data-brand-name="${pdto.productDTO.brand_name}">
                 ${pdto.productDTO.brand_name}
             </div>
             <div class="product-name">

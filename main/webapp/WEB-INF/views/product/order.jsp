@@ -43,6 +43,7 @@
                 <c:forEach var="item" items="${orderdto}">
 
                     <div class="product order-item"
+                         data-brand-id="${item.brand_id}"
                          data-product-id="${item.product_id}"
                          data-product-option-id="${item.product_option_id}"
                          data-price="${item.price}"
@@ -59,7 +60,11 @@
 
                         <div class="product-info">
 
+                            <div class="brand-name">
+                                ${item.brand_name}<br>
+                            </div>
                             <div class="product-name">
+
                                     ${item.product_name}
                             </div>
 
@@ -270,6 +275,7 @@
                         토스페이
                     </button>
 
+
                 </div>
 
             </section>
@@ -310,11 +316,9 @@
     </span>
             </div>
 
-
-            <button class="pay-btn"
-                    onclick="payment()">
+            <script src="https://js.tosspayments.com/v2/standard"></script>
+            <button class="pay-btn" id="paymentButton" onclick="payment()">
                 결제하기
-
             </button>
 
 
@@ -439,7 +443,10 @@
 
 </main>
 
-
+<script>
+    const member_id = "${sessionScope.authUser.id}";
+</script>
 <script src="${pageContext.request.contextPath}/js/order.js"></script>
+
 </body>
 </html>
