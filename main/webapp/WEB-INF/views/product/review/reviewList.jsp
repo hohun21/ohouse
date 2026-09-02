@@ -377,7 +377,7 @@
 			id="js-btn-clear-all" style="display: none;">↻ 전체 초기화</button>
 	</div>
 	<div id="reviewListContainer">
-    <jsp:include page="/WEB-INF/views/product/review/reviewItem.jsp" />
+		<jsp:include page="/WEB-INF/views/product/review/reviewItem.jsp" />
 	</div>
 </div>
 
@@ -488,7 +488,33 @@
             }
         }
     }
+    
+  	//태그의 [x] (btn-remove-tag) 버튼을 눌렀을 때의 처리 로직
+    parentContainer.addEventListener('click', function(e) {
+        var removeBtn = e.target.closest('.btn-remove-tag');
+        if (!removeBtn) return;
 
+        var type = removeBtn.getAttribute('data-type'); // 'rating' 또는 'option'
+        var val = removeBtn.getAttribute('data-val');
+
+        // 1. JS 내부 Set 데이터에서 제거
+        if (type === 'rating') {
+            selectedRatingsSet.delete(val);
+        } else if (type === 'option') {
+            selectedOptionsSet.delete(val);
+        }
+
+        // 2. 화면에 있는 실제 체크박스 찾아서 체크 해제하기 (핵심!)
+        var targetCheckbox = parentContainer.querySelector('input.js-' + type + '-checkbox[value="' + val + '"]');
+        if (targetCheckbox) {
+            targetCheckbox.checked = false;
+            // 체크박스의 change 이벤트나 연동된 데이터 갱신 함수가 있다면 여기서 호출
+        }
+
+        // 3. UI 동기화 함수 호출하여 태그바와 체크박스 상태 갱신
+        syncFilterUIState();
+    });
+  	
     // 💥 [통합 이벤트 리스너] document 수준에서 모든 클릭을 감지하도록 보완
     document.addEventListener('click', function(e) {
         

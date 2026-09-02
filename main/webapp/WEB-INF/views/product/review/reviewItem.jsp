@@ -12,38 +12,67 @@
 				<c:forEach var="review" items="${reviewList}">
 					<div class="review-item"
 						style="padding: 16px 0; border-bottom: 1px solid #f0f0f0;">
-						<div class="user-profile">
+						<div class="user-profile" style="justify-content: space-between"
+
+						>
 							<span class="user-name"
-								style="font-weight: bold; font-size: 13px;">${review.writerName}</span>
+								style="font-weight: bold; font-size: 13px;">${review.writerName}
+							</span>
+							<!-- 1. 작성자 이름 및 수정/삭제 버튼 영역 -->
+							<div class="user-profile"
+								style="display: flex; justify-content: space-between; align-items: center;">
+
+
+								<!-- 💥 본인인 경우에만 수정/삭제 버튼 노출 -->
+								<div class="review-owner-actions" style="font-size: 12px;">
+									<c:if
+										test="${not empty authUser and authUser.memberId eq review.memberId}">
+
+										<a href="javascript:void(0);" class="js-edit-review-btn"
+											data-review-id="${review.reviewId}"
+											data-rating="${review.rating}"
+											data-content="${review.content}"
+											data-image-url="${review.reviewImage.imageUrl}"> 댓글 수정 </a>
+
+									</c:if>
+									<c:if test="${isAdmin}">
+										<a href="javascript:void(0);"
+											onclick="deleteReview(${review.reviewId})"
+											style="color: #f44336; text-decoration: none;">댓글 삭제</a>
+
+									</c:if>
+								</div>
+							</div>
 						</div>
 						<div class="review-meta"
 							style="font-size: 12px; color: #9e9e9e; margin-top: 2px;">
 							<span class="stars" style="color: #35c5f0;"> <c:forEach
 									begin="1" end="${review.rating}">★</c:forEach>
-							</span> <span>${review.regDate}</span>
-						</div>
+							</span> 
+							<span>${review.regDate}</span>
 
-						<!-- 임시 데이터 확인용 (문제 해결 후 삭제) -->
-
-
-						<c:choose>
+							<c:choose>
 							<c:when test="${review.isPurchased eq 1}">
 								<span class="badge-purchased"
 									style="color: #35c5f0; font-weight: bold; background: #e8f7fc; padding: 2px 6px; border-radius: 4px; font-size: 12px;">
-									오늘의집 구매자 </span>
+									오늘의집 구매 </span>
 							</c:when>
 							<c:otherwise>
 								<span class="badge-purchased"
 									style="color: #757575; background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-size: 12px;">
-									비구매자 </span>
+									오늘의집 비구매 </span>
 							</c:otherwise>
 						</c:choose>
+						</div>
+
+				
+						
 
 
 						<c:if test="${not empty review.optionName}">
 							<div class="review-option"
 								style="font-size: 12px; color: #757575; margin-top: 4px;">
-								선택옵션: ${review.optionName}</div>
+								| ${review.optionName}</div>
 						</c:if>
 
 
@@ -128,7 +157,7 @@
 										style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
 										<span
 											style="font-weight: bold; font-size: 12px; color: #35c5f0;">ㄴ
-											판매자 답변</span>
+											오늘의 집 고객센터</span>
 
 										<%-- 💥 [수정] 문자열 "true"도 인식하도록 조건 통일 --%>
 										<c:if test="${isAdmin eq true or isAdmin eq 'true'}">
@@ -148,7 +177,7 @@
 
 							<%-- 2. 답변이 없고 관리자인 경우: [답변 달기] 버튼 노출 --%>
 							<%-- 💥 [수정] isAdmin 조건 통일 --%>
-							<c:if test="${isAdmin}">
+							<c:if test="${isAdmin and empty review.adminReply}">
 								<button type="button"
 									onclick="toggleReplyForm(${review.reviewId})"
 									style="padding: 4px 8px; font-size: 11px; color: #35c5f0; border: 1px solid #35c5f0; background: #fff; border-radius: 4px; cursor: pointer;">
@@ -187,27 +216,7 @@
 								<span>도움돼요</span> <span class="count"
 									style="font-weight: bold; color: #35c5f0;">${not empty review.helpCount ? review.helpCount : 0}</span>
 							</button>
-							<!-- 1. 작성자 이름 및 수정/삭제 버튼 영역 -->
-							<div class="user-profile"
-								style="display: flex; justify-content: space-between; align-items: center;">
-								<span class="user-name"
-									style="font-weight: bold; font-size: 13px;">${review.writerName}</span>
 
-								<!-- 💥 본인인 경우에만 수정/삭제 버튼 노출 -->
-								<c:if
-									test="${not empty authUser and authUser.memberId eq review.memberId}">
-									<div class="review-owner-actions" style="font-size: 12px;">
-										<a href="javascript:void(0);" class="js-edit-review-btn"
-											data-review-id="${review.reviewId}"
-											data-rating="${review.rating}"
-											data-content="${review.content}"
-											data-image-url="${review.reviewImage.imageUrl}">
-											수정
-										</a>
-										<a href="javascript:void(0);" onclick="deleteReview(${review.reviewId})" style="color: #f44336; text-decoration: none;">삭제</a>
-									</div>
-								</c:if>
-							</div>
 						</div>
 					</div>
 				</c:forEach>
