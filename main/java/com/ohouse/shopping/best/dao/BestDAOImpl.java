@@ -20,8 +20,7 @@ public class BestDAOImpl implements BestDAO {
 				WITH sales AS (
 				    SELECT po.product_id, SUM(od.quantity) AS sales_quantity
 				    FROM orders_detail od JOIN product_option po ON po.product_option_id = od.product_option_id
-                    JOIN orders o ON o.order_id = od.order_id
-                    WHERE o.order_status = 'CONFIRM'
+                    WHERE od.delivery_status = '5'
 				    GROUP BY po.product_id
 				),
 				review_score AS (
