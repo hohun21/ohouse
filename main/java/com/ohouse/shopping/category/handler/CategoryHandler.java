@@ -28,8 +28,13 @@ public String process(
 	    System.out.println("===== CategoryHandler.process() 실행 =====");
 	
 	    String categoryId = request.getParameter("category_id");
+	    String sort = request.getParameter("sort");
+
+	    if (sort == null || sort.isEmpty()) {
+	        sort = "recommend";
+	    }
 	    
-	    
+	    request.setAttribute("sort", sort);
 	
 	    Connection conn = null;
 	
@@ -67,6 +72,42 @@ public String process(
 	
 	            selectedCategoryId = Integer.parseInt(categoryId);
 	        }
+	        
+	        // 현재 선택된 카테고리의 대분류 찾기
+	        CategoryDTO currentCategory = null;
+
+	        for (CategoryDTO category : categories) {
+	            if (category.getCategory_id() == selectedCategoryId) {
+	                currentCategory = category;
+	                break;
+	            }
+	        }
+
+	        CategoryDTO mainCategory = currentCategory;
+
+	        // 부모를 따라가면서 대분류까지 올라가기
+	        while (mainCategory != null && mainCategory.getParentId() != null) {
+
+	            int parentId = mainCategory.getParentId();
+
+	            CategoryDTO parentCategory = null;
+
+	            for (CategoryDTO category : categories) {
+	                if (category.getCategory_id() == parentId) {
+	                    parentCategory = category;
+	                    break;
+	                }
+	            }
+
+	            mainCategory = parentCategory;
+	        }
+
+	        String mainCategoryName =
+	                mainCategory != null
+	                        ? mainCategory.getCategory_name()
+	                        : "";
+
+	        request.setAttribute("mainCategoryName", mainCategoryName);
 	
 	        // 현재 카테고리 아래의 leaf 카테고리 조회
 	        List<CategoryDTO> leafCategories =
@@ -87,14 +128,21 @@ public String process(
 	        List<ProductDTO> products =
 	                productService.getProductListByCategories(
 	                        conn,
-	                        categoryIds
+	                        categoryIds,
+	                        sort
 	                );
+	        
+	     // 상단 배너용 상품 3개
+	        List<ProductDTO> bannerProducts = products.size() > 3
+	                ? products.subList(0, 3)
+	                : products;
 	
 	        // JSP 전달
 	        request.setAttribute("categories", categories);
 	        request.setAttribute("leafCategories", leafCategories);
 	        request.setAttribute("products", products);
 	        request.setAttribute("selectedCategoryId", selectedCategoryId);
+	        request.setAttribute("bannerProducts", bannerProducts);
 	
 	        System.out.println("현재 카테고리 = " + selectedCategoryId);
 	        System.out.println("전체 카테고리 수 = " + categories.size());

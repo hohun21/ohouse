@@ -34,10 +34,11 @@ public class ProductService {
 
     public List<ProductDTO> getProductListByCategories(
             Connection conn,
-            List<Integer> categoryIds
+            List<Integer> categoryIds,
+            String sort
     ) throws SQLException {
 
-        return productdao.viewProductByCategories(conn, categoryIds);
+        return productdao.viewProductByCategories(conn, categoryIds, sort);
     }
     
     private CouponDAO couponDAO = new CouponDAO();

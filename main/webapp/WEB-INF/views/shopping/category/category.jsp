@@ -440,12 +440,49 @@
     <!-- 우측 메인 컨텐츠 -->
     <div class="main-content">
         
-        <div class="banner-header">가구</div>
-        <div class="category-banners">
-            <div class="banner-box"><img src="https://images.unsplash.com/photo-1554995207-c18c203602cb?w=400" alt="가구배너1"></div>
-            <div class="banner-box"><img src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=400" alt="가구배너2"></div>
-            <div class="banner-box"><img src="https://images.unsplash.com/photo-1583847268964-b28ce8f30321?w=400" alt="가구배너3"></div>
+        <div class="banner-header">MD's Pick</div><!-- ${mainCategoryName} -->
+       <div class="category-banners">
+
+    <c:forEach var="banner" items="${bannerProducts}">
+
+        <div class="product-card">
+
+            <div class="product-img-wrap">
+                <img src="${banner.image_url}"
+                     alt="${banner.product_name}">
+            </div>
+
+            <div class="brand">
+                ${banner.brand_name}
+            </div>
+
+            <div class="title">
+                ${banner.product_name}
+            </div>
+
+            <div class="price-wrap">
+                <span class="price">
+                    <fmt:formatNumber
+                        value="${banner.price}"
+                        pattern="#,###"/>원
+                </span>
+            </div>
+
+            <div class="review-wrap">
+                <span class="star">★</span>
+                <fmt:formatNumber
+                    value="${banner.avgRating}"
+                    pattern="0.0"/>
+                <span>
+                    리뷰 ${banner.reviewCount}개
+                </span>
+            </div>
+
         </div>
+
+    </c:forEach>
+
+</div>
 
         <div class="filter-section">
             <div class="filter-row">
@@ -472,11 +509,11 @@
 
         <div class="list-header">
             <span class="list-count">전체 ${products.size()}개</span>
-            <select class="sort-select">
-                <option>추천순 ∨</option>
-                <option>인기순</option>
-                <option>최신순</option>
-                <option>가격 낮은순</option>
+            <select class="sort-select" onchange="location.href='${pageContext.request.contextPath}/shopping/category/category.htm?category_id=${selectedCategoryId}&sort=' + this.value">
+                <option value="recommend" ${sort == 'recommend' ? 'selected' :'' }>추천순</option>
+                <option value="popular" ${sort == 'popular' ? 'selected' :''}>인기순</option>
+                <option value="latest" ${sort == 'latest' ? 'selected' :''}>최신순</option>
+                <option value="lowprice" ${sort == 'lowprice' ? 'selected' :''}>가격 낮은순</option>
             </select>
         </div>
 
@@ -517,9 +554,12 @@
 	            </div>
 	
 				<div class="review-wrap">
-					<span class="star">★</span>
-					리뷰 준비중
-				</div>
+    <span class="star">★</span>
+    ${product.avgRating}
+    <span style="color:#9E9E9E; font-weight:400;">
+        리뷰 ${product.reviewCount}개
+    </span>
+</div>
 	
 	        </div>
 
