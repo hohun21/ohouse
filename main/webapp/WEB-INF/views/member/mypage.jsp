@@ -72,7 +72,7 @@
 <div class="top-nav">
     <a href="#" class="active">프로필</a>
     <a href="#">나의 쇼핑</a>
-    <a href="#">나의 리뷰</a>
+    <a href="${pageContext.request.contextPath}/member/myReview.htm">나의 리뷰</a>
     <!-- 💡 수정 1: 상단 설정 버튼 경로 연결 -->
     <a href="${pageContext.request.contextPath}/changePwd.htm">설정</a>
 </div>

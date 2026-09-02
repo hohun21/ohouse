@@ -46,4 +46,8 @@ public interface ReviewDAO {
 	int deleteReviewImages(Connection conn, int reviewId) throws Exception;
 
 	int deleteReview(Connection conn, int reviewId) throws Exception;
+
+	int selectMyReviewTotalCount(Connection conn, int memberId) throws Exception;
+
+	List<ReviewDTO> selectMyReviewList(Connection conn, ReviewPageDTO reqDTO) throws Exception;
 }

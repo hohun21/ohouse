@@ -231,5 +231,22 @@ public class ReviewService {
             }
         }
     }
+ // 1. 내가 작성한 총 리뷰 개수 조회
+    public int getMyReviewTotalCount(int memberId) throws Exception {
+        int totalRecords = 0;
+        try (Connection conn = ConnectionProvider.getConnection()) {
+            totalRecords = reviewDao.selectMyReviewTotalCount(conn, memberId);
+        }
+        return totalRecords;
+    }
+
+    // 2. 내가 작성한 리뷰 목록 조회 (페이징 및 정렬 포함)
+    public List<ReviewDTO> getMyReviewList(ReviewPageDTO reqDTO) throws Exception {
+        List<ReviewDTO> list = null;
+        try (Connection conn = ConnectionProvider.getConnection()) {
+            list = reviewDao.selectMyReviewList(conn, reqDTO);
+        }
+        return list;
+    }
     
 }

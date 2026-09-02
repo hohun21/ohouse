@@ -15,6 +15,7 @@ public class ReviewDTO {
     private Integer memberId;            // MEMBER_ID (FK)
     private Integer productOptionId; // PRODUCT_OPTION_ID (FK, null 가능)
     
+    private String productName;
     // MEMBER 테이블 JOIN 결과
     private String writerName;       // 작성자 이름/닉네임
     private String profileImg;       // 작성자 프로필 이미지

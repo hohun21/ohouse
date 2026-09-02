@@ -623,4 +623,119 @@ public class ReviewDAOImpl implements ReviewDAO {
     }
     
     
+    @Override
+    public int selectMyReviewTotalCount(Connection conn, int memberId) throws Exception {
+        int totalCount = 0;
+        String sql = "SELECT COUNT(*) FROM REVIEW WHERE MEMBER_ID = ?";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, memberId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    totalCount = rs.getInt(1);
+                }
+            }
+        }
+        return totalCount;
+    }
+
+    @Override
+    public List<ReviewDTO> selectMyReviewList(Connection conn, ReviewPageDTO reqDTO) throws Exception {
+        List<ReviewDTO> list = new ArrayList<>();
+
+        // 정렬 조건 설정 (기본값: 최신순)
+        String orderBy = "r.REG_DATE DESC, r.REVIEW_ID DESC";
+        if ("best".equals(reqDTO.getSort())) {
+            orderBy = "HELP_COUNT DESC, r.RATING DESC, r.REG_DATE DESC";
+        }
+
+        // ROWNUM 페이징 범위 계산
+        int endRow = reqDTO.getCurrentPage() * reqDTO.getNumberPerPage();
+        int startRow = endRow - reqDTO.getNumberPerPage() + 1;
+
+        String sql = """
+            SELECT * FROM (
+                SELECT ROWNUM rnum, b.* FROM (
+                    SELECT r.REVIEW_ID, r.PRODUCT_ID, r.MEMBER_ID, r.PRODUCT_OPTION_ID, r.IS_HIDE_IMAGE,
+                           p.PRODUCT_NAME,
+                           NVL(m.NAME, '탈퇴한 사용자') AS WRITER_NAME,
+                           r.RATING, r.CONTENT,
+                           TO_CHAR(r.REG_DATE, 'YYYY-MM-DD') AS REG_DATE,
+                           TO_CHAR(r.EDIT_DATE, 'YYYY-MM-DD') AS EDIT_DATE,
+                           r.ADMIN_REPLY, r.IS_PURCHASED,
+                           img.IMG_ID, img.IMAGE_URL,
+                           opt.OPTION_NAME AS OPTION_NAME,
+                           (SELECT COUNT(*) FROM REVIEW_LIKE rl WHERE rl.REVIEW_ID = r.REVIEW_ID) AS HELP_COUNT
+                    FROM REVIEW r
+                    JOIN PRODUCT p ON r.PRODUCT_ID = p.PRODUCT_ID
+                    LEFT JOIN MEMBER m ON r.MEMBER_ID = m.MEMBER_ID
+                    LEFT JOIN (
+                        SELECT REVIEW_ID, IMG_ID, IMAGE_URL
+                        FROM (
+                            SELECT REVIEW_ID, IMG_ID, IMAGE_URL,
+                                   ROW_NUMBER() OVER (PARTITION BY REVIEW_ID ORDER BY IMG_ID ASC) as rn
+                            FROM REVIEW_IMAGE
+                        )
+                        WHERE rn = 1
+                    ) img ON r.REVIEW_ID = img.REVIEW_ID
+                    LEFT JOIN (
+                        SELECT pov.PRODUCT_OPTION_ID,
+                               LISTAGG(ov.OPTION_NAME, ' / ') WITHIN GROUP (ORDER BY ov.SORT_ORDER, ov.OPTION_VALUE_ID) AS OPTION_NAME
+                        FROM PRODUCT_OPTION_VALUE pov
+                        JOIN OPTION_VALUE ov ON pov.OPTION_VALUE_ID = ov.OPTION_VALUE_ID
+                        GROUP BY pov.PRODUCT_OPTION_ID
+                    ) opt ON r.PRODUCT_OPTION_ID = opt.PRODUCT_OPTION_ID
+                    WHERE r.MEMBER_ID = ?
+                    ORDER BY %s
+                ) b WHERE ROWNUM <= ?
+            ) WHERE rnum >= ?
+            """.formatted(orderBy);
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            int paramIdx = 1;
+            pstmt.setInt(paramIdx++, reqDTO.getMember_id());
+            pstmt.setInt(paramIdx++, endRow);
+            pstmt.setInt(paramIdx++, startRow);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    ReviewImageDTO imageDTO = null;
+                    if (rs.getObject("IMG_ID") != null) {
+                        imageDTO = ReviewImageDTO.builder()
+                                .imgId(rs.getInt("IMG_ID"))
+                                .reviewId(rs.getInt("REVIEW_ID"))
+                                .imageUrl(rs.getString("IMAGE_URL"))
+                                .build();
+                    }
+
+                    ReviewDTO reviewDTO = ReviewDTO.builder()
+                            .reviewId(rs.getInt("REVIEW_ID"))
+                            .productId(rs.getInt("PRODUCT_ID"))
+                            .memberId(rs.getInt("MEMBER_ID"))
+                            .productOptionId(rs.getObject("PRODUCT_OPTION_ID") != null ? rs.getInt("PRODUCT_OPTION_ID") : null)
+                            .writerName(rs.getString("WRITER_NAME"))
+                            .rating(rs.getInt("RATING"))
+                            .content(rs.getString("CONTENT"))
+                            .regDate(rs.getString("REG_DATE"))
+                            .editDate(rs.getString("EDIT_DATE"))
+                            .helpCount(rs.getInt("HELP_COUNT"))
+                            .adminReply(rs.getString("ADMIN_REPLY"))
+                            .isPurchased(rs.getInt("IS_PURCHASED"))
+                            .optionName(rs.getString("OPTION_NAME"))
+                            .reviewImage(imageDTO)
+                            .productName(rs.getString("PRODUCT_NAME"))
+                            .isHideImage(rs.getObject("IS_HIDE_IMAGE") != null ? rs.getInt("IS_HIDE_IMAGE") : 0)
+                            .build();
+
+                    // ReviewDTO에 productName 필드가 있다면 아래처럼 추가해 주세요
+                    // reviewDTO.setProductName(rs.getString("PRODUCT_NAME"));
+
+                    list.add(reviewDTO);
+                }
+            }
+        }
+        return list;
+    }
+    
+    
 }
