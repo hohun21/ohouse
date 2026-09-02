@@ -77,7 +77,7 @@ public class BestDAOImpl implements BestDAO {
 
 	            while (rs.next()) {
 	                BestDTO dto = BestDTO.builder()
-	                        .rank(rs.getInt("ranking"))
+	                        .rank(rs.getInt("rank"))
 	                        .productId(rs.getInt("product_id"))
 	                        .brandName(rs.getString("brand_name"))
 	                        .productName(rs.getString("product_name"))
