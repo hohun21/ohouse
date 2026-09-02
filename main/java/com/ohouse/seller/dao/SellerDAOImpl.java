@@ -523,4 +523,26 @@ public class SellerDAOImpl implements SellerDAO {
             return pstmt2.executeUpdate();
         }
     }
+    
+    @Override
+    public int updateProductStatus(int productId, String status) throws SQLException {
+        String sql = "UPDATE product SET status = ? WHERE product_id = ?";
+        try (PreparedStatement pstmt = this.conn.prepareStatement(sql)) {
+            pstmt.setString(1, status);
+            pstmt.setInt(2, productId);
+            return pstmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public int getStopProductCount(int brandId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM product WHERE brand_id = ? AND status = 'STOP'";
+        try (PreparedStatement pstmt = this.conn.prepareStatement(sql)) {
+            pstmt.setInt(1, brandId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
 }

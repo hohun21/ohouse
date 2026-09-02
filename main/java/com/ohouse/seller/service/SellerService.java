@@ -426,7 +426,7 @@ public class SellerService {
         return optionItems;
     }
     
-    // 6. 판매자 대시보드 통계
+    // 6. 판매자 대시보드 통계 (💡 판매중지 카운트 연동 및 계산식 수정)
     public Map<String, Integer> getDashboardStats(String brandName) {
         Map<String, Integer> stats = new HashMap<>();
         Connection conn = null;
@@ -439,13 +439,16 @@ public class SellerService {
             
             int totalCount = dao.getTotalProductCount(brandId);
             int soldOutCount = dao.getSoldOutProductCount(brandId);
-            int onSaleCount = totalCount - soldOutCount;
+            int stopCount = dao.getStopProductCount(brandId); // DB에서 판매중지 카운트 가져오기
+            
+            // 판매중 = 전체 - (품절 + 판매중지)
+            int onSaleCount = totalCount - soldOutCount - stopCount;
             if (onSaleCount < 0) onSaleCount = 0;
             
             stats.put("totalCount", totalCount);
             stats.put("soldOutCount", soldOutCount);
             stats.put("onSaleCount", onSaleCount);
-            stats.put("stopCount", 0);
+            stats.put("stopCount", stopCount); // 변수로 교체
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -477,6 +480,23 @@ public class SellerService {
             conn = ConnectionProvider.getConnection();
             SellerDAO dao = new SellerDAOImpl(conn);
             int count = dao.updateSellerStatus(sellerId, status);
+            if (count > 0) result = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (conn != null) try { conn.close(); } catch (Exception e) {}
+        }
+        return result;
+    }
+    
+    // 💡 관리자: 상품 상태(판매중지/판매재개) 변경 기능 추가
+    public boolean updateProductStatus(int productId, String status) {
+        Connection conn = null;
+        boolean result = false;
+        try {
+            conn = ConnectionProvider.getConnection();
+            SellerDAO dao = new SellerDAOImpl(conn);
+            int count = dao.updateProductStatus(productId, status);
             if (count > 0) result = true;
         } catch (Exception e) {
             e.printStackTrace();

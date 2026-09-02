@@ -29,8 +29,9 @@
     .product-table th { background-color: #f8f9fa; font-weight: bold; color: #555; }
     .product-name-cell { text-align: left !important; }
     
-    /* 관리자 삭제 버튼 */
-    .btn-delete { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; padding: 6px 14px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; }
+    /* 관리 버튼 공통 및 삭제 버튼 스타일 */
+    .btn-manage { padding: 6px 12px; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; margin: 0 2px; }
+    .btn-delete { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
     .btn-delete:hover { background-color: #ffcdd2; }
 </style>
 </head>
@@ -62,10 +63,10 @@
                     <tr>
                         <th width="10%">상품번호</th>
                         <th width="20%">판매자(상호명)</th>
-                        <th width="35%">상품명</th>
+                        <th width="30%">상품명</th>
                         <th width="15%">판매가</th>
                         <th width="10%">상태</th>
-                        <th width="10%">관리</th>
+                        <th width="15%">관리</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -82,9 +83,40 @@
                                     <td style="font-weight: bold; color: #009fce;">${product.brandName}</td>
                                     <td class="product-name-cell">${product.productName}</td>
                                     <td><fmt:formatNumber value="${product.price}" pattern="#,###"/>원</td>
-                                    <td><span style="color: #35c5f0; font-weight: bold;">판매중</span></td>
+                                    
                                     <td>
-                                        <button type="button" class="btn-delete" onclick="if(confirm('정말 이 상품을 강제 삭제하시겠습니까?')) location.href='${pageContext.request.contextPath}/admin/deleteProduct.htm?productId=${product.productId}'">강제삭제</button>
+                                        <c:choose>
+                                            <c:when test="${product.status == 'STOP'}">
+                                                <span style="color: #c62828; font-weight: bold;">판매중지</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span style="color: #35c5f0; font-weight: bold;">판매중</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${product.status == 'STOP'}">
+                                                <button type="button" class="btn-manage" 
+                                                        style="background-color: #e3f2fd; color: #0288d1; border: 1px solid #90caf9;" 
+                                                        onclick="if(confirm('이 상품의 판매를 재개하시겠습니까?')) location.href='${pageContext.request.contextPath}/admin/productStatus.htm?productId=${product.productId}&status=ACTIVE'">
+                                                    판매재개
+                                                </button>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <button type="button" class="btn-manage" 
+                                                        style="background-color: #fff3e0; color: #f57c00; border: 1px solid #ffcc80;" 
+                                                        onclick="if(confirm('이 상품을 강제로 판매중지 처리하시겠습니까?')) location.href='${pageContext.request.contextPath}/admin/productStatus.htm?productId=${product.productId}&status=STOP'">
+                                                    판매중지
+                                                </button>
+                                            </c:otherwise>
+                                        </c:choose>
+                                        
+                                        <button type="button" class="btn-manage btn-delete" 
+                                                onclick="if(confirm('정말 이 상품을 강제 삭제하시겠습니까?')) location.href='${pageContext.request.contextPath}/admin/deleteProduct.htm?productId=${product.productId}'">
+                                            강제삭제
+                                        </button>
                                     </td>
                                 </tr>
                             </c:forEach>

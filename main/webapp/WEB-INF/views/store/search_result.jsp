@@ -165,6 +165,15 @@
                         <a href="/productDetail.htm?product_id=${product.productId}" class="product-card">
                             <div class="product-img-wrap">
                                 <img src="${product.imageUrl}" alt="${product.productName}">
+                                
+                                <!-- 💡 품절 뱃지 추가 (status가 SOLD_OUT일 경우 노출) -->
+                                <c:if test="${product.status == 'SOLD_OUT'}">
+                                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+                                                background: rgba(0,0,0,0.5); color: white; display: flex; 
+                                                justify-content: center; align-items: center; font-size: 18px; font-weight: bold; z-index: 10;">
+                                        품절
+                                    </div>
+                                </c:if>
                             </div>
                             <div class="brand-name">${product.brandName}</div>
                             <div class="product-name">${product.productName}</div>
@@ -172,7 +181,6 @@
                                 <c:if test="${not empty product.discountRate and product.discountRate > 0}">
                                     <span class="discount">${product.discountRate}%</span>
                                 </c:if>
-                                <!-- 💡 fmt 태그로 가격에 콤마(,) 표시 추가 -->
                                 <span class="price"><fmt:formatNumber value="${product.price}" pattern="#,###"/>원</span>
                             </div>
                             <div class="review-area">
@@ -189,8 +197,6 @@
             </c:otherwise>
         </c:choose>
     </main>
-
-    <!-- 4. 공통 푸터 Include -->
     <jsp:include page="../layout/footer.jsp" />
 
 </body>

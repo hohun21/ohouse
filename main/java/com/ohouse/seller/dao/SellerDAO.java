@@ -53,5 +53,9 @@ public interface SellerDAO {
     int deleteProductImages(int productId) throws SQLException;
     int getTotalProductCount(int brandId) throws SQLException;
     int getSoldOutProductCount(int brandId) throws SQLException;
+    
+    int updateProductStatus(int productId, String status) throws SQLException;
+
+    int getStopProductCount(int brandId) throws SQLException;
      
 }
