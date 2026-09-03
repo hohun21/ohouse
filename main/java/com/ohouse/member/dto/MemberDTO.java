@@ -19,6 +19,7 @@ public class MemberDTO {
     private String rank;
     private String role;
     private Date regDate;
+    private int status;
 
 
     public MemberDTO(String id, String password, String name) {
