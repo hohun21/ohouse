@@ -18,6 +18,14 @@ import com.ohouse.product.cart.dto.CartOptionEditRequestDTO;
 import com.ohouse.util.conn.ConnectionProvider;
 
 public class CartDAOImpl implements CartDAO {
+    private Connection conn;
+
+    public CartDAOImpl() {
+    }
+
+    public CartDAOImpl(Connection conn) {
+        this.conn = conn;
+    }
     @Override
     public List<CartOptionDTO> selectCartOptions(Connection conn, long product_option_id) throws SQLException {
 
@@ -231,6 +239,7 @@ public class CartDAOImpl implements CartDAO {
                 SELECT cart_id,
                        cart_items_id,
                        b.brand_name,
+                       b.brand_id,
                        p.product_name,
                        pi.image_url,
                        p.product_id,
@@ -267,7 +276,7 @@ public class CartDAOImpl implements CartDAO {
                     List<CartOptionDTO> options = selectCartOptions(conn, productOptionId);
 
 
-                    CartItemDTO item = CartItemDTO.builder().cart_items_id(rs.getInt("cart_items_id")).cart_id(rs.getInt("cart_id")).product_id(rs.getLong("product_id")).product_option_id(productOptionId).product_name(rs.getString("product_name")).image_url(rs.getString("image_url")).quantity(rs.getInt("quantity")).brand_name(rs.getString("brand_name")).sku(rs.getString("sku")).price(rs.getInt("price")).options(options).build();
+                    CartItemDTO item = CartItemDTO.builder().cart_items_id(rs.getInt("cart_items_id")).cart_id(rs.getInt("cart_id")).brand_id(rs.getLong("brand_id")).product_id(rs.getLong("product_id")).product_option_id(productOptionId).product_name(rs.getString("product_name")).image_url(rs.getString("image_url")).quantity(rs.getInt("quantity")).brand_name(rs.getString("brand_name")).sku(rs.getString("sku")).price(rs.getInt("price")).options(options).build();
 
                     list.add(item);
                 }

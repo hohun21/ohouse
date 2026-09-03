@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class CartItemDTO {
+    private long brand_id;
     private int cart_group_id;
     private int cart_id;
     private int cart_items_id;

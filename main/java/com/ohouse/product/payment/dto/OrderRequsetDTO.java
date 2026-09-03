@@ -12,6 +12,7 @@ import java.util.List;
 public class OrderRequsetDTO {
     private long addressId;
     private String requestMsg;
+    private String orderName;
     private int totalPrice;
     private int couponDiscount;
     private int deliveryFee;
