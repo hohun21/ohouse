@@ -516,7 +516,7 @@
 
                     <div class="banner-box">
 
-                        <a href="${pageContext.request.contextPath}/product/detail.htm?product_id=${banner.product_id}">
+                        <a href="${pageContext.request.contextPath}/product/productDetail.htm?product_id=${banner.product_id}">
 
                             <img src="${banner.image_url}"
                                  alt="${banner.product_name}">
@@ -610,7 +610,7 @@
                 <c:forEach var="product" items="${products}">
 
                     <div class="product-card"
-                         onclick="location.href='${pageContext.request.contextPath}/product/detail.htm?product_id=${product.product_id}'">
+                         onclick="location.href='${pageContext.request.contextPath}/product/productDetail.htm?product_id=${product.product_id}'">
 
                         <div class="product-img-wrap">
 
