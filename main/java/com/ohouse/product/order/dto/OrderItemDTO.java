@@ -12,6 +12,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class OrderItemDTO {
+    private int cart_items_id;
     private long brand_id;
     private String brand_name;
     private String product_name;

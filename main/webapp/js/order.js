@@ -934,10 +934,15 @@ async function payment() {
     const orderDetails = [];
 
     document.querySelectorAll(".order-item").forEach(function (item) {
+        console.log("상품명 >>>", item.querySelector(".product-name").textContent.trim());
+        console.log("data-brand-id >>>", item.dataset.brandId);
+        console.log("data-product-option-id >>>", item.dataset.productOptionId);
         orderDetails.push({
-            brandId : Number(item.dataset.brandId),
+            cartItemsId: Number(item.dataset.cartItemsId),
+            brandId: Number(item.dataset.brandId),
             productId: Number(item.dataset.productId),
             productOptionId: Number(item.dataset.productOptionId),
+            imgUrl: item.dataset.imgUrl,
             productName: item.querySelector(".product-name").textContent.trim(),
             optionName: item.querySelector(".product-option").textContent.trim(),
             price: Number(item.dataset.price),
@@ -962,7 +967,15 @@ async function payment() {
     console.log("===== 주문 데이터 =====");
     console.log(orderData);
 
-    const response = await fetch("/order/payment/create.htm", {
+    const from = new URLSearchParams(location.search).get("from");
+
+    let url = "/order/payment/create.htm";
+
+    if (from === "cart") {
+        url += "?from=cart";
+    }
+
+    const response = await fetch(url, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -982,6 +995,13 @@ async function payment() {
     const orderName = orderDetails.length === 1
         ? orderDetails[0].productName
         : orderDetails[0].productName + " 외 " + (orderDetails.length - 1) + "건";
+
+    const DEV_MODE = true;
+
+    if (DEV_MODE) {
+        location.href = "/order/payment/success.htm?orderName=" + encodeURIComponent(orderName);
+        return;
+    }
     try {
         await paymentInstance.requestPayment({
             method: "CARD",

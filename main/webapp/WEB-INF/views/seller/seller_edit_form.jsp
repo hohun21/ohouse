@@ -267,11 +267,9 @@
         <ul class="sidebar-menu">
             <li><a href="${pageContext.request.contextPath}/seller/dashboard.htm">📊 대시보드 홈</a></li>
             <li><a href="${pageContext.request.contextPath}/seller/addForm.htm">➕ 상품 등록</a></li>
-            <!-- 수정 페이지는 보통 상품 목록에서 진입하므로 목록 관리에 active 지정 -->
             <li><a href="${pageContext.request.contextPath}/seller/productList.htm" class="active">📦 상품 목록 관리</a></li>
             <li><a href="${pageContext.request.contextPath}/seller/orderList.htm">🚚 주문 및 배송 관리</a></li>
             <li><a href="${pageContext.request.contextPath}/seller/settlementList.htm">💰 정산 관리</a></li>
-            <li><a href="#">⭐ 리뷰 관리</a></li>
         </ul>
     </div>
 

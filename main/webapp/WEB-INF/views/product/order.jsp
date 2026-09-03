@@ -43,6 +43,8 @@
                 <c:forEach var="item" items="${orderdto}">
 
                     <div class="product order-item"
+                         data-cart-items-id="${item.cart_items_id}"
+                         data-img-url="${item.image_url}"
                          data-brand-id="${item.brand_id}"
                          data-product-id="${item.product_id}"
                          data-product-option-id="${item.product_option_id}"

@@ -31,11 +31,16 @@ public class CartOrderHandler implements CommandHandler {
 
         List<OrderItemDTO> orderItems =
                 new ArrayList<>();
-
+        List<Integer> cartItemsIds = new ArrayList<>();
         for (CartItemDTO cartItem : cartItems) {
-
+            cartItemsIds.add(cartItem.getCart_items_id());
             OrderItemDTO orderItem =
                     new OrderItemDTO();
+            orderItem.setCart_items_id(cartItem.getCart_items_id());
+
+            orderItem.setBrand_id(
+                    cartItem.getBrand_id()
+            );
 
             orderItem.setProduct_name(
                     cartItem.getProduct_name()
@@ -87,7 +92,7 @@ public class CartOrderHandler implements CommandHandler {
             orderItem.setOptions(options);
 
             orderItems.add(orderItem);
-        }
+        }  // for
 
         HttpSession session =
                 request.getSession();
@@ -96,6 +101,7 @@ public class CartOrderHandler implements CommandHandler {
                 "orderItems",
                 orderItems
         );
+        session.setAttribute("selectedCartItemsIds",cartItemsIds);
 
         response.setContentType(
                 "application/json;charset=UTF-8"
