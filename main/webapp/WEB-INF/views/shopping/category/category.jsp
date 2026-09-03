@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/category.css" />
@@ -87,7 +88,10 @@
 
                             <!-- 공통 고정 메뉴 -->
                             <div class="sidebar-item">
-                                오늘의집 Only
+                                 <a href="${pageContext.request.contextPath}/shopping/category/category.htm?category_id=${main.category_id}&view=only"
+							       class="middle-category">
+							        오늘의집 Only
+							    </a>
                             </div>
 
 
@@ -437,96 +441,234 @@
 
 </aside>   
 
-    <!-- 우측 메인 컨텐츠 -->
-    <div class="main-content">
-        
-        <div class="banner-header">가구</div>
-        <div class="category-banners">
-            <div class="banner-box"><img src="https://images.unsplash.com/photo-1554995207-c18c203602cb?w=400" alt="가구배너1"></div>
-            <div class="banner-box"><img src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=400" alt="가구배너2"></div>
-            <div class="banner-box"><img src="https://images.unsplash.com/photo-1583847268964-b28ce8f30321?w=400" alt="가구배너3"></div>
-        </div>
+<!-- 우측 메인 컨텐츠 -->
+<div class="main-content">
 
-        <div class="filter-section">
-            <div class="filter-row">
-                <button class="filter-btn active" style="color:#00A6EA; border-color:#00A6EA;">% 오세일특가</button>
-                <button class="filter-btn" style="color:#00A6EA; font-weight:700;">🚚 원하는날도착</button>
-                <button class="filter-btn" style="color:#FF7777;">📦 패키지 할인</button>
-                <button class="filter-btn">색상 ∨</button>
-                <button class="filter-btn">주요 소재 ∨</button>
-                <button class="filter-btn">우드톤 ∨</button>
-                <button class="filter-btn">바이너리샵 ∨</button>
-                <button class="filter-btn">사용 인원 ∨</button>
-            </div>
-            <div class="filter-row">
-                <button class="filter-btn">리퍼 상품 ∨</button>
-                <button class="filter-btn">패키지 할인 ∨</button>
-                <button class="filter-btn">상품 유형 ∨</button>
-                <button class="filter-btn">브랜드 ∨</button>
-                <button class="filter-btn">특가 ∨</button>
-                <button class="filter-btn">오늘의집only ∨</button>
-                <button class="filter-btn">가격 ∨</button>
-                <button class="filter-btn">배송 ∨</button>
-            </div>
-        </div>
+    <c:choose>
 
-        <div class="list-header">
-            <span class="list-count">전체 ${products.size()}개</span>
-            <select class="sort-select">
-                <option>추천순 ∨</option>
-                <option>인기순</option>
-                <option>최신순</option>
-                <option>가격 낮은순</option>
-            </select>
-        </div>
+        <c:when test="${isOnly}">
 
-        <div class="product-grid">
+<div class="only-breadcrumb">
 
-   		 <c:forEach var="product" items="${products}">
-	
-	        <div class="product-card"
-     onclick="location.href='${pageContext.request.contextPath}/productDetail.htm?product_id=${product.product_id}'">
-	
-	            <div class="product-img-wrap">
-	
-	                <img src="${product.image_url}"
-	                     alt="${product.product_name}">
-	
-	            </div>
-	
-	            <div class="brand">
-	                ${product.brand_name}
-	            </div>
-	
-	            <div class="title">
-	                ${product.product_name}
-	            </div>
-	
-	            <div class="price-wrap">
-	
-	                <c:if test="${product.discount_rate > 0}">
-	                    <span class="discount">
-	                       <fmt:formatNumber value="${product.discount_rate}" pattern="0"/>% 
-	                    </span>
-	                </c:if>
-	
-	                <span class="price">
-	                    <fmt:formatNumber value="${product.price}" pattern="#,###"/>원 
-	                </span>
-	
-	            </div>
-	
-				<div class="review-wrap">
-					<span class="star">★</span>
-					리뷰 준비중
-				</div>
-	
-	        </div>
+    <a href="${pageContext.request.contextPath}/shopping/category/category.htm?category_id=${mainCategoryId}">
+        ${mainCategoryName}
+    </a>
 
-    </c:forEach>
+    <span>›</span>
+
+    <span>오늘의집 Only</span>
 
 </div>
+
+    <!-- 오늘의집 Only 홍보 배너 -->
+    <div class="only-banner">
+
+        <img src="${pageContext.request.contextPath}/images/category-only-banner.png"
+             alt="오늘의집 Only">
+
     </div>
+
+            <div class="banner-header">
+                ONLY 상품
+            </div>
+
+            <div class="product-grid">
+
+                <c:forEach var="product" items="${onlyProducts}">
+
+    <div class="product-card"
+         onclick="location.href='${pageContext.request.contextPath}/productDetail.htm?product_id=${product.productId}'">
+
+        <div class="product-img-wrap">
+            <img src="${product.imageUrl}"
+                 alt="${product.productName}">
+        </div>
+
+        <div class="brand">
+            ${product.brandName}
+        </div>
+
+        <div class="title">
+            ${fn:replace(product.productName, '[오늘의집 단독]', '')}
+        </div>
+
+        <div class="only-badge">
+            ONLY
+        </div>
+
+    </div>
+
+</c:forEach>
+
+            </div>
+
+        </c:when>
+
+        <c:otherwise>
+
+            <div class="banner-header">
+                MD's Pick
+            </div>
+
+            <div class="category-banners">
+
+                <c:forEach var="banner" items="${bannerProducts}">
+
+                    <div class="banner-box">
+
+                        <a href="${pageContext.request.contextPath}/product/detail.htm?product_id=${banner.product_id}">
+
+                            <img src="${banner.image_url}"
+                                 alt="${banner.product_name}">
+
+                            <div class="banner-product-info">
+
+                                <div class="banner-brand">
+                                    ${banner.brand_name}
+                                </div>
+
+                                <div class="banner-name">
+                                    ${banner.product_name}
+                                </div>
+
+                                <div class="banner-price">
+
+                                    <fmt:formatNumber
+                                        value="${banner.price}"
+                                        pattern="#,###"/>원
+
+                                </div>
+
+                                <div class="banner-review">
+
+                                    ★
+                                    <fmt:formatNumber
+                                        value="${banner.avgRating}"
+                                        pattern="0.0"/>
+
+                                    <span>
+                                        리뷰 ${banner.reviewCount}개
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </a>
+
+                    </div>
+
+                </c:forEach>
+
+            </div>
+
+            <div class="list-header">
+
+                <span class="list-count">
+                    전체 ${products.size()}개
+                </span>
+
+                <form method="get"
+                      action="${pageContext.request.contextPath}/shopping/category/category.htm">
+
+                    <input type="hidden"
+                           name="category_id"
+                           value="${selectedCategoryId}">
+
+                    <select class="sort-select"
+                            name="sort"
+                            onchange="this.form.submit()">
+
+                        <option value="recommend"
+                            ${sort == 'recommend' ? 'selected' : ''}>
+                            추천순
+                        </option>
+
+                        <option value="popular"
+                            ${sort == 'popular' ? 'selected' : ''}>
+                            인기순
+                        </option>
+
+                        <option value="latest"
+                            ${sort == 'latest' ? 'selected' : ''}>
+                            최신순
+                        </option>
+
+                        <option value="lowprice"
+                            ${sort == 'lowprice' ? 'selected' : ''}>
+                            가격 낮은순
+                        </option>
+
+                    </select>
+
+                </form>
+
+            </div>
+
+            <div class="product-grid">
+
+                <c:forEach var="product" items="${products}">
+
+                    <div class="product-card"
+                         onclick="location.href='${pageContext.request.contextPath}/product/detail.htm?product_id=${product.product_id}'">
+
+                        <div class="product-img-wrap">
+
+                            <img src="${product.image_url}"
+                                 alt="${product.product_name}">
+
+                        </div>
+
+                        <div class="brand">
+                            ${product.brand_name}
+                        </div>
+
+                        <div class="title">
+                            ${product.product_name}
+                        </div>
+
+                        <div class="price-wrap">
+
+                            <c:if test="${product.discount_rate > 0}">
+
+                                <span class="discount">
+                                    <fmt:formatNumber
+                                        value="${product.discount_rate}"
+                                        pattern="0"/>%
+                                </span>
+
+                            </c:if>
+
+                            <span class="price">
+                                <fmt:formatNumber
+                                    value="${product.price}"
+                                    pattern="#,###"/>원
+                            </span>
+
+                        </div>
+
+                        <div class="review-wrap">
+
+                            <span class="star">★</span>
+                            ${product.avgRating}
+
+                            <span style="color:#9E9E9E; font-weight:400;">
+                                리뷰 ${product.reviewCount}개
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </c:forEach>
+
+            </div>
+
+        </c:otherwise>
+
+    </c:choose>
+
+</div>
 </main>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp" />

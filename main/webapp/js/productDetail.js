@@ -121,7 +121,6 @@ function findProductOption() {
                     return;
                 }
 
-                // 💡 수정 1: 투박한 alert 대신 showToast 사용 및 옵션 자동 초기화
                 if (data.status !== "ACTIVE") {
                     showToast("현재 판매할 수 없는 옵션입니다.");
                     initOptions();
@@ -171,7 +170,6 @@ function findAdditionalProductOption(select) {
                 return;
             }
 
-            // 💡 수정 2: 추가 옵션도 alert 대신 예쁜 Toast 처리
             if (data.status !== "ACTIVE") {
                 showToast("현재 판매할 수 없는 추가 옵션입니다.");
                 select.value = "";
@@ -215,7 +213,7 @@ const selectOptionData = [];
 
 function createSelectedOption(data, names, option_value_ids) {
     const selectedOptionValueIds = option_value_ids.map(Number);
-    const maxStock = Number(data.stock); // 💡 핵심: DB에서 가져온 진짜 재고 수량 저장
+    const maxStock = Number(data.stock);
 
     const options =
         selects
@@ -239,8 +237,10 @@ function createSelectedOption(data, names, option_value_ids) {
             
     const productName = document.querySelector(".product-name").textContent.trim();
     const productImage = document.querySelector("#mainProductImage").src;
-    
+
     const optionData = {
+        brand_id : data.brand_id,
+        brand_name: data.brand_name,
         product_option_id: data.product_option_id,
         product_id: data.product_id,
         sku: data.sku,
@@ -322,10 +322,9 @@ function createSelectedOption(data, names, option_value_ids) {
     plusButton.addEventListener("click", function () {
         let quantity = Number(quantityNumber.textContent);
 
-        // 💡 수정 3: 현재 수량이 DB 재고 이상으로 올라가려고 하면 컷!
         if (quantity >= maxStock) {
             alert(`재고가 부족합니다. (최대 ${maxStock}개 구매 가능)`);
-            return; // 여기서 함수를 끝내서 숫자가 안 올라가게 막음
+            return;
         }
 
         quantity++;
