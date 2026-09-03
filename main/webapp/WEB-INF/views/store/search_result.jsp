@@ -160,6 +160,15 @@
         transform: scale(1.05);
     }
 
+    /* 💡 추가: 품절 시 hover 확대 방지 및 커서 기본값 변경 */
+    .product-card.sold-out {
+        cursor: default;
+    }
+    
+    .product-card.sold-out:hover .product-img-wrap img {
+        transform: none; 
+    }
+
     .brand-name {
         margin-bottom: 4px;
         color: #757575;
@@ -256,12 +265,21 @@
             <c:when test="${not empty productList}">
                 <div class="grid-4">
                     <c:forEach var="product" items="${productList}">
-                        <a href="${pageContext.request.contextPath}/productDetail.htm?product_id=${product.productId}"
-                           class="product-card">
+                        
+                        <!-- 💡 수정: 품절 여부에 따라 class와 href 속성을 동적으로 분기 -->
+                        <a class="product-card <c:if test="${product.status == 'SOLD_OUT'}">sold-out</c:if>"
+                           <c:choose>
+                               <c:when test="${product.status == 'SOLD_OUT'}">
+                                   href="javascript:void(0);" onclick="alert('품절된 상품입니다.'); return false;"
+                               </c:when>
+                               <c:otherwise>
+                                   href="${pageContext.request.contextPath}/productDetail.htm?product_id=${product.productId}"
+                               </c:otherwise>
+                           </c:choose>
+                        >
                             <div class="product-img-wrap">
                                 <img src="${product.imageUrl}" alt="${product.productName}">
                                 
-                                <!-- 💡 품절 뱃지 추가 (status가 SOLD_OUT일 경우 노출) -->
                                 <c:if test="${product.status == 'SOLD_OUT'}">
                                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
                                                 background: rgba(0,0,0,0.5); color: white; display: flex; 
@@ -282,6 +300,7 @@
                                 <span class="star">★</span> 4.8 리뷰 1,204
                             </div>
                         </a>
+                        
                     </c:forEach>
                 </div>
             </c:when>

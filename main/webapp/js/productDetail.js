@@ -116,17 +116,21 @@ function findProductOption() {
             })
             .then(function (data) {
                 if (!data) {
-                    alert("선택한 옵션 조합이 없습니다.");
+                    showToast("선택한 옵션 조합이 없습니다.");
+                    initOptions();
                     return;
                 }
 
+                // 💡 수정 1: 투박한 alert 대신 showToast 사용 및 옵션 자동 초기화
                 if (data.status !== "ACTIVE") {
-                    alert("판매할 수 없는 옵션입니다.");
+                    showToast("현재 판매할 수 없는 옵션입니다.");
+                    initOptions();
                     return;
                 }
 
                 if (Number(data.stock) <= 0) {
-                    alert("품절된 옵션입니다.");
+                    showToast("현재 품절된 옵션입니다.");
+                    initOptions();
                     return;
                 }
 
@@ -162,17 +166,21 @@ function findAdditionalProductOption(select) {
         })
         .then(function (data) {
             if (!data) {
-                alert("선택한 추가 옵션이 없습니다.");
+                showToast("선택한 추가 옵션이 없습니다.");
+                select.value = "";
                 return;
             }
 
+            // 💡 수정 2: 추가 옵션도 alert 대신 예쁜 Toast 처리
             if (data.status !== "ACTIVE") {
-                alert("판매할 수 없는 추가 옵션입니다.");
+                showToast("현재 판매할 수 없는 추가 옵션입니다.");
+                select.value = "";
                 return;
             }
 
             if (Number(data.stock) <= 0) {
-                alert("품절된 추가 옵션입니다.");
+                showToast("현재 품절된 추가 옵션입니다.");
+                select.value = "";
                 return;
             }
 
@@ -205,11 +213,9 @@ function showToast(message) {
 
 const selectOptionData = [];
 
-function createSelectedOption(data,
-                              names,
-                              option_value_ids) {
-    const selectedOptionValueIds =
-        option_value_ids.map(Number);
+function createSelectedOption(data, names, option_value_ids) {
+    const selectedOptionValueIds = option_value_ids.map(Number);
+    const maxStock = Number(data.stock); // 💡 핵심: DB에서 가져온 진짜 재고 수량 저장
 
     const options =
         selects
@@ -224,22 +230,16 @@ function createSelectedOption(data,
                     select.options[select.selectedIndex];
 
                 return {
-                    option_group_id:
-                        Number(select.dataset.group_id),
-
-                    option_group_name:
-                    select.dataset.group_name,
-
-                    option_value_id:
-                        Number(select.value),
-
-                    option_value_name:
-                    selectedOption.text
+                    option_group_id: Number(select.dataset.group_id),
+                    option_group_name: select.dataset.group_name,
+                    option_value_id: Number(select.value),
+                    option_value_name: selectedOption.text
                 };
             });
-    const productName =
-        document.querySelector(".product-name").textContent.trim();
+            
+    const productName = document.querySelector(".product-name").textContent.trim();
     const productImage = document.querySelector("#mainProductImage").src;
+    
     const optionData = {
         product_option_id: data.product_option_id,
         product_id: data.product_id,
@@ -248,21 +248,12 @@ function createSelectedOption(data,
         product_name: productName,
         image_url: productImage,
         quantity: 1,
-
         options: options
     };
     selectOptionData.push(optionData);
 
     const selectedList = document.getElementById("selectedList");
     if (!selectedList) return;
-
-    const selectedOptions = selectedList.querySelectorAll(".selected-option");
-
-    for (const selectedOption of selectedOptions) {
-        if (selectedOption.dataset.option_value_ids === option_value_ids.join(",")) {
-            return;
-        }
-    }
 
     const div = document.createElement("div");
     div.className = "selected-option";
@@ -331,6 +322,12 @@ function createSelectedOption(data,
     plusButton.addEventListener("click", function () {
         let quantity = Number(quantityNumber.textContent);
 
+        // 💡 수정 3: 현재 수량이 DB 재고 이상으로 올라가려고 하면 컷!
+        if (quantity >= maxStock) {
+            alert(`재고가 부족합니다. (최대 ${maxStock}개 구매 가능)`);
+            return; // 여기서 함수를 끝내서 숫자가 안 올라가게 막음
+        }
+
         quantity++;
         quantityNumber.textContent = quantity;
         optionData.quantity = quantity
@@ -371,47 +368,21 @@ function initOptions() {
 }
 
 function updateTotalPrice() {
-    const selectedOptions =
-        document.querySelectorAll(".selected-option");
-
+    const selectedOptions = document.querySelectorAll(".selected-option");
     let total_price = 0;
 
     selectedOptions.forEach(function (selectedOption) {
-
-        const priceText =
-            selectedOption.querySelector(".selected-price")
+        const priceText = selectedOption.querySelector(".selected-price")
                 .textContent
                 .replace(/[^0-9]/g, "");
-
         const price = Number(priceText);
-
         total_price += price;
     });
 
     const totalPrice = document.getElementById("totalPrice");
-
     if (totalPrice) {
-        totalPrice.textContent =
-            total_price.toLocaleString("ko-KR") + "원";
+        totalPrice.textContent = total_price.toLocaleString("ko-KR") + "원";
     }
-}
-
-function resetRequiredOptions() {
-    const required_selects = Array.from(
-        document.querySelectorAll(".option-select")
-    ).filter(function (select) {
-        return select.dataset.required === "1";
-    });
-
-    required_selects.forEach(function (select, index) {
-        select.value = "";
-
-        if (index === 0) {
-            select.disabled = false;
-        } else {
-            select.disabled = true;
-        }
-    });
 }
 
 function changeImage(element) {
@@ -438,8 +409,6 @@ $(".cart").on("click", async function () {
     }
 
     try {
-        console.log("selectOptionData 객체:", selectOptionData);
-        console.log("JSON:", JSON.stringify(selectOptionData, null, 2));
         const response = await fetch("/cartAdd.htm", {
             method: "POST",
             headers: {
@@ -450,7 +419,6 @@ $(".cart").on("click", async function () {
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error("서버 응답:", errorText);
             throw new Error(`장바구니 전송 실패 (${response.status})`);
         }
 
@@ -468,9 +436,6 @@ $(".buy").on("click", async function () {
     }
 
     try {
-        console.log("selectOptionData 객체:", selectOptionData);
-        console.log("JSON:", JSON.stringify(selectOptionData, null, 2));
-
         const response = await fetch("/productOrder.htm", {
             method: "POST",
             headers: {
@@ -481,7 +446,6 @@ $(".buy").on("click", async function () {
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error("서버 응답:", errorText);
             throw new Error(`주문정보 전송 실패 (${response.status})`);
         }
 
@@ -490,20 +454,14 @@ $(".buy").on("click", async function () {
     } catch (error) {
         console.error("주문 처리 오류:", error);
     }
-}
+});
 
-
-
-);
 document.querySelectorAll('.tabs a').forEach(tab => {
     tab.addEventListener('click', function(e) {
-        e.preventDefault(); // 화면 튀는 현상 방지
-
-        // 1. 탭 버튼 불 들어오는 위치 바꾸기
+        e.preventDefault(); 
         document.querySelectorAll('.tabs a').forEach(t => t.classList.remove('active'));
         this.classList.add('active');
 
-        // 2. 모든 내용 숨기고 누른 내용만 보이기
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         
         const targetId = this.getAttribute('href');
