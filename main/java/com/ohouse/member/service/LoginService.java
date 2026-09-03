@@ -41,4 +41,16 @@ public class LoginService {
             throw new RuntimeException(e);
         }
     }
+    
+    // status 체크 ajax
+    public Integer statusCheck(String id) throws SQLException, NamingException {
+        try (Connection conn = ConnectionProvider.getConnection()) {
+            MemberDAO memberDao = new MemberDAOImpl(conn); 
+            
+            return memberDao.statusCheck(conn, id); 
+            
+        } catch (SQLException | NamingException e) {
+            throw new RuntimeException(e);
+        } 
+    }
 }

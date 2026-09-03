@@ -3,6 +3,8 @@ package com.ohouse.member.dao;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import javax.naming.NamingException;
+
 import com.ohouse.member.dto.MemberDTO;
 
 public interface MemberDAO {
@@ -15,4 +17,5 @@ public interface MemberDAO {
     // 중복 체크
     String nameCheck(Connection conn, String name);
     String idCheck(Connection conn, String id);
+    Integer statusCheck(Connection conn, String id) throws SQLException;
 }

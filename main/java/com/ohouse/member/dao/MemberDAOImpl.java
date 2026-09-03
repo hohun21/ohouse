@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.naming.NamingException;
+
 import com.ohouse.member.dto.MemberDTO;
 import com.ohouse.util.conn.JdbcUtil;
 
@@ -101,7 +103,7 @@ public class MemberDAOImpl implements MemberDAO {
     @Override
     public String nameCheck(Connection conn, String name) {
         String sql = "SELECT COUNT(*) cnt FROM member WHERE name = ?";
-        ResultSet rs = null;
+        ResultSet rs = null;  
         String jsonResult = null;
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, name);
@@ -140,4 +142,22 @@ public class MemberDAOImpl implements MemberDAO {
         }
         return jsonResult;
     }
+
+	@Override
+	public Integer statusCheck(Connection conn, String id) throws SQLException {
+		String sql = "SELECT status FROM member WHERE id = ? ";
+        ResultSet rs = null;
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, id);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("status");
+			}
+        } catch (SQLException e) {
+            JdbcUtil.close(rs);
+        }
+		return null;
+	}
 }

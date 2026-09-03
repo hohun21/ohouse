@@ -145,6 +145,25 @@ public class SellerAuthDAOImpl implements SellerAuthDAO {
         return jsonResult; 
     }
     
+    // 판매자 status 검사 후 json 데이터 반환
+    @Override
+    public String statusCheck(Connection conn, String email) throws SQLException {
+    	String sql = "SELECT status FROM seller WHERE email = ? ";
+        ResultSet rs = null;
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, email);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("status");
+			}
+        } catch (SQLException e) {
+            JdbcUtil.close(rs);
+        }
+		return null;
+    }
+
     // 6. 판매자 비밀번호 변경
     @Override
     public int updatePassword(Connection conn, long sellerId, String newPassword) throws SQLException {
@@ -159,4 +178,5 @@ public class SellerAuthDAOImpl implements SellerAuthDAO {
             return pstmt.executeUpdate();
         }
     }
+
 }
