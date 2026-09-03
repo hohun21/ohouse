@@ -472,6 +472,7 @@ document.querySelectorAll('.tabs a').forEach(tab => {
 // 수정 모달 열기 및 기존 데이터 바인딩
 // 수정 모달 열기 및 기존 데이터 바인딩 (안전 장치 포함)
 function openEditReviewModal(reviewId, rating, content, imageUrl) {
+	
     console.log("openEditReviewModal 실행됨! 데이터:", { reviewId, rating, content, imageUrl });
 
     const reviewIdEl = document.getElementById("editReviewId");

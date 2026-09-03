@@ -34,7 +34,7 @@ public class WriteReviewHandler implements CommandHandler {
 		String name = "";
 		String role = "";
 
-		if (authUser == null || !"ADMIN".equals(authUser.getRole())) {
+		if (authUser == null) {
 			return "redirect:" + request.getContextPath() + "/login.htm";
 		}
 

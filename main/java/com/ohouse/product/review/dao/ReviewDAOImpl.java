@@ -35,54 +35,63 @@ public class ReviewDAOImpl implements ReviewDAO {
                 reqDTO.getRatings().stream().map(r -> "?").collect(Collectors.joining(",")) + ")";
         }
 
+     // 옵션 필터 조건 (동일한 옵션 값을 공유하는 모든 PRODUCT_OPTION_ID 확장 매핑)
         String optionInClause = "";
         if (reqDTO.getOptions() != null && !reqDTO.getOptions().isEmpty()) {
-            optionInClause = " AND r.PRODUCT_OPTION_ID IN (" + 
-                reqDTO.getOptions().stream().map(o -> "?").collect(Collectors.joining(",")) + ")";
+            String placeholders = reqDTO.getOptions().stream().map(o -> "?").collect(Collectors.joining(","));
+            // 확장 서브쿼리를 제거하고, 선택된 PRODUCT_OPTION_ID만 정확히 매칭
+            optionInClause = " AND r.PRODUCT_OPTION_ID IN (" + placeholders + ") ";
         }
-
         // 3. SQL (대표 이미지만 1:1 조인)
         String sql = """
-            SELECT * FROM (
-                SELECT ROWNUM rnum, b.* FROM (
-                    SELECT r.REVIEW_ID, r.PRODUCT_ID, r.MEMBER_ID, r.PRODUCT_OPTION_ID, r.IS_HIDE_IMAGE,
-                           NVL(m.NAME, '더미사용자' || r.REVIEW_ID) AS WRITER_NAME,
-                           r.RATING, r.CONTENT,
-                           TO_CHAR(r.REG_DATE, 'YYYY-MM-DD') AS REG_DATE,
-                           TO_CHAR(r.EDIT_DATE, 'YYYY-MM-DD') AS EDIT_DATE,
-                           r.ADMIN_REPLY, r.IS_PURCHASED,
-                           img.IMG_ID, img.IMAGE_URL,
-                           opt.OPTION_NAME AS OPTION_NAME,
-                           (SELECT COUNT(*) FROM REVIEW_LIKE rl WHERE rl.REVIEW_ID = r.REVIEW_ID) AS HELP_COUNT,
-                           (SELECT COUNT(*) FROM REVIEW_LIKE rl WHERE rl.REVIEW_ID = r.REVIEW_ID AND rl.MEMBER_ID = ?) AS IS_LIKED
-                    FROM REVIEW r
-                    LEFT JOIN MEMBER m ON r.MEMBER_ID = m.MEMBER_ID
-                    LEFT JOIN (
-                        SELECT REVIEW_ID, IMG_ID, IMAGE_URL
-                        FROM (
-                            SELECT REVIEW_ID, IMG_ID, IMAGE_URL,
-                                   ROW_NUMBER() OVER (PARTITION BY REVIEW_ID ORDER BY IMG_ID ASC) as rn
-                            FROM REVIEW_IMAGE
-                        )
-                        WHERE rn = 1
-                    ) img ON r.REVIEW_ID = img.REVIEW_ID
-                    LEFT JOIN (
-                        SELECT PRODUCT_OPTION_ID,
-                               LISTAGG(OPTION_NAME, ' / ') WITHIN GROUP (ORDER BY OPTION_NAME) AS OPTION_NAME
-                        FROM (
-                            SELECT DISTINCT pov.PRODUCT_OPTION_ID, ov.OPTION_NAME
-                            FROM PRODUCT_OPTION_VALUE pov
-                            JOIN OPTION_VALUE ov ON pov.OPTION_VALUE_ID = ov.OPTION_VALUE_ID
-                        )
-                        GROUP BY PRODUCT_OPTION_ID
+                SELECT * FROM (
+                    SELECT ROWNUM rnum, b.* FROM (
+                        SELECT r.REVIEW_ID, r.PRODUCT_ID, r.MEMBER_ID, r.PRODUCT_OPTION_ID, r.IS_HIDE_IMAGE,
+                               CASE 
+                                   WHEN m.MEMBER_ID IS NULL THEN '더미사용자' || r.REVIEW_ID
+                                   WHEN m.STATUS = 0 THEN '탈퇴회원'
+                                   ELSE m.NAME
+                               END AS WRITER_NAME,
+                               r.RATING, r.CONTENT,
+                               TO_CHAR(r.REG_DATE, 'YYYY-MM-DD') AS REG_DATE,
+                               TO_CHAR(r.EDIT_DATE, 'YYYY-MM-DD') AS EDIT_DATE,
+                               r.ADMIN_REPLY, r.IS_PURCHASED,
+                               img.IMG_ID, img.IMAGE_URL,
+                               opt.OPTION_NAME AS OPTION_NAME,
+                               (SELECT COUNT(*) FROM REVIEW_LIKE rl WHERE rl.REVIEW_ID = r.REVIEW_ID) AS HELP_COUNT,
+                               (SELECT COUNT(*) FROM REVIEW_LIKE rl WHERE rl.REVIEW_ID = r.REVIEW_ID AND rl.MEMBER_ID = ?) AS IS_LIKED
+                        FROM REVIEW r
+                        LEFT JOIN MEMBER m ON r.MEMBER_ID = m.MEMBER_ID
+                        LEFT JOIN (
+                            SELECT REVIEW_ID, IMG_ID, IMAGE_URL
+                            FROM (
+                                SELECT REVIEW_ID, IMG_ID, IMAGE_URL,
+                                       ROW_NUMBER() OVER (PARTITION BY REVIEW_ID ORDER BY IMG_ID ASC) as rn
+                                FROM REVIEW_IMAGE
+                            )
+                            WHERE rn = 1
+                        ) img ON r.REVIEW_ID = img.REVIEW_ID
+                        LEFT JOIN (
+                        SELECT po.PRODUCT_OPTION_ID,
+                               CASE 
+                                   WHEN (SELECT COUNT(*) FROM OPTION_GROUP og WHERE og.PRODUCT_ID = po.PRODUCT_ID AND og.REQUIRED = 1) <= 1 
+                                   THEN MIN(ov.OPTION_NAME)
+                                   ELSE LISTAGG(ov.OPTION_NAME, ' / ') WITHIN GROUP (ORDER BY og.SORT_ORDER, ov.OPTION_NAME)
+                               END AS OPTION_NAME
+                        FROM PRODUCT_OPTION po
+                        JOIN PRODUCT_OPTION_VALUE pov ON po.PRODUCT_OPTION_ID = pov.PRODUCT_OPTION_ID
+                        JOIN OPTION_VALUE ov ON pov.OPTION_VALUE_ID = ov.OPTION_VALUE_ID
+                        JOIN OPTION_GROUP og ON ov.OPTION_GROUP_ID = og.OPTION_GROUP_ID
+                        GROUP BY po.PRODUCT_OPTION_ID, po.PRODUCT_ID
                     ) opt ON r.PRODUCT_OPTION_ID = opt.PRODUCT_OPTION_ID
-                    WHERE r.PRODUCT_ID = ?
-                      %s
-                      %s
-                    ORDER BY %s
-                ) b WHERE ROWNUM <= ?
-            ) WHERE rnum >= ?
-            """.formatted(ratingInClause, optionInClause, orderBy);
+                        WHERE r.PRODUCT_ID = ?
+                          AND (m.STATUS IS NULL OR m.STATUS != -1)
+                          %s
+                          %s
+                        ORDER BY %s
+                    ) b WHERE ROWNUM <= ?
+                ) WHERE rnum >= ?
+                """.formatted(ratingInClause, optionInClause, orderBy);
 
         int endRow = reqDTO.getCurrentPage() * reqDTO.getNumberPerPage();
         int startRow = endRow - reqDTO.getNumberPerPage() + 1;
@@ -346,7 +355,7 @@ public class ReviewDAOImpl implements ReviewDAO {
         System.out.println(">>> 상품 ID: " + productId + " 의 옵션 그룹 개수(groupCount): " + groupCount);
         return list;
     }
-    //도움돼요 토그
+    //도움돼요 토글
  // 1. 해당 유저가 해당 리뷰에 이미 좋아요를 눌렀는지 확인
     @Override
     public boolean isReviewLiked(Connection conn, int reviewId, int memberId) {
@@ -765,7 +774,7 @@ public class ReviewDAOImpl implements ReviewDAO {
         }
         return false;
     }
-    
+    @Override
     public ReviewDTO findLatestOrderInfo(Connection conn, int memberId, long productId) throws Exception {
         String sql = """
             SELECT PRODUCT_OPTION_ID, ORDER_DATE

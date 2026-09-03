@@ -565,7 +565,7 @@
     // 💥 [통합 이벤트 리스너] document 수준에서 모든 클릭을 감지하도록 보완
     document.addEventListener('click', function(e) {
         
-        // 1. 도움돼요(좋아요) 토글 버튼 클릭
+    	// 1. 도움돼요(좋아요) 토글 버튼 클릭
         var likeBtn = e.target.closest('.js-review-like');
         if (likeBtn) {
             e.stopPropagation();
@@ -573,25 +573,30 @@
 
             var reviewId = likeBtn.getAttribute('data-review-id');
             if (!reviewId) return;
-            var memberId = ${memberId}; 
-            var url = '${pageContext.request.contextPath}/helpCountToggle.htm?review_id=' + reviewId + '&member_id=' + memberId;
 
-            fetch(url, {   method: 'GET',
+            // 💡 memberId 파라미터 제거 (서버 세션에서 처리하므로 review_id만 보내면 됨)
+            var url = '${pageContext.request.contextPath}/helpCountToggle.htm?review_id=' + reviewId;
+
+            fetch(url, {
+                method: 'GET',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(function (response) {
-            	if (response.status === 401) {
-                    // confirm 창을 띄워 확인/취소 분기 처리
+                if (response.status === 401) {
+                    // 비로그인 상태일 때 401 응답을 받으면 상세 페이지 주소를 통째로 들고 로그인으로 이동
                     if (confirm("로그인이 필요한 서비스입니다. 로그인 페이지로 이동하시겠습니까?")) {
-                        window.location.href = '${pageContext.request.contextPath}/login.htm';
+                        const currentDetailUrl = window.location.pathname + window.location.search;
+                        window.location.href = '${pageContext.request.contextPath}/login.htm?referer=' + encodeURIComponent(currentDetailUrl);
                     }
-                    return null; // 확인이든 취소든 이후 then으로 데이터 파싱이 넘어가지 않도록 중단
+                    return null;
                 }
                 
                 if (!response.ok) throw new Error('HTTP 에러: ' + response.status);
                 return response.json();
             })
             .then(function (data) {
+                if (!data) return; // 401 처리로 인해 null인 경우 중단
+
                 var countSpan = likeBtn.querySelector('.count');
                 if (countSpan) countSpan.textContent = data.helpCount;
 
@@ -609,7 +614,6 @@
             })
             .catch(function (error) {
                 console.error('도움돼요 토글 실패:', error);
-               /*  alert('처리에 실패했습니다: ' + error.message); */
             });
             return;
         }
@@ -955,12 +959,22 @@ function sendAdminReplyRequest(reviewId, adminReply) {
 <script>
 //리뷰 작성 모달 열기
 function openReviewModal() {
+    const isLoggedIn = '${sessionScope.authUser}' !== '';
+    if (!isLoggedIn) {
+        if (confirm("로그인 후 이용할 수 있습니다. 로그인하시겠습니까?")) {
+            // 현재 상세 페이지의 경로와 상품 번호 파라미터를 통째로 encode해서 전달
+            const currentDetailUrl = window.location.pathname + window.location.search;
+            location.href = '${pageContext.request.contextPath}/login.htm?referer=' + encodeURIComponent(currentDetailUrl);
+        }
+        return;
+    }
+
     var modal = document.getElementById('review-write-modal');
     if (modal) {
-        modal.style.display = 'flex'; // 중앙 정렬 flex 활성화
+        modal.style.display = 'flex';
     }
+ 
 }
-
 // 리뷰 작성 모달 닫기
 function closeReviewModal() {
     var modal = document.getElementById('review-write-modal');
