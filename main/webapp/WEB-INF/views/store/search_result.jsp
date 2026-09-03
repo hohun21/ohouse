@@ -273,7 +273,7 @@
                                    href="javascript:void(0);" onclick="alert('품절된 상품입니다.'); return false;"
                                </c:when>
                                <c:otherwise>
-                                   href="${pageContext.request.contextPath}/productDetail.htm?product_id=${product.productId}"
+                                   href="${pageContext.request.contextPath}/product/productDetail.htm?product_id=${product.productId}"
                                </c:otherwise>
                            </c:choose>
                         >

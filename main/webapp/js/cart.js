@@ -365,7 +365,7 @@ $(document).on(
 
             const response =
                 await fetch(
-                    "/cartDelete.htm",
+                    "/cart/cartDelete.htm",
                     {
                         method: "POST",
                         headers: {
@@ -474,7 +474,7 @@ $("#deleteSelected").on(
 
             const response =
                 await fetch(
-                    "/cartDelete.htm",
+                    "/cart/cartDelete.htm",
                     {
                         method: "POST",
                         headers: {
@@ -985,7 +985,7 @@ function loadCartOptionSelects(productId) {
         .addClass("active");
 
     fetch(
-        "/productDetail.htm?product_id=" +
+        "/product/productDetail.htm?product_id=" +
         encodeURIComponent(productId)
     )
         .then(function (response) {
