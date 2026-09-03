@@ -178,15 +178,16 @@ public class AdminService {
         return list;
     }
 
-    public boolean deleteMember(int memberId) {
+    // 💡 기존 deleteMember 대신 새로 추가된 논리적 삭제(상태 변경) 로직
+    public boolean changeMemberStatus(int memberId, int status) {
         Connection conn = null;
         boolean isSuccess = false;
         try {
             conn = ConnectionProvider.getConnection();
-            conn.setAutoCommit(false);
+            conn.setAutoCommit(false); // 안전하게 트랜잭션 처리
             
             AdminDAO dao = new AdminDAOImpl(conn);
-            int result = dao.deleteMember(memberId);
+            int result = dao.updateMemberStatus(conn, memberId, status);
             
             if (result > 0) {
                 conn.commit();

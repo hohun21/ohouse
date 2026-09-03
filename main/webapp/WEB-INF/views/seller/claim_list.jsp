@@ -68,7 +68,6 @@
             <li><a href="${pageContext.request.contextPath}/seller/orderList.htm">🚚 주문 및 배송 관리</a></li>
             <li><a href="${pageContext.request.contextPath}/seller/claimList.htm" class="active">🔄 취소/반품 관리</a></li>
             <li><a href="${pageContext.request.contextPath}/seller/settlementList.htm">💰 정산 관리</a></li>
-            <li><a href="#">⭐ 리뷰 관리</a></li>
         </ul>
     </div>
 

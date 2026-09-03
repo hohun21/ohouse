@@ -20,7 +20,7 @@ public class AdminSettlementDAOImpl implements AdminSettlementDAO {
     public List<SellerOrderDTO> selectAdminSettlementList(Connection conn) throws SQLException {
         List<SellerOrderDTO> list = new ArrayList<>();
         
-        String sql = "SELECT od.order_detail_id, o.order_date, b.brand_name, od.product_name, od.option_name, "
+        String sql = "SELECT od.orders_detail_id, o.order_date, b.brand_name, od.product_name, od.option_name, "
                    + "       od.quantity, od.price, od.delivery_status "
                    + "FROM ORDERS_DETAIL od "
                    + "JOIN ORDERS o ON od.order_id = o.order_id "
@@ -32,7 +32,7 @@ public class AdminSettlementDAOImpl implements AdminSettlementDAO {
              ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 SellerOrderDTO dto = new SellerOrderDTO();
-                dto.setOrderDetailId(rs.getInt("order_detail_id"));
+                dto.setOrderDetailId(rs.getInt("orders_detail_id"));
                 dto.setOrderDate(rs.getTimestamp("order_date"));
                 dto.setBrandName(rs.getString("brand_name"));
                 dto.setProductName(rs.getString("product_name"));
@@ -49,7 +49,7 @@ public class AdminSettlementDAOImpl implements AdminSettlementDAO {
     
     @Override
     public int updateSettlementStatus(Connection conn, int orderDetailId) throws SQLException {
-        String sql = "UPDATE ORDERS_DETAIL SET delivery_status = 12 WHERE order_detail_id = ?";
+        String sql = "UPDATE ORDERS_DETAIL SET delivery_status = 12 WHERE orders_detail_id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, orderDetailId);
             return pstmt.executeUpdate();

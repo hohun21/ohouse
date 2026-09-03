@@ -65,6 +65,7 @@
         text-align: center;
         border-bottom: 1px solid #e1e4e6;
         font-size: 14px;
+        vertical-align: middle;
     }
     th {
         background-color: #f8f9fa;
@@ -72,6 +73,14 @@
         color: #555;
     }
     
+    /* 버튼 스타일 공통 */
+    .btn-action {
+        border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; color: white;
+    }
+    .btn-stop { background-color: #ff4d4f; }
+    .btn-resume { background-color: #1890ff; }
+    .btn-withdraw { background-color: #595959; margin-left: 4px; }
+
     /* 페이징 스타일 */
     .pagination {
         display: flex;
@@ -138,7 +147,7 @@
                         <th>이름</th>
                         <th>가입일</th>
                         <th>상태</th>
-                        <th>삭제</th>
+                        <th>관리</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -162,18 +171,37 @@
                                                 <span style="color: #ff9800; font-weight: bold;">승인대기</span>
                                             </c:when>
                                             <c:when test="${seller.status == 'ACTIVE'}">
-                                                <span style="color: #4caf50; font-weight: bold;">승인완료</span>
+                                                <span style="color: #4caf50; font-weight: bold;">활동중</span>
+                                            </c:when>
+                                            <c:when test="${seller.status == 'STOP'}">
+                                                <span style="color: #ff4d4f; font-weight: bold;">정지됨</span>
+                                            </c:when>
+                                            <c:when test="${seller.status == 'WITHDRAW'}">
+                                                <span style="color: #8c8c8c; font-weight: bold;">탈퇴(퇴점)</span>
                                             </c:when>
                                             <c:otherwise>
                                                 <span style="color: #f44336; font-weight: bold;">거절됨</span>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
+                                    
                                     <td>
-                                        <button type="button" onclick="confirmDeleteSeller(${seller.sellerId})" 
-                                            style="background-color: #ff4d4f; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;">
-                                            X
-                                        </button>
+                                        <c:choose>
+                                            <c:when test="${seller.status == 'ACTIVE'}">
+                                                <button type="button" class="btn-action btn-stop" onclick="changeSellerStatus(${seller.sellerId}, 'STOP')">정지</button>
+                                                <button type="button" class="btn-action btn-withdraw" onclick="changeSellerStatus(${seller.sellerId}, 'WITHDRAW')">탈퇴</button>
+                                            </c:when>
+                                            <c:when test="${seller.status == 'STOP'}">
+                                                <button type="button" class="btn-action btn-resume" onclick="changeSellerStatus(${seller.sellerId}, 'ACTIVE')">정지해제</button>
+                                                <button type="button" class="btn-action btn-withdraw" onclick="changeSellerStatus(${seller.sellerId}, 'WITHDRAW')">탈퇴</button>
+                                            </c:when>
+                                            <c:when test="${seller.status == 'PENDING'}">
+                                                <span style="font-size: 12px; color: #888;">승인 대기중</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span style="font-size: 12px; color: #999;">관리불가</span>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </td>
                                 </tr>
                             </c:forEach>
@@ -199,9 +227,14 @@
     </div>
 
 <script>
-function confirmDeleteSeller(sellerId) {
-    if (confirm("판매자 번호 " + sellerId + "번 회원을 삭제하시겠습니까?")) {
-        location.href = "${pageContext.request.contextPath}/admin/deleteSeller.htm?sellerId=" + sellerId;
+function changeSellerStatus(sellerId, status) {
+    let actionText = "";
+    if (status === 'STOP') actionText = "정지";
+    else if (status === 'ACTIVE') actionText = "정지 해제";
+    else if (status === 'WITHDRAW') actionText = "탈퇴(퇴점)";
+
+    if (confirm("판매자 번호 " + sellerId + "번 회원을 " + actionText + " 처리하시겠습니까?")) {
+        location.href = "${pageContext.request.contextPath}/admin/sellerStatusUpdate.htm?seller_id=" + sellerId + "&status=" + status;
     }
 }
 </script>
