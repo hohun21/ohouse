@@ -2,6 +2,7 @@ package com.ohouse.seller.service;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,11 +54,11 @@ public class SellerService {
         return optionList;
     }
 
-    // 2. 상품 등록 로직
-    public boolean registerProduct(ProductFormDTO form) {
+    // 2. 상품 등록 로직 (성공 시 생성된 productId 반환, 실패 시 -1 반환)
+    public int registerProduct(ProductFormDTO form) {
         
         Connection conn = null;
-        boolean isSuccess = false;
+        int generatedProductId = -1;
 
         try {
             conn = ConnectionProvider.getConnection();
@@ -194,7 +195,7 @@ public class SellerService {
             }
 
             conn.commit();
-            isSuccess = true;
+            generatedProductId = productId;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -202,10 +203,10 @@ public class SellerService {
         } finally {
             if (conn != null) { try { conn.setAutoCommit(true); conn.close(); } catch (Exception e) {} }
         }
-        return isSuccess;
+        return generatedProductId;
     }
 
-    // 3. 상품 수정 로직
+    // 3. 상품 수정 로직 (🚨 ORA-02292 무결성 에러 완벽 해결 버전)
     public boolean updateProduct(ProductFormDTO form) {  
         
         Connection conn = null;
@@ -233,9 +234,9 @@ public class SellerService {
                     .build();
             dao.updateProduct(productDTO);
 
-            dao.deleteProductImages(form.getProductId());
-            
+            // 이미지 교체
             if (form.getImageUrls() != null && !form.getImageUrls().isEmpty()) {
+                dao.deleteProductImages(form.getProductId());
                 for (int i = 0; i < form.getImageUrls().size(); i++) {
                     ProductImageDTO imageDTO = ProductImageDTO.builder()
                             .productId(form.getProductId())
@@ -247,137 +248,91 @@ public class SellerService {
                 }
             }
 
-            dao.deleteOptionGroupsByProductId(form.getProductId());
+            // 💡 여기서부터 핵심: Savepoint를 만들어서 옵션 삭제 실패 시 대처합니다.
+            Savepoint savepoint = conn.setSavepoint("BeforeOptionDelete");
 
-            Map<String, Integer> optionValueIdMap = new HashMap<>();
-            int optionGroupCount = 0;
+            try {
+                // 플랜 A: 아직 안 팔린 상품이면 깔끔하게 다 지우고 새로 등록 시도
+                dao.deleteProductOptionsByProductId(form.getProductId());
+                dao.deleteOptionGroupsByProductId(form.getProductId());
 
-            // 필수 옵션 그룹 및 값 재등록
-            if (form.getOptionNames() != null && form.getOptionValues() != null) {
-                for (int i = 0; i < form.getOptionNames().length; i++) {
-                    if (form.getOptionNames()[i].trim().equals("")) continue;
+                Map<String, Integer> optionValueIdMap = new HashMap<>();
+                int optionGroupCount = 0;
 
-                    optionGroupCount++;
-
-                    OptionGroupDTO groupDTO = OptionGroupDTO.builder()
-                            .productId(form.getProductId())
-                            .groupName(form.getOptionNames()[i])
-                            .sortOrder(optionGroupCount)
-                            .required(1)
-                            .build();
-                    int optionGroupId = dao.insertOptionGroup(groupDTO);
-                    
-                    String[] values = form.getOptionValues()[i].split(",");
-                    for (int j = 0; j < values.length; j++) {
-                        String optName = values[j].trim();
-                        if (optName.equals("")) continue;
+                // (아래는 기존과 동일한 옵션 새로 Insert 로직)
+                if (form.getOptionNames() != null && form.getOptionValues() != null) {
+                    for (int i = 0; i < form.getOptionNames().length; i++) {
+                        if (form.getOptionNames()[i].trim().equals("")) continue;
+                        optionGroupCount++;
+                        OptionGroupDTO groupDTO = OptionGroupDTO.builder().productId(form.getProductId()).groupName(form.getOptionNames()[i]).sortOrder(optionGroupCount).required(1).build();
+                        int optionGroupId = dao.insertOptionGroup(groupDTO);
                         
-                        OptionValueDTO valueDTO = OptionValueDTO.builder()
-                                .optionGroupId(optionGroupId)
-                                .optionName(optName)
-                                .sortOrder(j + 1)
-                                .build();
-                    
-                        int optionValueId = dao.insertOptionValue(valueDTO);
-                        optionValueIdMap.put(optName, optionValueId);
+                        String[] values = form.getOptionValues()[i].split(",");
+                        for (int j = 0; j < values.length; j++) {
+                            String optName = values[j].trim();
+                            if (optName.equals("")) continue;
+                            OptionValueDTO valueDTO = OptionValueDTO.builder().optionGroupId(optionGroupId).optionName(optName).sortOrder(j + 1).build();
+                            int optionValueId = dao.insertOptionValue(valueDTO);
+                            optionValueIdMap.put(optName, optionValueId);
+                        }
                     }
                 }
-            }
 
-            // 수정 시 추가 상품 그룹 및 값 재등록
-            if (form.getExtraNames() != null && form.getExtraNames().length > 0) {
-                OptionGroupDTO extraGroupDTO = OptionGroupDTO.builder()
-                        .productId(form.getProductId())
-                        .groupName("추가상품")
-                        .sortOrder(optionGroupCount + 1)
-                        .required(0)
-                        .build();
-                int extraGroupId = dao.insertOptionGroup(extraGroupDTO);
+                if (form.getExtraNames() != null && form.getExtraNames().length > 0) {
+                    OptionGroupDTO extraGroupDTO = OptionGroupDTO.builder().productId(form.getProductId()).groupName("추가상품").sortOrder(optionGroupCount + 1).required(0).build();
+                    int extraGroupId = dao.insertOptionGroup(extraGroupDTO);
 
-                for (int i = 0; i < form.getExtraNames().length; i++) {
-                    if (form.getExtraNames()[i].trim().equals("")) continue;
-
-                    String extraName = form.getExtraNames()[i].trim();
-                    int extraPrice = Integer.parseInt(form.getExtraPrices()[i]);
-                    int extraStock = Integer.parseInt(form.getExtraStocks()[i]);
-
-                    OptionValueDTO extraValueDTO = OptionValueDTO.builder()
-                            .optionGroupId(extraGroupId)
-                            .optionName(extraName)
-                            .sortOrder(i + 1)
-                            .build();
-                    int extraValueId = dao.insertOptionValue(extraValueDTO);
-
-                    ProductOptionDTO extraSkuDTO = ProductOptionDTO.builder()
-                            .productId(form.getProductId())
-                            .sku("[추가상품] " + extraName)
-                            .price(extraPrice)
-                            .stock(extraStock)
-                            .build();
-                    int productOptionId = dao.insertProductOption(extraSkuDTO);
-
-                    ProductOptionValueDTO mappingDTO = ProductOptionValueDTO.builder()
-                            .productOptionId(productOptionId)
-                            .optionValueId(extraValueId)
-                            .build();
-                    dao.insertProductOptionValue(mappingDTO);
+                    for (int i = 0; i < form.getExtraNames().length; i++) {
+                        if (form.getExtraNames()[i].trim().equals("")) continue;
+                        String extraName = form.getExtraNames()[i].trim();
+                        int extraValueId = dao.insertOptionValue(OptionValueDTO.builder().optionGroupId(extraGroupId).optionName(extraName).sortOrder(i + 1).build());
+                        
+                        ProductOptionDTO extraSkuDTO = ProductOptionDTO.builder().productId(form.getProductId()).sku("[추가상품] " + extraName).price(Integer.parseInt(form.getExtraPrices()[i])).stock(Integer.parseInt(form.getExtraStocks()[i])).build();
+                        int productOptionId = dao.insertProductOption(extraSkuDTO);
+                        dao.insertProductOptionValue(ProductOptionValueDTO.builder().productOptionId(productOptionId).optionValueId(extraValueId).build());
+                    }
                 }
-            }
 
-            List<ProductOptionDTO> dbOptions = dao.getProductOptions(form.getProductId());
-            Map<String, ProductOptionDTO> dbOptionMap = new HashMap<>();
-            for (ProductOptionDTO opt : dbOptions) {
-                dbOptionMap.put(opt.getSku(), opt);
-            }
-
-            if (form.getSkuNames() != null) {
-                for (int i = 0; i < form.getSkuNames().length; i++) {
-                    String currentSku = form.getSkuNames()[i];
-                    int skuPrice = Integer.parseInt(form.getSkuPrices()[i]);
-                    int skuStock = Integer.parseInt(form.getSkuStocks()[i]);
-
-                    if (dbOptionMap.containsKey(currentSku)) {
-                        ProductOptionDTO existingOpt = dbOptionMap.get(currentSku);
-                        existingOpt.setPrice(skuPrice);
-                        existingOpt.setStock(skuStock);
-                        dao.updateProductOption(existingOpt);
-
-                        for (String optName : optionValueIdMap.keySet()) {
-                            if (currentSku.contains(optName)) {
-                                ProductOptionValueDTO mappingDTO = ProductOptionValueDTO.builder()
-                                        .productOptionId(existingOpt.getProductOptionId()) 
-                                        .optionValueId(optionValueIdMap.get(optName))  
-                                        .build();
-                                dao.insertProductOptionValue(mappingDTO);
-                            }
-                        }
-                        dbOptionMap.remove(currentSku);
-                    } else {
-                        ProductOptionDTO skuDTO = ProductOptionDTO.builder()
-                                .productId(form.getProductId())
-                                .sku(currentSku)
-                                .price(skuPrice)
-                                .stock(skuStock)
-                                .build();
-                    
+                if (form.getSkuNames() != null) {
+                    for (int i = 0; i < form.getSkuNames().length; i++) {
+                        String currentSku = form.getSkuNames()[i];
+                        ProductOptionDTO skuDTO = ProductOptionDTO.builder().productId(form.getProductId()).sku(currentSku).price(Integer.parseInt(form.getSkuPrices()[i])).stock(Integer.parseInt(form.getSkuStocks()[i])).build();
                         int productOptionId = dao.insertProductOption(skuDTO);
 
                         for (String optName : optionValueIdMap.keySet()) {
                             if (currentSku.contains(optName)) {
-                                ProductOptionValueDTO mappingDTO = ProductOptionValueDTO.builder()
-                                        .productOptionId(productOptionId)
-                                        .optionValueId(optionValueIdMap.get(optName))
-                                        .build();
-                                dao.insertProductOptionValue(mappingDTO);
+                                dao.insertProductOptionValue(ProductOptionValueDTO.builder().productOptionId(productOptionId).optionValueId(optionValueIdMap.get(optName)).build());
                             }
                         }
                     }
                 }
-            }
 
-            for (String deletedSku : dbOptionMap.keySet()) {
-                ProductOptionDTO optToDelete = dbOptionMap.get(deletedSku);
-                dao.deleteProductOption(optToDelete.getProductOptionId());
+            } catch (SQLException e) {
+                // 🚨 ORA-02292 에러 발생 (누군가 이미 사간 상품이라 삭제가 안 될 때!)
+                if (e.getErrorCode() == 2292) {
+                    System.out.println("주문 내역 발견! 옵션 삭제 취소 후 가격/재고 UPDATE 모드로 진입합니다.");
+                    
+                    // 지우려다 꼬인 데이터를 원래대로 롤백 (Savepoint 지점으로)
+                    conn.rollback(savepoint);
+
+                    // 플랜 B: 안전하게 가격과 재고만 UPDATE 처리 (구조 변경 무시)
+                    dao.resetAllOptionStocksToZero(form.getProductId()); // JSP에서 삭제된 건 0으로 품절 처리
+
+                    if (form.getSkuNames() != null) {
+                        for (int i = 0; i < form.getSkuNames().length; i++) {
+                            dao.updateOptionPriceAndStock(form.getProductId(), form.getSkuNames()[i], Integer.parseInt(form.getSkuPrices()[i]), Integer.parseInt(form.getSkuStocks()[i]));
+                        }
+                    }
+                    if (form.getExtraNames() != null) {
+                        for (int i = 0; i < form.getExtraNames().length; i++) {
+                            if (form.getExtraNames()[i].trim().equals("")) continue;
+                            String extraName = "[추가상품] " + form.getExtraNames()[i].trim();
+                            dao.updateOptionPriceAndStock(form.getProductId(), extraName, Integer.parseInt(form.getExtraPrices()[i]), Integer.parseInt(form.getExtraStocks()[i]));
+                        }
+                    }
+                } else {
+                    throw e; // 다른 심각한 에러면 던짐
+                }
             }
 
             conn.commit();
@@ -427,6 +382,10 @@ public class SellerService {
             List<OptionGroupDTO> groups = dao.getOptionGroups(productId);
             
             for (OptionGroupDTO group : groups) {
+                if ("추가상품".equals(group.getGroupName())) {
+                    continue;
+                }
+                
                 List<OptionValueDTO> values = dao.getOptionValues(group.getOptionGroupId());
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < values.size(); i++) {
@@ -461,13 +420,15 @@ public class SellerService {
             
             int totalCount = dao.getTotalProductCount(brandId);
             int soldOutCount = dao.getSoldOutProductCount(brandId);
-            int onSaleCount = totalCount - soldOutCount;
+            int stopCount = dao.getStopProductCount(brandId); 
+            
+            int onSaleCount = totalCount - soldOutCount - stopCount;
             if (onSaleCount < 0) onSaleCount = 0;
             
             stats.put("totalCount", totalCount);
             stats.put("soldOutCount", soldOutCount);
             stats.put("onSaleCount", onSaleCount);
-            stats.put("stopCount", 0);
+            stats.put("stopCount", stopCount); 
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -508,6 +469,22 @@ public class SellerService {
         return result;
     }
     
+    public boolean updateProductStatus(int productId, String status) {
+        Connection conn = null;
+        boolean result = false;
+        try {
+            conn = ConnectionProvider.getConnection();
+            SellerDAO dao = new SellerDAOImpl(conn);
+            int count = dao.updateProductStatus(productId, status);
+            if (count > 0) result = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (conn != null) try { conn.close(); } catch (Exception e) {}
+        }
+        return result;
+    }
+    
     public List<ProductDTO> getProductListByBrandName(String brandName) {
         List<ProductDTO> list = new ArrayList<>();
         Connection conn = null;
@@ -517,7 +494,6 @@ public class SellerService {
             SellerDAO dao = new SellerDAOImpl(conn);
             
             int brandId = dao.getBrandId(brandName);
-            
             if (brandId != -1) {
                 list = dao.getProductListByBrandId(brandId);
             }

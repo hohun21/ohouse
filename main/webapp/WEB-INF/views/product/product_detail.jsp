@@ -61,6 +61,14 @@
         margin: 50px 0 0;
     }
 
+.breadcrumb {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 24px;
+	color: #828c94;
+	font-size: 13px;
+	padding-top: 50px;
+}
     .product-detail {
         width: 100%;
         max-width: 1100px;
@@ -74,14 +82,6 @@
 
     .product-detail * {
         box-sizing: border-box;
-    }
-
-    .breadcrumb {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 24px;
-        color: #828c94;
-        font-size: 13px;
     }
 
     .breadcrumb span {
@@ -410,7 +410,7 @@
     <!-- 카테고리 경로: DB 데이터만 사용 -->
     <div class="breadcrumb">
         <c:forEach var="category" items="${pdto.categoryDTOList}" varStatus="s">
-            <button class="link-category" data-category-id="${category.category_id}">
+            <button class="link-category" data-category_id="${category.category_id}">
                 <span>${category.category_name}</span>
             </button>
             <c:if test="${!s.last}">
@@ -418,7 +418,7 @@
             </c:if>
         </c:forEach>
     </div>
-   
+
     <div class="product-main">
 
         <!-- 왼쪽 이미지 -->
@@ -447,7 +447,7 @@
         <!-- 오른쪽 상품 정보 -->
         <div class="product-info">
 
-            <div class="brand">
+            <div class="brand" data-brand-id="${pdto.productDTO.brand_id}" data-brand-name="${pdto.productDTO.brand_name}">
                 ${pdto.productDTO.brand_name}
             </div>
             <div class="product-name">
@@ -612,15 +612,9 @@
 </div>
 <script src="${pageContext.request.contextPath}/js/productDetail.js"></script>
 <script>
-$(".link-category").on("click", function (e) {
-
-    const category_id = $(this).attr("data-category-id");
-
-    const url =
-        "${pageContext.request.contextPath}/shopping/category/category.htm"
-        + "?category_id=" + category_id;
-
-    location.href = url;
-});
+    $(".link-category").on("click", function (e) {
+        const category_id = $(this).data("category_id");
+        location.href = `${pageContext.request.contextPath}/category.htm?category_id=\${category_id}`;
+    })
 </script>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
