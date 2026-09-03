@@ -35,7 +35,7 @@
 						style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
 						<!-- 상품명 클릭 시 해당 상품 상세 페이지로 이동 -->
 						<a
-							href="${pageContext.request.contextPath}/productDetail.htm?product_id=${review.productId}"
+							href="${pageContext.request.contextPath}/product/productDetail.htm?product_id=${review.productId}"
 							style="font-weight: bold; font-size: 15px; color: #292929; text-decoration: none;">
 							${review.productName} </a>
 						<div>

@@ -10,4 +10,8 @@ public interface OnlyDAO {
 
 	List<OnlyDTO> getAllOnlyProducts(Connection conn) throws SQLException;
 	
+	List<OnlyDTO> getOnlyProductsByMainCategory(
+	        Connection conn,
+	        int mainCategoryId
+	) throws SQLException;
 }

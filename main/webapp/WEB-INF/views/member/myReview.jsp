@@ -601,12 +601,10 @@ a {
 
 	<div class="top-nav">
 
-		<a href="${pageContext.request.contextPath}/member/myPage.htm">
-			프로필 </a> <a href="#"> 나의 쇼핑 </a> <a
-			href="${pageContext.request.contextPath}/member/myReview.htm"> 나의
-			리뷰 </a> <a href="${pageContext.request.contextPath}/changePwd.htm">
-			설정 </a>
-
+		<a href="${pageContext.request.contextPath}/member/myPage.htm">프로필</a>
+		<a href="${pageContext.request.contextPath}/member/myShopping.htm">나의 쇼핑</a>
+        <a href="${pageContext.request.contextPath}/member/myReview.htm" class="active">나의 리뷰</a>
+        <a href="${pageContext.request.contextPath}/changePwd.htm">설정</a>
 	</div>
 
 
@@ -654,7 +652,7 @@ a {
 								<div
 									style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
 									<a
-										href="${pageContext.request.contextPath}/productDetail.htm?product_id=${review.productId}"
+										href="${pageContext.request.contextPath}/product/productDetail.htm?product_id=${review.productId}"
 										style="font-weight: bold; font-size: 15px; color: #292929; text-decoration: none;">
 										${review.productName} </a>
 									<div>
@@ -777,7 +775,7 @@ a {
                 let content = e.target.getAttribute("data-content");
                 let imageUrl = e.target.getAttribute("data-image-url");
 
-                location.href = `${pageContext.request.contextPath}/productDetail.htm?product_id=` + productId + 
+                location.href = `${pageContext.request.contextPath}/product/productDetail.htm?product_id=` + productId + 
                                 `&openEdit=true` +
                                 `&reviewId=` + reviewId + 
                                 `&rating=` + rating + 

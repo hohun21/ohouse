@@ -20,7 +20,7 @@ public class AdminDAOImpl implements AdminDAO {
     @Override
     public List<MemberDTO> getAllMembers() throws SQLException {
         List<MemberDTO> list = new ArrayList<>();
-        String sql = "SELECT member_id, id, name, role, reg_date FROM member ORDER BY member_id DESC";
+        String sql = "SELECT member_id, id, name, role, reg_date, status FROM member ORDER BY member_id DESC";
         
         try (PreparedStatement pstmt = this.conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
@@ -31,6 +31,7 @@ public class AdminDAOImpl implements AdminDAO {
                         .name(rs.getString("name"))
                         .role(rs.getString("role"))
                         .regDate(rs.getDate("reg_date"))
+                        .status(rs.getInt("status"))
                         .build());
             }
         }
@@ -52,7 +53,7 @@ public class AdminDAOImpl implements AdminDAO {
         List<MemberDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM ("
                    + "  SELECT a.*, ROWNUM rnum FROM ("
-                   + "    SELECT member_id, id, name, role, reg_date FROM member ORDER BY member_id DESC"
+                   + "    SELECT member_id, id, name, role, reg_date, status FROM member ORDER BY member_id DESC"
                    + "  ) a WHERE ROWNUM <= ?"
                    + ") WHERE rnum >= ?";
 
@@ -67,6 +68,7 @@ public class AdminDAOImpl implements AdminDAO {
                             .name(rs.getString("name"))
                             .role(rs.getString("role"))
                             .regDate(rs.getDate("reg_date"))
+                            .status(rs.getInt("status"))
                             .build());
                 }
             }
@@ -75,10 +77,11 @@ public class AdminDAOImpl implements AdminDAO {
     }
 
     @Override
-    public int deleteMember(int memberId) throws SQLException {
-        String sql = "DELETE FROM member WHERE member_id = ?";
-        try (PreparedStatement pstmt = this.conn.prepareStatement(sql)) {
-            pstmt.setInt(1, memberId);
+    public int updateMemberStatus(Connection conn, int memberId, int status) throws SQLException {
+        String sql = "UPDATE member SET status = ? WHERE member_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, status);
+            pstmt.setInt(2, memberId);
             return pstmt.executeUpdate();
         }
     }

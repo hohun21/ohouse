@@ -624,7 +624,7 @@
             프로필
         </a>
 
-        <a href="#">
+        <a href="${pageContext.request.contextPath}/member/myShopping.htm">
             나의 쇼핑
         </a>
 

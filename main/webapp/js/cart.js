@@ -534,6 +534,7 @@ $("#buyBtn").on("click", async function () {
         $(this).find(".cart-item").each(function () {
             selectedItems.push({
                 cart_items_id: Number(this.dataset.cartItemsId),
+                brand_id: Number(this.dataset.brandId),
                 product_id: Number(this.dataset.productId),
                 product_option_id: Number(this.dataset.productOptionId),
                 product_name: this.dataset.productName,

@@ -162,6 +162,7 @@ a {
     text-decoration: underline;
 }
 </style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 
 <body>
@@ -205,7 +206,7 @@ a {
 
     <!-- 판매자 로그인 폼 -->
     <form action="${pageContext.request.contextPath}/seller/login.htm"
-          method="post">
+           id="loginForm" method="post">
 
         <!-- 이메일 -->
         <div class="form-group">
@@ -323,6 +324,67 @@ a {
         }
         this.value = number;
     });
+</script>
+<script>
+$(function () {
+    // 로그인 버튼을 눌렀을 때 상태 확인
+    $("#loginForm").on("submit", function (event) {
+        event.preventDefault();
+
+        const form = this;
+        const email = $("#email").val().trim();
+
+        if (email === "") {
+            alert(" 이메일을 입력해주세요.");
+            $("#email").focus();
+            return;
+        }
+
+        $.ajax({
+            url: "${pageContext.request.contextPath}/sellerStatusCheck.ajax",
+            type: "GET",
+            data: {
+                email: email
+            },
+            dataType: "json",
+
+            success: function (result) {
+
+                if (result.code === "WITHDRAWN") {
+                    alert("탈퇴한 계정입니다.");
+                    return;
+                }
+
+                if (result.code === "STOP") {
+                    alert("정지된 계정입니다.");
+                    return;
+                }
+
+                if (result.code === "NOT_FOUND") {
+                    alert("등록되지 않은 계정입니다.");
+                    return;
+                }
+
+                if (result.code === "ACTIVE") {
+                    // 정상 회원인 경우에만 실제 로그인 요청
+                    form.submit();
+                    return;
+                }
+
+                alert("회원 상태를 확인할 수 없습니다.");
+            },
+
+            error: function (xhr, textStatus, errorThrown) {
+            	console.log("HTTP 상태:", xhr.status);
+                console.log("jQuery 상태:", textStatus);
+                console.log("파싱 오류:", errorThrown);
+                console.log("실제 서버 응답:", xhr.responseText);
+
+                alert("서버 오류가 발생했습니다. 상태 코드: " + xhr.status);
+            }
+        });
+    });
+});
 </script>
 </body>
 </html>

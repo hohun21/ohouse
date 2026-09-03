@@ -22,4 +22,16 @@ public class OnlyService {
             return onlyDao.getAllOnlyProducts(conn);
         }
     }
+	
+	public List<OnlyDTO> getOnlyProductsByMainCategory(
+	        Connection conn,
+	        int mainCategoryId
+	) throws SQLException {
+
+	    return onlyDao.getOnlyProductsByMainCategory(
+	            conn,
+	            mainCategoryId
+	    );
+	}
+
 }

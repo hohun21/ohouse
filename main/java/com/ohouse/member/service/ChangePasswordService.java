@@ -15,7 +15,7 @@ public class ChangePasswordService {
     public boolean checkCurrentPassword(String userId, String currentPwd) {
         try (Connection conn = ConnectionProvider.getConnection()) {
             MemberDAO memberDao = new MemberDAOImpl(conn);
-            MemberDTO member = memberDao.selectByEmail(conn, userId);
+            MemberDTO member = memberDao.selectById(conn, userId);
             
             if (member == null) {
                 return false;
@@ -34,7 +34,7 @@ public class ChangePasswordService {
             conn.setAutoCommit(false);
 
             MemberDAO memberDao = new MemberDAOImpl(conn);
-            MemberDTO member = memberDao.selectByEmail(conn, userId);
+            MemberDTO member = memberDao.selectById(conn, userId);
 
             if (member == null) {
                 throw new RuntimeException("회원 정보를 찾을 수 없습니다.");

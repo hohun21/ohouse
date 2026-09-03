@@ -20,6 +20,9 @@ public class ProductDTO {
         private long price;
         private long category_id;
         private double discount_rate;
+        
+        private double avgRating;
+        private int reviewCount;
 
         // 기존 DAO에서 사용하던 6개짜리 생성자 유지
         public ProductDTO(

@@ -24,5 +24,5 @@ public interface ProductDAO {
 
     List<CategoryDTO> viewCategory(Connection conn, long category_id) throws SQLException;
 
-    List<ProductDTO> viewProductByCategories( Connection conn, List<Integer> categoryIds ) throws SQLException;
+    List<ProductDTO> viewProductByCategories( Connection conn, List<Integer> categoryIds, String sort ) throws SQLException;
 }

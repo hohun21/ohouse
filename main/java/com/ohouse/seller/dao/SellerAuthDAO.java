@@ -22,6 +22,9 @@ public interface SellerAuthDAO {
     // 통신판매업 신고번호 중복 검사 후 json 데이터 반환
     String mailOrderNumberCheck(Connection conn, String mail_Order_Number) throws SQLException;
 
+    // 판매자 status 검사 후 json 데이터 반환
+    String statusCheck(Connection conn, String email) throws SQLException;
+
     // 판매자 비밀번호 변경
     int updatePassword( Connection conn, long sellerId, String newPassword) throws SQLException;
 }

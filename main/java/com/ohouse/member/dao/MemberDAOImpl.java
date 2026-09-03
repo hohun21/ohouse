@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.naming.NamingException;
+
 import com.ohouse.member.dto.MemberDTO;
 import com.ohouse.util.conn.JdbcUtil;
 
@@ -23,7 +25,8 @@ public class MemberDAOImpl implements MemberDAO {
     @Override
     public int delete(Connection conn, int memberId) throws SQLException {
         String sql = """
-                DELETE FROM member
+                UPDATE member
+                SET status = 0
                 WHERE member_id = ?
                 """;
 
@@ -34,12 +37,12 @@ public class MemberDAOImpl implements MemberDAO {
     }
 
     @Override
-    public MemberDTO selectByEmail(Connection conn, String email) throws SQLException {
+    public MemberDTO selectById(Connection conn, String id) throws SQLException {
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         try {
             pstmt = conn.prepareStatement("SELECT * FROM member WHERE id = ?");
-            pstmt.setString(1, email);
+            pstmt.setString(1, id);
             rs = pstmt.executeQuery();
 
             MemberDTO member = null;
@@ -52,6 +55,7 @@ public class MemberDAOImpl implements MemberDAO {
                         .regDate(toDate(rs.getTimestamp("reg_date")))
                         .role(rs.getString("role"))
                         .rank(rs.getString("rank"))
+                        .status(rs.getInt("status"))
                         .build();
             }
             return member;
@@ -99,7 +103,7 @@ public class MemberDAOImpl implements MemberDAO {
     @Override
     public String nameCheck(Connection conn, String name) {
         String sql = "SELECT COUNT(*) cnt FROM member WHERE name = ?";
-        ResultSet rs = null;
+        ResultSet rs = null;  
         String jsonResult = null;
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, name);
@@ -138,4 +142,22 @@ public class MemberDAOImpl implements MemberDAO {
         }
         return jsonResult;
     }
+
+	@Override
+	public Integer statusCheck(Connection conn, String id) throws SQLException {
+		String sql = "SELECT status FROM member WHERE id = ? ";
+        ResultSet rs = null;
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, id);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("status");
+			}
+        } catch (SQLException e) {
+            JdbcUtil.close(rs);
+        }
+		return null;
+	}
 }

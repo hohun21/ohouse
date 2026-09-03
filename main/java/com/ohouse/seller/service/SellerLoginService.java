@@ -67,4 +67,15 @@ public class SellerLoginService {
         if (businessNumber == null) { return ""; }
         return businessNumber.replaceAll("[^0-9]", "");
     }
+    
+    // status 체크 ajax
+    public String statusCheck(String email) throws SQLException, NamingException {
+        try (Connection conn = ConnectionProvider.getConnection()) {
+            
+            return sellerDao.statusCheck(conn, email); 
+            
+        } catch (SQLException | NamingException e) {
+            throw new RuntimeException(e);
+        } 
+    }
 }

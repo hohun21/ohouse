@@ -428,7 +428,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 	                </a>
 	                <nav class="header-main-nav">
 	                    <a href="#" data-menu="home">집구경</a>
-	                    <a href="main.htm" data-menu="shopping" class="active">쇼핑</a>
+	                    <a href="/main.htm" data-menu="shopping" class="active">쇼핑</a>
 	                    <a href="#" data-menu="interior">인테리어/생활</a>
 	                </nav>
 	            </div>
@@ -533,7 +533,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 	            </nav>
 	            <!-- 쇼핑 메뉴 리스트 -->
 	            <nav class="shoping-nav-list">
-	                <a href="main.htm" class="active">쇼핑홈</a>
+	                <a href="${ pageContext.request.contextPath }/main.htm" class="active">쇼핑홈</a>
 	                <div class="category-wrap">
 	                    <a href="${ pageContext.request.contextPath }/shopping/category/category.htm" class="category-tab">카테고리</a>
 	                    <div class="category-dropdown">

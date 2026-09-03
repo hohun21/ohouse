@@ -72,7 +72,7 @@ public class EditReviewHandler implements CommandHandler {
             boolean success = reviewService.modifyReview(reviewDTO, imageUrl);
 
             if (success) {
-                return "redirect:" + request.getContextPath() + "/productDetail.htm?product_id=" + productId;
+                return "redirect:" + request.getContextPath() + "/product/productDetail.htm?product_id=" + productId;
             } else {
                 request.setAttribute("errorMessage", "리뷰 수정에 실패했습니다.");
                 return "/WEB-INF/views/common/error.jsp";

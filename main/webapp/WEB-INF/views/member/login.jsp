@@ -46,6 +46,7 @@ form { width: 100%; }
 .guest-link:hover { text-decoration: underline; }
 .copyright { position: absolute; bottom: 30px; font-size: 12px; color: #9e9e9e; text-align: center; width: 100%; }
 </style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 <body>
 
@@ -58,9 +59,9 @@ form { width: 100%; }
             </svg>
         </a>
 
-        <form action="login.htm" method="post">
+        <form id="loginForm" action="login.htm" method="post">
             <div class="input-group">
-                <input type="text" name="id" placeholder="아이디" required>
+            	<input type="text" id="id" name="id" placeholder="아이디" required>
                 <input type="password" name="password" placeholder="비밀번호" required>
             </div>
             <button type="submit" class="btn-login">로그인</button>
@@ -87,15 +88,70 @@ form { width: 100%; }
 
     <div class="copyright">© bucketplace, Co., Ltd.. All Rights Reserved</div>
 	
-	<script>
-        var loginError = "${errors.idOrPwNotMatch}";
-        
-        if (loginError === "true") {
-            window.onload = function() {
-                alert("아이디 또는 비밀번호가 잘못되었습니다.\n다시 확인해주세요.");
-            };
+<script>
+$(function () {
+
+    // 기존 로그인 실패 처리
+    const loginError = "${errors.idOrPwNotMatch}";
+
+    if (loginError === "true") {
+        alert("아이디 또는 비밀번호가 잘못되었습니다.\n다시 확인해주세요.");
+    }
+
+    // 로그인 버튼을 눌렀을 때 상태 확인
+    $("#loginForm").on("submit", function (event) {
+        event.preventDefault();
+
+        const form = this;
+        const id = $("#id").val().trim();
+
+        if (id === "") {
+            alert("아이디를 입력해주세요.");
+            $("#id").focus();
+            return;
         }
-    </script>
-    
+
+        $.ajax({
+            url: "${pageContext.request.contextPath}/statusCheck.ajax",
+            type: "GET",
+            data: {
+                id: id
+            },
+            dataType: "json",
+
+            success: function (result) {
+
+                if (result.code === "WITHDRAWN") {
+                    alert("탈퇴한 회원입니다.");
+                    return;
+                }
+
+                if (result.code === "STOP") {
+                    alert("정지된 회원입니다.");
+                    return;
+                }
+
+                if (result.code === "NOT_FOUND") {
+                    alert("등록되지 않은 아이디입니다.");
+                    return;
+                }
+
+                if (result.code === "ACTIVE") {
+                    // 정상 회원인 경우에만 실제 로그인 요청
+                    form.submit();
+                    return;
+                }
+
+                alert("회원 상태를 확인할 수 없습니다.");
+            },
+
+            error: function (xhr) {
+                console.log(xhr.responseText);
+                alert("서버 통신 중 오류가 발생했습니다.");
+            }
+        });
+    });
+});
+</script>
 </body>
 </html>

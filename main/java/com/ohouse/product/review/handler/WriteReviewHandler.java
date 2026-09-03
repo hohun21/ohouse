@@ -92,7 +92,7 @@ public class WriteReviewHandler implements CommandHandler {
 			boolean success = reviewService.registerReview(reviewDTO, imageUrl);
 
 			if (success) {
-				return "redirect:" + request.getContextPath() + "/productDetail.htm?product_id=" + productId;
+				return "redirect:" + request.getContextPath() + "/product/productDetail.htm?product_id=" + productId;
 			} else {
 				request.setAttribute("errorMessage", "리뷰 등록에 실패했습니다.");
 				return "/WEB-INF/views/common/error.jsp";

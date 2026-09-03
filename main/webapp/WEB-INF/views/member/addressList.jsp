@@ -87,12 +87,14 @@
 </head>
 <body>
 
-    <jsp:include page="/WEB-INF/views/layout/header.jsp" />
+    <jsp:include page="/WEB-INF/views/layout/header.jsp">
+		<jsp:param name="showSubHeaderAtTop" value="false"/>
+	</jsp:include>
 
     <div class="top-nav">
         <a href="${pageContext.request.contextPath}/member/myPage.htm">프로필</a>
-        <a href="#">나의 쇼핑</a>
-         <a href="${pageContext.request.contextPath}/member/myReview.htm">나의 리뷰</a>
+		<a href="${pageContext.request.contextPath}/member/myShopping.htm">나의 쇼핑</a>
+        <a href="${pageContext.request.contextPath}/member/myReview.htm">나의 리뷰</a>
         <a href="${pageContext.request.contextPath}/changePwd.htm" class="active">설정</a>
     </div>
 
@@ -103,7 +105,7 @@
         <a href="${pageContext.request.contextPath}/addressList.htm" class="active">배송지 설정</a>
         <a href="${pageContext.request.contextPath}/changePwd.htm">비밀번호 변경</a>
         <a href="#">추천코드</a>
-        <a href="#">회원 탈퇴</a>
+        <a href="${pageContext.request.contextPath}/member/withdraw.htm">회원 탈퇴</a>
     </div>
 
     <div class="container">
