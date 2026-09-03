@@ -23,7 +23,8 @@ public class MemberDAOImpl implements MemberDAO {
     @Override
     public int delete(Connection conn, int memberId) throws SQLException {
         String sql = """
-                DELETE FROM member
+                UPDATE member
+                SET status = 0
                 WHERE member_id = ?
                 """;
 
@@ -52,6 +53,7 @@ public class MemberDAOImpl implements MemberDAO {
                         .regDate(toDate(rs.getTimestamp("reg_date")))
                         .role(rs.getString("role"))
                         .rank(rs.getString("rank"))
+                        .status(rs.getInt("status"))
                         .build();
             }
             return member;
