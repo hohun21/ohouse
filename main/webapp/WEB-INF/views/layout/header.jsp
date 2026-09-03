@@ -428,7 +428,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 	                </a>
 	                <nav class="header-main-nav">
 	                    <a href="#" data-menu="home">집구경</a>
-	                    <a href="main.htm" data-menu="shopping" class="active">쇼핑</a>
+	                    <a href="/main.htm" data-menu="shopping" class="active">쇼핑</a>
 	                    <a href="#" data-menu="interior">인테리어/생활</a>
 	                </nav>
 	            </div>
