@@ -93,7 +93,7 @@
 
     <div class="top-nav">
         <a href="${pageContext.request.contextPath}/member/myPage.htm">프로필</a>
-        <a href="#">나의 쇼핑</a>
+        <a href="${pageContext.request.contextPath}/member/myShopping.htm">나의 쇼핑</a>
         <a href="#">나의 리뷰</a>
         <a href="${pageContext.request.contextPath}/changePwd.htm" class="active">설정</a>
     </div>
