@@ -301,7 +301,7 @@ ul {
 			<h2 class="recommend-title">추천상품</h2>
 			<div class="grid-4">
 				<c:forEach var="product" items="${randomProductList}">
-					<a href="/productDetail.htm?product_id=${product.productId}"
+					<a href="/product/productDetail.htm?product_id=${product.productId}"
 						class="product-card">
 						<div class="product-img-wrap">
 							<img src="${product.imageUrl}" alt="${product.productName}">
