@@ -22,7 +22,7 @@ public class SellerOrderDAOImpl implements SellerOrderDAO {
     public List<SellerOrderDTO> selectOrderListByBrand(Connection conn, String brandName) throws SQLException {
         List<SellerOrderDTO> list = new ArrayList<>();
         
-        String sql = "SELECT od.order_detail_id, o.order_date, od.product_name, od.option_name, "
+        String sql = "SELECT od.orders_detail_id, o.order_date, od.product_name, od.option_name, "
                    + "       od.quantity, od.price, od.delivery_status "
                    + "FROM ORDERS_DETAIL od "
                    + "JOIN ORDERS o ON od.order_id = o.order_id "
@@ -35,7 +35,7 @@ public class SellerOrderDAOImpl implements SellerOrderDAO {
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     SellerOrderDTO dto = new SellerOrderDTO();
-                    dto.setOrderDetailId(rs.getInt("order_detail_id"));
+                    dto.setOrderDetailId(rs.getInt("orders_detail_id"));
                     dto.setOrderDate(rs.getTimestamp("order_date"));
                     dto.setProductName(rs.getString("product_name"));
                     dto.setOptionName(rs.getString("option_name"));
@@ -102,7 +102,7 @@ public class SellerOrderDAOImpl implements SellerOrderDAO {
     public List<SellerOrderDTO> selectClaimListByBrand(Connection conn, String brandName) throws SQLException {
         List<SellerOrderDTO> list = new ArrayList<>();
         
-        String sql = "SELECT od.order_detail_id, o.order_date, od.product_name, od.option_name, "
+        String sql = "SELECT od.orders_detail_id, o.order_date, od.product_name, od.option_name, "
                    + "       od.quantity, od.price, od.delivery_status "
                    + "FROM ORDERS_DETAIL od "
                    + "JOIN ORDERS o ON od.order_id = o.order_id "
@@ -115,7 +115,7 @@ public class SellerOrderDAOImpl implements SellerOrderDAO {
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     SellerOrderDTO dto = new SellerOrderDTO();
-                    dto.setOrderDetailId(rs.getInt("order_detail_id"));
+                    dto.setOrderDetailId(rs.getInt("orders_detail_id"));
                     dto.setOrderDate(rs.getTimestamp("order_date"));
                     dto.setProductName(rs.getString("product_name"));
                     dto.setOptionName(rs.getString("option_name"));
@@ -134,7 +134,7 @@ public class SellerOrderDAOImpl implements SellerOrderDAO {
     public List<SellerOrderDTO> selectSettlementListByBrand(Connection conn, String brandName) throws SQLException {
         List<SellerOrderDTO> list = new ArrayList<>();
         
-        String sql = "SELECT od.order_detail_id, o.order_date, od.product_name, od.option_name, "
+        String sql = "SELECT od.orders_detail_id, o.order_date, od.product_name, od.option_name, "
                    + "       od.quantity, od.price, od.delivery_status, "
                    + "       (od.price * od.quantity) AS total_price, "
                    + "       ((od.price * od.quantity) * 0.98) AS settlement_amount "
@@ -149,7 +149,7 @@ public class SellerOrderDAOImpl implements SellerOrderDAO {
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     SellerOrderDTO dto = new SellerOrderDTO();
-                    dto.setOrderDetailId(rs.getInt("order_detail_id"));
+                    dto.setOrderDetailId(rs.getInt("orders_detail_id"));
                     dto.setOrderDate(rs.getTimestamp("order_date"));
                     dto.setProductName(rs.getString("product_name"));
                     dto.setOptionName(rs.getString("option_name"));
