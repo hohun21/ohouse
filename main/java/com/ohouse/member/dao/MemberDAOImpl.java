@@ -35,12 +35,12 @@ public class MemberDAOImpl implements MemberDAO {
     }
 
     @Override
-    public MemberDTO selectByEmail(Connection conn, String email) throws SQLException {
+    public MemberDTO selectById(Connection conn, String id) throws SQLException {
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         try {
             pstmt = conn.prepareStatement("SELECT * FROM member WHERE id = ?");
-            pstmt.setString(1, email);
+            pstmt.setString(1, id);
             rs = pstmt.executeQuery();
 
             MemberDTO member = null;

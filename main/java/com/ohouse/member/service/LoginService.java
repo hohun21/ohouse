@@ -20,7 +20,7 @@ public class LoginService {
             
             MemberDAO memberDao = new MemberDAOImpl(conn);
             
-            MemberDTO member = memberDao.selectByEmail(conn, id);
+            MemberDTO member = memberDao.selectById(conn, id);
             
             if (member == null) {
                 throw new LoginFailException();
