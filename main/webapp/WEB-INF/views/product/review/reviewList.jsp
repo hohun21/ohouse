@@ -296,12 +296,15 @@
 			</div>
 
 			<!-- 2. 2단 계층 옵션 드롭다운 -->
+			<!-- 2. 옵션 드롭다운 (단일/복합 구조 유연 대응) -->
+			<!-- 2. 옵션 드롭다운 영역 (여기를 통째로 교체하세요) -->
 			<div class="custom-dropdown" data-dropdown-id="option">
 				<button type="button" class="dropdown-btn js-dropdown-toggle">
 					옵션 <span>∨</span>
 				</button>
 
-				<div class="dropdown-menu-box option-menu">
+				<div class="dropdown-menu-box option-menu"
+					style="width: ${optionFilterList.size() > 1 ? '400px' : '280px'};">
 					<div class="option-menu-header">
 						<span style="font-size: 13px; font-weight: bold;">옵션 선택</span>
 						<button type="button" class="reset-btn js-reset-options">↻
@@ -310,59 +313,94 @@
 
 					<c:choose>
 						<c:when test="${not empty optionFilterList}">
-							<div style="display: flex; height: 260px;">
-								<!-- 좌측: 1차 옵션 목록 -->
-								<div class="tier-left"
-									style="width: 40%; border-right: 1px solid #ededed; overflow-y: auto; background-color: #f7f9fa;">
-									<c:forEach var="parentOpt" items="${optionFilterList}"
-										varStatus="status">
-										<div class="left-tab-item ${status.first ? 'active' : ''}"
-											data-target="sub-group-${parentOpt.optionValueId}">
-											<span>${parentOpt.optionValueName}</span> <span
-												style="font-size: 10px; color: #bdbdbd;">&gt;</span>
-										</div>
-									</c:forEach>
-								</div>
+							<c:choose>
+								<%-- [케이스 1] 1차 옵션 그룹이 딱 1개뿐인 단일 옵션 상품 --%>
+								<c:when test="${optionFilterList.size() == 1}">
+									<div
+										style="padding: 12px; max-height: 260px; overflow-y: auto;">
+										<c:forEach var="parentOpt" items="${optionFilterList}">
+											<c:if test="${not empty parentOpt.optionValueName}">
+												<div
+													style="font-size: 12px; font-weight: bold; color: #8f9bb3; margin-bottom: 8px;">
+													${parentOpt.optionValueName}</div>
+											</c:if>
 
-								<!-- 우측: 2차 옵션 그룹 목록 -->
-								<div class="tier-right"
-									style="width: 60%; padding: 12px; overflow-y: auto;">
-									<c:forEach var="parentOpt" items="${optionFilterList}"
-										varStatus="status">
-										<div class="sub-option-group"
-											id="sub-group-${parentOpt.optionValueId}"
-											data-parent-id="${parentOpt.optionValueId}"
-											data-parent-name="${parentOpt.optionValueName}"
-											style="display: ${status.first ? 'block' : 'none'};">
+											<div class="sub-option-group"
+												id="sub-group-${parentOpt.optionValueId}"
+												data-parent-id="${parentOpt.optionValueId}"
+												data-parent-name="">
 
-											<label class="all-select-label"> <input
-												type="checkbox" class="js-select-all-group" /> <span>전체선택</span>
-											</label>
+												<c:forEach var="subOpt" items="${parentOpt.subOptions}">
+													<label
+														style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; cursor: pointer;">
+														<input type="checkbox" name="options"
+														value="${subOpt.productOptionId}"
+														data-name="${subOpt.subOptionName}"
+														class="js-filter-checkbox js-option-checkbox"
+														<c:if test="${not empty selectedOptions and selectedOptions.contains(subOpt.productOptionId)}">checked</c:if> />
+														<span>${subOpt.subOptionName}</span>
+													</label>
+												</c:forEach>
+											</div>
+										</c:forEach>
+									</div>
+								</c:when>
 
-											<c:forEach var="subOpt" items="${parentOpt.subOptions}">
-												<label
-													style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; cursor: pointer;">
-													<input type="checkbox" name="options"
-													value="${subOpt.productOptionId}"
-													data-name="${subOpt.subOptionName}"
-													class="js-filter-checkbox js-option-checkbox"
-													<c:if test="${not empty selectedOptions and selectedOptions.contains(subOpt.productOptionId)}">checked</c:if> />
-													<span>${subOpt.subOptionName}</span>
-												</label>
+								<%-- [케이스 2] 옵션 그룹이 2개 이상인 복합 옵션 상품 (좌우 2단 탭) --%>
+								<c:otherwise>
+									<div style="display: flex; height: 260px;">
+										<!-- 좌측: 1차 옵션 목록 -->
+										<div class="tier-left"
+											style="width: 40%; border-right: 1px solid #ededed; overflow-y: auto; background-color: #f7f9fa;">
+											<c:forEach var="parentOpt" items="${optionFilterList}"
+												varStatus="status">
+												<div class="left-tab-item ${status.first ? 'active' : ''}"
+													data-target="sub-group-${parentOpt.optionValueId}">
+													<span>${parentOpt.optionValueName}</span> <span
+														style="font-size: 10px; color: #bdbdbd;">&gt;</span>
+												</div>
 											</c:forEach>
-
 										</div>
-									</c:forEach>
-								</div>
-							</div>
+
+										<!-- 우측: 2차 옵션 그룹 목록 -->
+										<div class="tier-right"
+											style="width: 60%; padding: 12px; overflow-y: auto;">
+											<c:forEach var="parentOpt" items="${optionFilterList}"
+												varStatus="status">
+												<div class="sub-option-group"
+													id="sub-group-${parentOpt.optionValueId}"
+													data-parent-id="${parentOpt.optionValueId}"
+													data-parent-name="${parentOpt.optionValueName}"
+													style="display: ${status.first ? 'block' : 'none'};">
+
+													<label class="all-select-label"> <input
+														type="checkbox" class="js-select-all-group" /> <span>전체선택</span>
+													</label>
+
+													<c:forEach var="subOpt" items="${parentOpt.subOptions}">
+														<label
+															style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; cursor: pointer;">
+															<input type="checkbox" name="options"
+															value="${subOpt.productOptionId}"
+															data-name="${subOpt.subOptionName}"
+															class="js-filter-checkbox js-option-checkbox"
+															<c:if test="${not empty selectedOptions and selectedOptions.contains(subOpt.productOptionId)}">checked</c:if> />
+															<span>${subOpt.subOptionName}</span>
+														</label>
+													</c:forEach>
+												</div>
+											</c:forEach>
+										</div>
+									</div>
+								</c:otherwise>
+							</c:choose>
 						</c:when>
 						<c:otherwise>
 							<div
-								style="padding: 16px; font-size: 13px; color: #757575; text-align: center;">선택
-								가능한 옵션이 없습니다.</div>
+								style="padding: 16px; font-size: 13px; color: #757575; text-align: center;">
+								선택 가능한 옵션이 없습니다.</div>
 						</c:otherwise>
 					</c:choose>
-
 				</div>
 			</div>
 		</div>
@@ -542,6 +580,14 @@
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(function (response) {
+            	if (response.status === 401) {
+                    // confirm 창을 띄워 확인/취소 분기 처리
+                    if (confirm("로그인이 필요한 서비스입니다. 로그인 페이지로 이동하시겠습니까?")) {
+                        window.location.href = '${pageContext.request.contextPath}/login.htm';
+                    }
+                    return null; // 확인이든 취소든 이후 then으로 데이터 파싱이 넘어가지 않도록 중단
+                }
+                
                 if (!response.ok) throw new Error('HTTP 에러: ' + response.status);
                 return response.json();
             })
@@ -563,15 +609,13 @@
             })
             .catch(function (error) {
                 console.error('도움돼요 토글 실패:', error);
-                alert('처리에 실패했습니다: ' + error.message);
+               /*  alert('처리에 실패했습니다: ' + error.message); */
             });
             return;
         }
 
         // 2. 페이징 및 정렬 버튼 클릭 (💥 href="javascript:void(0)" 기본 동작 차단 추가!)
-        // 2. 페이징 및 정렬 버튼 클릭
-       // 2. 페이징 및 정렬 버튼 클릭
-        // 2. 페이징 및 정렬 버튼 클릭
+        
         var actionBtn = e.target.closest('.js-review-action');
         if (actionBtn) {
             e.stopPropagation();

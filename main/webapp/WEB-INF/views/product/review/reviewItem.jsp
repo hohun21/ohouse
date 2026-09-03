@@ -203,7 +203,7 @@
 							</c:if>
 						</div>
 
-						<!-- 💥 [누락된 코드 추가] 도움이 돼요 버튼 및 카운트 영역 -->
+						<!--도움이 돼요 버튼 및 카운트 영역 -->
 						<div class="review-footer" style="margin-top: 12px;">
 							<button type="button"
 								class="btn-like js-review-like ${review.liked ? 'active' : ''}"

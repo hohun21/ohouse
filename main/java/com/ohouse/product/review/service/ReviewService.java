@@ -249,4 +249,10 @@ public class ReviewService {
         return list;
     }
     
+
+    public boolean checkAndValidateUserReview(int memberId, long productId) throws Exception {
+        try (Connection conn = ConnectionProvider.getConnection()) {
+            return reviewDao.hasUserReviewedProduct(conn, memberId, productId);
+        }
+    }
 }

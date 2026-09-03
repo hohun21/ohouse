@@ -16,10 +16,13 @@ public class DeleteReviewHandler implements CommandHandler {
         request.setCharacterEncoding("UTF-8");
         AuthUserDTO authUser = (AuthUserDTO) request.getSession().getAttribute("authUser");
 
-        if (authUser == null) {
-            return "redirect:" + request.getContextPath() + "/member/login.htm";
+        if (authUser == null || !"ADMIN".equals(authUser.getRole())) {
+            return "redirect:" + request.getContextPath() + "/login.htm";
         }
 
+        
+        
+        
         try {
         	String reviewIdStr = request.getParameter("reviewId");
             int reviewId = Integer.parseInt(reviewIdStr);

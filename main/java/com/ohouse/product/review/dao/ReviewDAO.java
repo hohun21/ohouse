@@ -52,4 +52,6 @@ public interface ReviewDAO {
 	boolean hasUserPurchased(Connection conn, int memberId, long productId) throws Exception;
 
 	int insertReview2(Connection conn, ReviewDTO reviewDTO) throws Exception; //backup
+
+	boolean hasUserReviewedProduct(Connection conn, long memberId, long productId) throws Exception;
 }

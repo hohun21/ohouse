@@ -24,6 +24,11 @@ public class AdminReplyHandler implements CommandHandler {
         String name = "";
         String role = "";
         
+        if (authUser == null || !"ADMIN".equals(authUser.getRole())) {
+            return "redirect:" + request.getContextPath() + "/login.htm";
+        }
+        
+        
         if(authUser != null) {
         	memberId=authUser.getMemberId();
         	id=authUser.getId();

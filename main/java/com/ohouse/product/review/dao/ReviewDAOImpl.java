@@ -67,11 +67,14 @@ public class ReviewDAOImpl implements ReviewDAO {
                         WHERE rn = 1
                     ) img ON r.REVIEW_ID = img.REVIEW_ID
                     LEFT JOIN (
-                        SELECT pov.PRODUCT_OPTION_ID,
-                               LISTAGG(ov.OPTION_NAME, ' / ') WITHIN GROUP (ORDER BY ov.SORT_ORDER, ov.OPTION_VALUE_ID) AS OPTION_NAME
-                        FROM PRODUCT_OPTION_VALUE pov
-                        JOIN OPTION_VALUE ov ON pov.OPTION_VALUE_ID = ov.OPTION_VALUE_ID
-                        GROUP BY pov.PRODUCT_OPTION_ID
+                        SELECT PRODUCT_OPTION_ID,
+                               LISTAGG(OPTION_NAME, ' / ') WITHIN GROUP (ORDER BY OPTION_NAME) AS OPTION_NAME
+                        FROM (
+                            SELECT DISTINCT pov.PRODUCT_OPTION_ID, ov.OPTION_NAME
+                            FROM PRODUCT_OPTION_VALUE pov
+                            JOIN OPTION_VALUE ov ON pov.OPTION_VALUE_ID = ov.OPTION_VALUE_ID
+                        )
+                        GROUP BY PRODUCT_OPTION_ID
                     ) opt ON r.PRODUCT_OPTION_ID = opt.PRODUCT_OPTION_ID
                     WHERE r.PRODUCT_ID = ?
                       %s
@@ -251,33 +254,65 @@ public class ReviewDAOImpl implements ReviewDAO {
     // 2단 구조의 리뷰 옵션 필터 드롭다운용 목록 조회 추가
     @Override
     public List<OptionFilterDTO> selectOptionFilterList(Connection conn, long productId) throws Exception {
-        String sql = """
-            SELECT ov1.OPTION_VALUE_ID AS PARENT_VAL_ID,
-                   ov1.OPTION_NAME AS PARENT_VAL_NAME,
-                   po.PRODUCT_OPTION_ID,
-                   LISTAGG(ov2.OPTION_NAME, ' / ') WITHIN GROUP (ORDER BY og2.SORT_ORDER, ov2.SORT_ORDER) AS SUB_OPTION_NAME
-            FROM PRODUCT_OPTION po
-            JOIN PRODUCT_OPTION_VALUE pov1 ON po.PRODUCT_OPTION_ID = pov1.PRODUCT_OPTION_ID
-            JOIN OPTION_VALUE ov1 ON pov1.OPTION_VALUE_ID = ov1.OPTION_VALUE_ID
-            JOIN OPTION_GROUP og1 ON ov1.OPTION_GROUP_ID = og1.OPTION_GROUP_ID AND og1.SORT_ORDER = 1
-            
-            JOIN PRODUCT_OPTION_VALUE pov2 ON po.PRODUCT_OPTION_ID = pov2.PRODUCT_OPTION_ID
-            JOIN OPTION_VALUE ov2 ON pov2.OPTION_VALUE_ID = ov2.OPTION_VALUE_ID
-            JOIN OPTION_GROUP og2 ON ov2.OPTION_GROUP_ID = og2.OPTION_GROUP_ID AND og2.SORT_ORDER > 1
-            WHERE po.PRODUCT_ID = ?
-              AND po.STATUS = 'ACTIVE'
-            GROUP BY ov1.OPTION_VALUE_ID, ov1.OPTION_NAME, po.PRODUCT_OPTION_ID
-            ORDER BY ov1.OPTION_VALUE_ID, po.PRODUCT_OPTION_ID
-            """;
+        // 1. 해당 상품의 옵션 그룹 개수 확인 (단일 옵션 vs 복수 옵션 판별)
+    	// [변경 후] 필수 옵션 그룹(또는 본품 옵션)만 카운트하도록 제한
+    	String countSql = "SELECT COUNT(*) FROM OPTION_GROUP WHERE PRODUCT_ID = ? AND REQUIRED = 1";
+        int groupCount = 0;
+        try (PreparedStatement pstmt = conn.prepareStatement(countSql)) {
+            pstmt.setLong(1, productId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    groupCount = rs.getInt(1);
+                }
+            }
+        }
 
-        List<OptionFilterDTO> list = null;
+        List<OptionFilterDTO> list = new ArrayList<>();
+        Map<Integer, OptionFilterDTO> map = new LinkedHashMap<>();
 
+        String sql = "";
+        if (groupCount <= 1) {
+            // [단일 옵션 상품] 옵션 그룹 자체를 부모(그룹명)로, 하위 옵션 값들을 자식(SubOption)으로 조회
+            sql = """
+                SELECT 
+                    og.OPTION_GROUP_ID AS PARENT_VAL_ID,
+                    og.GROUP_NAME AS PARENT_VAL_NAME,
+                    po.PRODUCT_OPTION_ID,
+                    ov.OPTION_NAME AS SUB_OPTION_NAME
+                FROM OPTION_GROUP og
+                JOIN OPTION_VALUE ov ON og.OPTION_GROUP_ID = ov.OPTION_GROUP_ID
+                JOIN PRODUCT_OPTION_VALUE pov ON ov.OPTION_VALUE_ID = pov.OPTION_VALUE_ID
+                JOIN PRODUCT_OPTION po ON pov.PRODUCT_OPTION_ID = po.PRODUCT_OPTION_ID
+                WHERE og.PRODUCT_ID = ?
+                  AND po.STATUS = 'ACTIVE'
+                ORDER BY ov.SORT_ORDER, po.PRODUCT_OPTION_ID
+                """;
+        } else {
+            // [복수 옵션 상품] DISTINCT를 추가하여 동일한 이름의 2차 옵션이 중복 노출되는 것 방지
+        	sql = """
+                    SELECT DISTINCT
+                        ov1.OPTION_VALUE_ID AS PARENT_VAL_ID,
+                        ov1.OPTION_NAME AS PARENT_VAL_NAME,
+                        po.PRODUCT_OPTION_ID,
+                        ov2.OPTION_NAME AS SUB_OPTION_NAME,
+                        og1.SORT_ORDER AS P_SORT,
+                        og2.SORT_ORDER AS S_SORT
+                    FROM PRODUCT_OPTION po
+                    JOIN PRODUCT_OPTION_VALUE pov1 ON po.PRODUCT_OPTION_ID = pov1.PRODUCT_OPTION_ID
+                    JOIN OPTION_VALUE ov1 ON pov1.OPTION_VALUE_ID = ov1.OPTION_VALUE_ID
+                    JOIN OPTION_GROUP og1 ON ov1.OPTION_GROUP_ID = og1.OPTION_GROUP_ID AND og1.SORT_ORDER = 1
+                    JOIN PRODUCT_OPTION_VALUE pov2 ON po.PRODUCT_OPTION_ID = pov2.PRODUCT_OPTION_ID AND pov2.OPTION_VALUE_ID != ov1.OPTION_VALUE_ID
+                    JOIN OPTION_VALUE ov2 ON pov2.OPTION_VALUE_ID = ov2.OPTION_VALUE_ID
+                    JOIN OPTION_GROUP og2 ON ov2.OPTION_GROUP_ID = og2.OPTION_GROUP_ID AND og2.SORT_ORDER > 1
+                    WHERE po.PRODUCT_ID = ?
+                      AND po.STATUS = 'ACTIVE'
+                    ORDER BY og1.SORT_ORDER, og2.SORT_ORDER, po.PRODUCT_OPTION_ID
+                    """;
+        }
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setLong(1, productId);
 
             try (ResultSet rs = pstmt.executeQuery()) {
-                Map<Integer, OptionFilterDTO> map = new LinkedHashMap<>();
-
                 while (rs.next()) {
                     int parentValId = rs.getInt("PARENT_VAL_ID");
                     String parentValName = rs.getString("PARENT_VAL_NAME");
@@ -292,17 +327,23 @@ public class ReviewDAOImpl implements ReviewDAO {
                             .build()
                     );
 
-                    SubOptionDTO subDTO = SubOptionDTO.builder()
-                            .productOptionId(productOptionId)
-                            .subOptionName(subOptionName)
-                            .build();
+                 // 기존: productOptionId만 체크하던 것을 subOptionName 중복까지 함께 체크
+                    boolean exists = parentDTO.getSubOptions().stream()
+                            .anyMatch(sub -> sub.getSubOptionName().equals(subOptionName));
 
-                    parentDTO.getSubOptions().add(subDTO);
+                    if (!exists) {
+                        SubOptionDTO subDTO = SubOptionDTO.builder()
+                                .productOptionId(productOptionId)
+                                .subOptionName(subOptionName)
+                                .build();
+
+                        parentDTO.getSubOptions().add(subDTO);
+                    }
                 }
-
                 list = new ArrayList<>(map.values());
             }
         }
+        System.out.println(">>> 상품 ID: " + productId + " 의 옵션 그룹 개수(groupCount): " + groupCount);
         return list;
     }
     //도움돼요 토그
@@ -640,11 +681,14 @@ public class ReviewDAOImpl implements ReviewDAO {
                         WHERE rn = 1
                     ) img ON r.REVIEW_ID = img.REVIEW_ID
                     LEFT JOIN (
-                        SELECT pov.PRODUCT_OPTION_ID,
-                               LISTAGG(ov.OPTION_NAME, ' / ') WITHIN GROUP (ORDER BY ov.SORT_ORDER, ov.OPTION_VALUE_ID) AS OPTION_NAME
-                        FROM PRODUCT_OPTION_VALUE pov
-                        JOIN OPTION_VALUE ov ON pov.OPTION_VALUE_ID = ov.OPTION_VALUE_ID
-                        GROUP BY pov.PRODUCT_OPTION_ID
+                        SELECT PRODUCT_OPTION_ID,
+                               LISTAGG(OPTION_NAME, ' / ') WITHIN GROUP (ORDER BY OPTION_NAME) AS OPTION_NAME
+                        FROM (
+                            SELECT DISTINCT pov.PRODUCT_OPTION_ID, ov.OPTION_NAME
+                            FROM PRODUCT_OPTION_VALUE pov
+                            JOIN OPTION_VALUE ov ON pov.OPTION_VALUE_ID = ov.OPTION_VALUE_ID
+                        )
+                        GROUP BY PRODUCT_OPTION_ID
                     ) opt ON r.PRODUCT_OPTION_ID = opt.PRODUCT_OPTION_ID
                     WHERE r.MEMBER_ID = ?
                     ORDER BY %s
@@ -764,5 +808,32 @@ public class ReviewDAOImpl implements ReviewDAO {
             }
         }
         return orderInfo;
+    }
+    
+    @Override
+    public boolean hasUserReviewedProduct(Connection conn, long memberId, long productId) throws Exception {
+        String sql = """
+            SELECT CASE 
+                        WHEN EXISTS (
+                            SELECT 1 
+                            FROM REVIEW 
+                            WHERE MEMBER_ID = ? AND PRODUCT_ID = ?
+                        ) THEN 1 
+                        ELSE 0 
+                    END AS HAS_REVIEWED
+            FROM DUAL
+            """;
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setLong(1, memberId);
+            pstmt.setLong(2, productId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("HAS_REVIEWED") == 1;
+                }
+            }
+        }
+        return false;
     }
 }
