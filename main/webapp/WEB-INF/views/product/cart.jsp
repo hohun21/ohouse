@@ -717,6 +717,7 @@
             <%-- cart-item --%>
         <div class="cart-item"
              data-cart-items-id="${item.cart_items_id}"
+             data-brand-id="${item.brand_id}"
              data-product-id="${item.product_id}"
              data-product-option-id="${item.product_option_id}"
              data-product-name="${item.product_name}"

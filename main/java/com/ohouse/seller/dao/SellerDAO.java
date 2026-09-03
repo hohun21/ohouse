@@ -21,7 +21,7 @@ public interface SellerDAO {
     List<SellerDTO> getPendingSellersWithPaging(int startRow, int endRow) throws SQLException;
     int getTotalSellerCount() throws SQLException;
     List<SellerDTO> getSellerListWithPaging(int startRow, int endRow) throws SQLException;
-    int deleteSeller(int sellerId) throws SQLException;
+    int deleteSeller(int sellerId) throws SQLException; // 💡 원복 완료
     List<ProductDTO> getProductListByBrandId(int brandId) throws SQLException;
     List<ProductDTO> getAllProductsForAdmin() throws SQLException;
 

@@ -546,10 +546,8 @@ public class SellerDAOImpl implements SellerDAO {
         return 0;
     }
 
-    // 💡 3. 수정 중 주문 내역(무결성 위배) 발견 시 플랜 B를 위한 메서드 구현
     @Override
     public void resetAllOptionStocksToZero(int productId) throws SQLException {
-        // 기존에 등록된 옵션들을 임시로 0개로 만들고, 품절 상태로 업데이트 처리
         String sql = "UPDATE product_option SET stock = 0, status = 'SOLD_OUT' WHERE product_id = ?";
         try (PreparedStatement pstmt = this.conn.prepareStatement(sql)) {
             pstmt.setInt(1, productId);
@@ -559,7 +557,6 @@ public class SellerDAOImpl implements SellerDAO {
 
     @Override
     public int updateOptionPriceAndStock(int productId, String skuName, int price, int stock) throws SQLException {
-        // 이름이 일치하는 SKU를 찾아서 입력받은 가격, 재고로 덮어쓰고 품절/활성 상태도 동기화
         String sql = "UPDATE product_option SET price = ?, stock = ?, status = ? WHERE product_id = ? AND sku = ?";
         try (PreparedStatement pstmt = this.conn.prepareStatement(sql)) {
             pstmt.setInt(1, price);

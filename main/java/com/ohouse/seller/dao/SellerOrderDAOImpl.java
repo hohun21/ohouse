@@ -55,9 +55,9 @@ public class SellerOrderDAOImpl implements SellerOrderDAO {
         String sql = "";
         
         if (status == 4) {
-            sql = "UPDATE ORDERS_DETAIL SET delivery_status = ?, delivered_date = SYSDATE WHERE order_detail_id = ?";
+            sql = "UPDATE ORDERS_DETAIL SET delivery_status = ?, delivered_date = SYSDATE WHERE orders_detail_id = ?";
         } else {
-            sql = "UPDATE ORDERS_DETAIL SET delivery_status = ? WHERE order_detail_id = ?";
+            sql = "UPDATE ORDERS_DETAIL SET delivery_status = ? WHERE orders_detail_id = ?";
         }
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {

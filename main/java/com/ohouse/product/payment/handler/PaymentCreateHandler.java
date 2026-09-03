@@ -24,8 +24,9 @@ public class PaymentCreateHandler implements CommandHandler {
         System.out.println("addressId = " + dto.getAddressId());
         System.out.println("requestMsg = " + dto.getRequestMsg());
         System.out.println("paymentPrice = " + dto.getPaymentPrice());
-
+        String from = request.getParameter("from");
         request.getSession().setAttribute("orderdata",dto);
+        request.getSession().setAttribute("from",from);
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");

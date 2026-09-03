@@ -68,7 +68,6 @@
             <li><a href="${pageContext.request.contextPath}/seller/orderList.htm" class="active">🚚 주문 및 배송 관리</a></li>
             <li><a href="${pageContext.request.contextPath}/seller/claimList.htm">🔄 취소/교환/반품 관리</a></li>
             <li><a href="${pageContext.request.contextPath}/seller/settlementList.htm">💰 정산 관리</a></li>
-            <li><a href="#">⭐ 리뷰 관리</a></li>
         </ul>
     </div>
 
@@ -115,7 +114,6 @@
                                         <fmt:formatNumber value="${item.price}" pattern="#,###"/>원
                                     </td>
                                     
-                                    <!-- 1. 현재 배송 상태를 보여주는 뱃지 구역 (1~5 숫자 기준) -->
                                     <td>
                                         <c:choose>
                                             <c:when test="${item.deliveryStatus == 1 || empty item.deliveryStatus}">
@@ -136,7 +134,6 @@
                                         </c:choose>
                                     </td>
                                     
-                                    <!-- 2. 판매자 액션 버튼 구역 (4번 배송완료까지만 제어) -->
                                     <td>
                                         <c:choose>
                                             <c:when test="${item.deliveryStatus == 1 || empty item.deliveryStatus}">

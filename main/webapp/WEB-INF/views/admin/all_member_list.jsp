@@ -51,6 +51,7 @@
         text-align: center;
         border-bottom: 1px solid #e1e4e6;
         font-size: 14px;
+        vertical-align: middle;
     }
     th {
         background-color: #f8f9fa;
@@ -122,14 +123,15 @@
                         <th>이름</th>
                         <th>권한(Role)</th>
                         <th>가입일(RegDate)</th>
-                        <th>삭제</th>
+                        <th>상태</th>
+                        <th>관리</th>
                     </tr>
                 </thead>
                 <tbody>
                     <c:choose>
                         <c:when test="${empty memberList}">
                             <tr>
-                                <td colspan="6" class="empty-msg">가입된 회원이 없습니다.</td>
+                                <td colspan="7" class="empty-msg">가입된 회원이 없습니다.</td>
                             </tr>
                         </c:when>
                         <c:otherwise>
@@ -140,11 +142,39 @@
                                     <td>${member.name}</td>
                                     <td>${member.role}</td>
                                     <td><fmt:formatDate value="${member.regDate}" pattern="yyyy-MM-dd"/></td>
+                                    
                                     <td>
-                                        <button type="button" onclick="confirmDelete(${member.memberId})" 
-                                            style="background-color: #ff4d4f; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;">
-                                               X
-                                        </button>
+                                        <c:choose>
+                                            <c:when test="${member.status == 1}">
+                                                <span style="color: #52c41a; font-weight: bold;">정상</span>
+                                            </c:when>
+                                            <c:when test="${member.status == -1}">
+                                                <span style="color: #ff4d4f; font-weight: bold;">정지</span>
+                                            </c:when>
+                                            <c:when test="${member.status == 0}">
+                                                <span style="color: #bfbfbf;">탈퇴</span>
+                                            </c:when>
+                                        </c:choose>
+                                    </td>
+                                    
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${member.status == 1}">
+                                                <button type="button" onclick="changeMemberStatus(${member.memberId}, -1)" 
+                                                    style="background-color: #ff4d4f; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;">
+                                                    정지
+                                                </button>
+                                            </c:when>
+                                            <c:when test="${member.status == -1}">
+                                                <button type="button" onclick="changeMemberStatus(${member.memberId}, 1)" 
+                                                    style="background-color: #1890ff; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;">
+                                                    정지해제
+                                                </button>
+                                            </c:when>
+                                            <c:when test="${member.status == 0}">
+                                                <span style="font-size: 12px; color: #999;">관리불가</span>
+                                            </c:when>
+                                        </c:choose>
                                     </td>
                                 </tr>
                             </c:forEach>
@@ -177,9 +207,11 @@
     </div>
 
 <script>
-function confirmDelete(memberId) {
-    if (confirm("회원번호 " + memberId + "번 회원을 삭제하시겠습니까?")) {
-        location.href = "${pageContext.request.contextPath}/admin/deleteMember.htm?memberId=" + memberId;
+function changeMemberStatus(memberId, status) {
+    const actionText = (status === -1) ? "정지" : "정지 해제";
+    
+    if (confirm("회원번호 " + memberId + "번 회원을 " + actionText + " 처리하시겠습니까?")) {
+        location.href = "${pageContext.request.contextPath}/admin/memberStatusUpdate.htm?member_id=" + memberId + "&status=" + status;
     }
 }
 </script>
