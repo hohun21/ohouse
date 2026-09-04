@@ -239,17 +239,8 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 	z-index: 1000;
 	height: 80px;
 	background-color: #fff;
-	transition: height 0.15s ease;
 }
-/* 서브 헤더가 열려도 부모 높이는 바꾸지 않아 화면 흔들림을 방지한다. */
-.sticky-header.sub-open,
-.sticky-header.sub-visible {
-	height: 132px;
-}
-/* showSubHeaderAtTop=false를 직접 전달한 페이지는 hover 시 본문을 52px 아래로 민다. */
-.sticky-header.push-sub-header.sub-open {
-	height: 132px;
-}
+
 /* 기존 sticky를 해제하고 sticky-header가 전체를 고정한다. */
 .header-main-area { position: relative; top: auto; z-index: 20; }
 .header-sub-area {
