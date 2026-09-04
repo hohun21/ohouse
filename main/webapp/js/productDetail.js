@@ -467,3 +467,84 @@ document.querySelectorAll('.tabs a').forEach(tab => {
         document.querySelector(targetId).classList.add('active');
     });
 });
+
+// 수정 모달 열기 (기존 리뷰 데이터를 가져와서 모달 폼에 채워주는 비동기 호출 등 연결)
+// 수정 모달 열기 및 기존 데이터 바인딩
+// 수정 모달 열기 및 기존 데이터 바인딩 (안전 장치 포함)
+function openEditReviewModal(reviewId, rating, content, imageUrl) {
+	
+    console.log("openEditReviewModal 실행됨! 데이터:", { reviewId, rating, content, imageUrl });
+
+    const reviewIdEl = document.getElementById("editReviewId");
+    const ratingEl = document.getElementById("editRating");
+    const contentEl = document.getElementById("editContent");
+    const imageUrlEl = document.getElementById("editImageUrl");
+    const modalEl = document.getElementById("reviewEditModal");
+
+    // 각 요소가 실제로 존재하는지 확인 (없으면 콘솔에 에러 출력)
+    if (!reviewIdEl) console.error("id가 'editReviewId'인 요소를 찾을 수 없습니다.");
+    if (!ratingEl) console.error("id가 'editRating'인 요소를 찾을 수 없습니다.");
+    if (!contentEl) console.error("id가 'editContent'인 요소를 찾을 수 없습니다.");
+    if (!imageUrlEl) console.error("id가 'editImageUrl'인 요소를 찾을 수 없습니다.");
+    if (!modalEl) console.error("id가 'reviewEditModal'인 요소를 찾을 수 없습니다.");
+
+    if (reviewIdEl) reviewIdEl.value = reviewId;
+    if (ratingEl) ratingEl.value = rating;
+    if (contentEl) contentEl.value = content;
+    if (imageUrlEl) imageUrlEl.value = imageUrl;
+    
+    if (modalEl) {
+        modalEl.style.display = "flex";
+        console.log("모달 display = flex 적용 완료!");
+    }
+}
+
+// 모달 닫기
+function closeEditReviewModal() {
+    const modalEl = document.getElementById("reviewEditModal");
+    if (modalEl) {
+        modalEl.style.display = "none";
+    }
+}
+
+// 리뷰 삭제 요청 함수
+function deleteReview(reviewId, productId) {
+    if (confirm("정말 삭제하시겠습니까?")) {
+		location.href = "deleteReview.htm?reviewId=" + reviewId;
+       }
+}
+
+// 이벤트 위임 (data-* 속성 매칭)
+document.addEventListener("click", function(event) {
+    const editBtn = event.target.closest(".js-edit-review-btn");
+    if (editBtn) {
+        const reviewId = editBtn.getAttribute("data-review-id");
+        const rating = editBtn.getAttribute("data-rating");
+        const content = editBtn.getAttribute("data-content");
+		const imageUrl = editBtn.getAttribute("date-image-url");
+        
+        openEditReviewModal(reviewId, rating, content);
+    }
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // 마이페이지에서 수정 버튼을 눌러 넘어온 경우
+    if (urlParams.get("openEdit") === "true") {
+        const reviewId = urlParams.get("reviewId");
+        const rating = urlParams.get("rating");
+        const content = decodeURIComponent(urlParams.get("content") || "");
+        const imageUrl = decodeURIComponent(urlParams.get("imageUrl") || "");
+        const productId = urlParams.get("product_id");
+
+        // 위에 정의하신 openEditReviewModal 함수 호출
+        if (typeof openEditReviewModal === "function") {
+            openEditReviewModal(reviewId, rating, content, imageUrl);
+        }
+        
+        // 주소창 파라미터 정리 (새로고침 시 모달 중복 실행 방지)
+        window.history.replaceState({}, document.title, window.location.pathname + "?product_id=" + productId);
+    }
+});

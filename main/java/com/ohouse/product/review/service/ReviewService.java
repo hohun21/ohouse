@@ -17,152 +17,262 @@ import com.ohouse.util.conn.ConnectionProvider;
 
 public class ReviewService {
 
-    private ReviewDAO reviewDao = new ReviewDAOImpl(); 
+	private ReviewDAO reviewDao = new ReviewDAOImpl(); 
 
-    public List<ReviewDTO> getReviewList(ReviewPageDTO reqDTO) {
-        try (Connection conn = ConnectionProvider.getConnection()) {
-        	System.out.println("getReviewList");
-            return reviewDao.selectReviewList(conn, reqDTO);
-        } catch (Exception e) {
-            throw new RuntimeException("리뷰 목록 조회 중 에러 발생", e);
-        }
-    }
+	public List<ReviewDTO> getReviewList(ReviewPageDTO reqDTO) {
+		try (Connection conn = ConnectionProvider.getConnection()) {
+			System.out.println("getReviewList, " + reqDTO.getMember_id());
+			return reviewDao.selectReviewList(conn, reqDTO);
+		} catch (Exception e) {
+			throw new RuntimeException("리뷰 목록 조회 중 에러 발생", e);
+		}
+	}
 
-    public ReviewSummaryDTO getReviewSummary(long productId) {
-        try (Connection conn = ConnectionProvider.getConnection()) {
-            return reviewDao.selectReviewSummary(conn, productId);
-        } catch (Exception e) {
-            throw new RuntimeException("리뷰 요약 정보 조회 중 에러 발생", e);
-        }
-    }
-    
- // ReviewService.java
-    public int getTotalRecords(ReviewPageDTO reqDTO) throws Exception {
-        try (Connection conn = ConnectionProvider.getConnection()) { 
-            return reviewDao.getTotalRecords(conn, reqDTO);
-        }
-    }
-    public List<OptionFilterDTO> getOptionFilterList(long productId) throws Exception {
-        try (Connection conn = ConnectionProvider.getConnection()) { 
-            return reviewDao.selectOptionFilterList(conn, productId);
-        }
-    }
-    
- // 도움돼요 토글 처리 (좋아요 추가/삭제 및 최신 개수 반환)
-    public Map<String, Object> toggleHelpCount(int reviewId, int memberId) {
-        Map<String, Object> resultMap = new HashMap<>();
-        
-        try (Connection conn = ConnectionProvider.getConnection()) {
-            conn.setAutoCommit(false); // 트랜잭션 시작
+	public ReviewSummaryDTO getReviewSummary(long productId) {
+		try (Connection conn = ConnectionProvider.getConnection()) {
+			return reviewDao.selectReviewSummary(conn, productId);
+		} catch (Exception e) {
+			throw new RuntimeException("리뷰 요약 정보 조회 중 에러 발생", e);
+		}
+	}
 
-            boolean isLiked = reviewDao.isReviewLiked(conn, reviewId, memberId);
+	// ReviewService.java
+	public int getTotalRecords(ReviewPageDTO reqDTO) throws Exception {
+		try (Connection conn = ConnectionProvider.getConnection()) { 
+			return reviewDao.getTotalRecords(conn, reqDTO);
+		}
+	}
+	public List<OptionFilterDTO> getOptionFilterList(long productId) throws Exception {
+		try (Connection conn = ConnectionProvider.getConnection()) { 
+			return reviewDao.selectOptionFilterList(conn, productId);
+		}
+	}
 
-            if (isLiked) {
-                reviewDao.deleteReviewLike(conn, reviewId, memberId);
-                resultMap.put("isLiked", false);
-            } else {
-                reviewDao.insertReviewLike(conn, reviewId, memberId);
-                resultMap.put("isLiked", true);
-            }
+	// 도움돼요 토글 처리 (좋아요 추가/삭제 및 최신 개수 반환)
+	public Map<String, Object> toggleHelpCount(int reviewId, int memberId) {
+		Map<String, Object> resultMap = new HashMap<>();
 
-            conn.commit(); // 커밋
+		try (Connection conn = ConnectionProvider.getConnection()) {
+			conn.setAutoCommit(false); // 트랜잭션 시작
 
-            // REVIEW_LIKE 기준 최신 개수 집계
-            int updatedCount = reviewDao.getHelpCount(conn, reviewId);
-            resultMap.put("helpCount", updatedCount);
+			boolean isLiked = reviewDao.isReviewLiked(conn, reviewId, memberId);
 
-        } catch (Exception e) {
-            throw new RuntimeException("도움돼요 토글 처리 중 에러 발생", e);
-        }
+			if (isLiked) {
+				reviewDao.deleteReviewLike(conn, reviewId, memberId);
+				resultMap.put("isLiked", false);
+			} else {
+				reviewDao.insertReviewLike(conn, reviewId, memberId);
+				resultMap.put("isLiked", true);
+			}
 
-        return resultMap;
-    }
- // 리뷰 이미지 숨김/해제 토글 서비스
-    public boolean updateHideImage(int reviewId, int isHideImage) {
-        Connection conn = null;
+			conn.commit(); // 커밋
 
-        try {
-            conn = ConnectionProvider.getConnection();
-            
-            // DAO 메서드에 conn 전달 (executeUpdate 시 자동 커밋됨)
-            int rowCount = reviewDao.updateHideImage(conn, reviewId, isHideImage);
+			// REVIEW_LIKE 기준 최신 개수 집계
+			int updatedCount = reviewDao.getHelpCount(conn, reviewId);
+			resultMap.put("helpCount", updatedCount);
 
-            return rowCount > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            if (conn != null) try { conn.close(); } catch (Exception e) {}
-        }
-    }
-    
-    public boolean saveAdminReply(int reviewId, String adminReply, boolean isAdmin) {
-        if (!isAdmin) {
-            throw new SecurityException("관리자 권한이 없습니다.");
-        }
+		} catch (Exception e) {
+			throw new RuntimeException("도움돼요 토글 처리 중 에러 발생", e);
+		}
 
-        Connection conn = null;
-        try {
-            conn = ConnectionProvider.getConnection();
-            conn.setAutoCommit(false);
+		return resultMap;
+	}
+	// 리뷰 이미지 숨김/해제 토글 서비스
+	public boolean updateHideImage(int reviewId, int isHideImage) {
+		Connection conn = null;
 
-            int result = reviewDao.updateAdminReply(conn, reviewId, adminReply);
+		try {
+			conn = ConnectionProvider.getConnection();
 
-            if (result > 0) {
-                conn.commit();
-                return true;
-            } else {
-                conn.rollback();
-                return false;
-            }
-        } catch (Exception e) {
-            if (conn != null) try { conn.rollback(); } catch (Exception ex) {}
-            throw new RuntimeException(e);
-        } finally {
-            if (conn != null) try { conn.close(); } catch (Exception ex) {}
-        }
-    }
-    
-    /**
-     * 리뷰 등록 및 이미지 URL 저장 통합 비즈니스 로직
-     */
-    public boolean registerReview(ReviewDTO reviewDTO, String imageUrl) {
-        Connection conn = null;
-        try {
-            conn = ConnectionProvider.getConnection();
-            conn.setAutoCommit(false); // 트랜잭션 시작
+			// DAO 메서드에 conn 전달 (executeUpdate 시 자동 커밋됨)
+			int rowCount = reviewDao.updateHideImage(conn, reviewId, isHideImage);
 
-            // 1. 리뷰 본문 저장 후 생성된 review_id 반환 받기
-            int generatedReviewId = reviewDao.insertReview(conn, reviewDTO);
+			return rowCount > 0;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		} finally {
+			if (conn != null) try { conn.close(); } catch (Exception e) {}
+		}
+	}
 
-            if (generatedReviewId <= 0) {
-                conn.rollback();
-                return false;
-            }
+	public boolean saveAdminReply(int reviewId, String adminReply, boolean isAdmin) {
+		if (!isAdmin) {
+			throw new SecurityException("관리자 권한이 없습니다.");
+		}
 
-            // 2. 이미지가 첨부된 경우에만 이미지 URL 저장 테이블에 INSERT
-            if (imageUrl != null && !imageUrl.trim().isEmpty()) {
-                int imageResult = reviewDao.insertReviewImage(conn, generatedReviewId, imageUrl);
-                if (imageResult <= 0) {
-                    conn.rollback();
-                    return false;
-                }
-            }
+		Connection conn = null;
+		try {
+			conn = ConnectionProvider.getConnection();
+			conn.setAutoCommit(false);
 
-            // 모든 작업 성공 시 커밋
-            conn.commit();
-            return true;
+			int result = reviewDao.updateAdminReply(conn, reviewId, adminReply);
 
-        } catch (Exception e) {
-            if (conn != null) {
-                try { conn.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
-            }
-            throw new RuntimeException("리뷰 등록 중 오류 발생: " + e.getMessage(), e);
-        } finally {
-            if (conn != null) {
-                try { conn.close(); } catch (Exception ex) { ex.printStackTrace(); }
-            }
-        }
-    }
-    
+			if (result > 0) {
+				conn.commit();
+				return true;
+			} else {
+				conn.rollback();
+				return false;
+			}
+		} catch (Exception e) {
+			if (conn != null) try { conn.rollback(); } catch (Exception ex) {}
+			throw new RuntimeException(e);
+		} finally {
+			if (conn != null) try { conn.close(); } catch (Exception ex) {}
+		}
+	}
+
+	/**
+	 * 리뷰 등록 및 이미지 URL 저장 통합 비즈니스 로직
+	 */
+	public boolean registerReview(ReviewDTO reviewDTO, String imageUrl) {
+		Connection conn = null;
+		try {
+			conn = ConnectionProvider.getConnection();
+			conn.setAutoCommit(false); // 트랜잭션 시작
+
+			// 1. 리뷰 본문 저장 후 생성된 review_id 반환 받기
+			int generatedReviewId = reviewDao.insertReview(conn, reviewDTO);
+
+			if (generatedReviewId <= 0) {
+				conn.rollback();
+				return false;
+			}
+
+			// 2. 이미지가 첨부된 경우에만 이미지 URL 저장 테이블에 INSERT
+			if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+				int imageResult = reviewDao.insertReviewImage(conn, generatedReviewId, imageUrl);
+				if (imageResult <= 0) {
+					conn.rollback();
+					return false;
+				}
+			}
+
+			// 모든 작업 성공 시 커밋
+			conn.commit();
+			return true;
+
+		} catch (Exception e) {
+			if (conn != null) {
+				try { conn.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
+			}
+			throw new RuntimeException("리뷰 등록 중 오류 발생: " + e.getMessage(), e);
+		} finally {
+			if (conn != null) {
+				try { conn.close(); } catch (Exception ex) { ex.printStackTrace(); }
+			}
+		}
+	}
+	public boolean modifyReview(ReviewDTO reviewDTO, String imageUrl) {
+		Connection conn = null;
+		try {
+			conn = ConnectionProvider.getConnection();
+			conn.setAutoCommit(false); // 트랜잭션 시작
+
+			// 1. 리뷰 본문(내용, 별점) 수정
+			int updateCount = reviewDao.updateReview(conn, reviewDTO);
+			if (updateCount <= 0) {
+				conn.rollback();
+				return false;
+			}
+
+			// 2. 새 이미지가 첨부된 경우에만 이미지 갱신/등록 처리
+			if (imageUrl != null && !imageUrl.isEmpty()) {
+				reviewDao.updateReviewImage(conn, reviewDTO.getReviewId(), imageUrl);
+			}
+
+			conn.commit();
+			return true;
+
+		} catch (Exception e) {
+			if (conn != null) {
+				try { conn.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
+			}
+			e.printStackTrace();
+			return false;
+		} finally {
+			if (conn != null) {
+				try { conn.close(); } catch (Exception e) { e.printStackTrace(); }
+			}
+		}
+	}
+	public boolean removeReview(int reviewId) {
+		Connection conn = null;
+		try {
+			conn = ConnectionProvider.getConnection();
+			conn.setAutoCommit(false);
+
+			// 1. 연관된 좋아요 데이터 삭제
+			reviewDao.deleteReviewLikes(conn, reviewId);
+
+			// 2. 연관된 이미지 데이터 삭제
+			reviewDao.deleteReviewImages(conn, reviewId);
+
+			// 3. 메인 리뷰 데이터 삭제
+			int affectedRows = reviewDao.deleteReview(conn, reviewId);
+
+			if (affectedRows > 0) {
+				conn.commit();
+				return true;
+			} else {
+				conn.rollback();
+				return false;
+			}
+		} catch (Exception e) {
+			if (conn != null) {
+				try { conn.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
+			}
+			e.printStackTrace();
+			return false;
+		} finally {
+			if (conn != null) {
+				try { conn.close(); } catch (Exception e) { e.printStackTrace(); }
+			}
+		}
+	}
+	// 1. 내가 작성한 총 리뷰 개수 조회
+	public int getMyReviewTotalCount(int memberId) throws Exception {
+		int totalRecords = 0;
+		try (Connection conn = ConnectionProvider.getConnection()) {
+			totalRecords = reviewDao.selectMyReviewTotalCount(conn, memberId);
+		}
+		return totalRecords;
+	}
+
+	// 2. 내가 작성한 리뷰 목록 조회 (페이징 및 정렬 포함)
+	public List<ReviewDTO> getMyReviewList(ReviewPageDTO reqDTO) throws Exception {
+		List<ReviewDTO> list = null;
+		try (Connection conn = ConnectionProvider.getConnection()) {
+			list = reviewDao.selectMyReviewList(conn, reqDTO);
+		}
+		return list;
+	}
+
+
+	public boolean checkAndValidateUserReview(int memberId, long productId) throws Exception {
+		try (Connection conn = ConnectionProvider.getConnection()) {
+			return reviewDao.hasUserReviewedProduct(conn, memberId, productId);
+		}
+	}
+
+	// 3. 사용자의 특정 상품 최근 구매 정보(주문일, 선택 옵션명) 조회
+	public ReviewDTO getLatestOrderInfo(int memberId, long productId) throws Exception {
+		ReviewDTO orderInfo = null;
+		try (Connection conn = ConnectionProvider.getConnection()) {
+			orderInfo = reviewDao.findLatestOrderInfo(conn, memberId, productId);
+		}
+		return orderInfo;
+	}
+	
+	public boolean checkUserReviewAndRedirect(int memberId, long productId) {
+	    try (Connection conn = ConnectionProvider.getConnection()) {
+	        return reviewDao.hasUserReviewedProduct(conn, memberId, productId);
+	    } catch (Exception e) {
+	        throw new RuntimeException("리뷰 작성 여부 확인 중 에러 발생", e);
+	    }
+	}
+	
+	
+
 }

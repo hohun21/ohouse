@@ -15,6 +15,7 @@ import java.io.IOException;
 @WebFilter(urlPatterns = {
 	    "/order.htm", "/couponlist.htm", "/cart.htm", "/cartAdd.htm",
 	    "/addressList.htm", "/addressAddPro.htm", "/addressSetDefault.htm", "/addressDelete.htm"
+	    ,"/writeReview.htm"
 	})
 public class LoginFilter extends HttpFilter implements Filter {
     public LoginFilter() {
