@@ -163,7 +163,7 @@ document.querySelectorAll(".option-change-btn")
 
 function loadOptionSelects(productId) {
 
-    fetch("productDetail.htm?product_id=" + encodeURIComponent(productId))
+    fetch("/product/productDetail.htm?product_id=" + encodeURIComponent(productId))
         .then(function (response) {
 
             if (!response.ok) {
@@ -535,7 +535,7 @@ function findChangedProductOption() {
      * 상품 옵션 조회
      */
 
-    fetch("productOption.htm?product_id=" + encodeURIComponent(productId) + "&option_value_ids=" + encodeURIComponent(optionValueIds.join(",")))
+    fetch("/product/productOption.htm?product_id=" + encodeURIComponent(productId) + "&option_value_ids=" + encodeURIComponent(optionValueIds.join(",")))
         .then(function (response) {
 
             if (!response.ok) {
