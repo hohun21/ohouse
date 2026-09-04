@@ -628,7 +628,7 @@
             나의 쇼핑
         </a>
 
-        <a href="#">
+         <a href="${pageContext.request.contextPath}/member/myReview.htm">
             나의 리뷰
         </a>
 

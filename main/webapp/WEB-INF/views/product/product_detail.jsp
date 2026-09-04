@@ -532,15 +532,15 @@
                             <c:forEach var="value"
                                        items="${pdto.optionDTOList}">
 
-                                <c:if test="${value.option_group_id == option.option_group_id}">
 
-                                    <option value="${value.option_value_id}">
-                                            ${value.option_name}
-                                    </option>
+								<c:if test="${value.option_group_id == option.option_group_id}">
 
-                                </c:if>
+									<option value="${value.option_value_id}">
+										${value.option_name}</option>
 
-                            </c:forEach>
+								</c:if>
+
+							</c:forEach>
 
                         </select>
 
@@ -611,6 +611,13 @@
     </div>
 </div>
 <script src="${pageContext.request.contextPath}/js/productDetail.js"></script>
+<jsp:include page="/WEB-INF/views/product/review/reviewFormModal.jsp" >
+	<jsp:param name="productId" value="${pdto.productDTO.product_id}" />
+</jsp:include>
+<jsp:include page="/WEB-INF/views/product/review/reviewEditModal.jsp">
+    <jsp:param name="productId" value="${pdto.productDTO.product_id}" />
+</jsp:include>
+
 <script>
     $(".link-category").on("click", function (e) {
         const category_id = $(this).data("category_id");
