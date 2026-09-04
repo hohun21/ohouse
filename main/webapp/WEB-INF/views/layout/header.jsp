@@ -496,7 +496,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 	                    <%-- 2. 비로그인 상태일 때 --%>
 	                    <c:otherwise>
 	                        <!-- 장바구니 아이콘 -->
-	                        <a href="${pageContext.request.contextPath}/cart.htm" class="header-icon-btn" title="장바구니">
+	                        <a href="${pageContext.request.contextPath}/cart/cart.htm" class="header-icon-btn" title="장바구니">
 	                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
 	                                 stroke-linecap="round" stroke-linejoin="round">
 	                                <circle cx="9" cy="21" r="1"></circle>

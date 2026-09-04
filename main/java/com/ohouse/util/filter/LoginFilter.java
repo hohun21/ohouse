@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
 @WebFilter(urlPatterns = {
-	    "/order/order.htm", "/couponlist.htm", "/cart.htm", "/cartAdd.htm",
+	    "/order/*", "/couponlist.htm", "/cart/*",
 	    "/addressList.htm", "/addressAddPro.htm", "/addressSetDefault.htm", "/addressDelete.htm"
 	    ,"/writeReview.htm"
 	})
