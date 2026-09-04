@@ -4,16 +4,17 @@
 
 <jsp:include page="/WEB-INF/views/layout/header.jsp"/>
 <style>
-/* 기본적으로 내용 다 숨기기 */
-.tab-content {
-    display: none;
-    margin-bottom: 80px;
-}
+    /* 기본적으로 내용 다 숨기기 */
+    .tab-content {
+        display: none;
+        margin-bottom: 80px;
+    }
 
-/* active 붙은 내용만 보이기 */
-.tab-content.active {
-    display: block;
-}
+    /* active 붙은 내용만 보이기 */
+    .tab-content.active {
+        display: block;
+    }
+
     html,
     body {
         min-width: 1200px;
@@ -61,14 +62,15 @@
         margin: 50px 0 0;
     }
 
-.breadcrumb {
-	display: flex;
-	gap: 8px;
-	margin-bottom: 24px;
-	color: #828c94;
-	font-size: 13px;
-	padding-top: 50px;
-}
+    .breadcrumb {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+        color: #828c94;
+        font-size: 13px;
+        padding-top: 50px;
+    }
+
     .product-detail {
         width: 100%;
         max-width: 1100px;
@@ -235,11 +237,16 @@
         font-size: 14px;
     }
 
-    .selected-list {
-        margin-top: 12px;
+
+    #selected-list {
+        width: 100%;
+        margin-top: 20px;
     }
 
     .selected-option {
+        position: relative;
+        width: 100%;
+        height: 110px;
         padding: 15px;
         margin-bottom: 8px;
         border-radius: 4px;
@@ -247,13 +254,21 @@
     }
 
     .selected-name {
-        margin-bottom: 14px;
+        position: absolute;
+        top: 22px;
+        left: 15px;
+        right: 30px;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 400;
         line-height: 1.5;
+        color:#000000;
     }
 
     .selected-bottom {
+        position: absolute;
+        left: 15px;
+        right: 15px;
+        bottom: 15px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -261,6 +276,7 @@
 
     .quantity {
         display: flex;
+        width: fit-content;
         height: 32px;
         border: 1px solid #dadde0;
         border-radius: 4px;
@@ -269,6 +285,8 @@
 
     .quantity button {
         width: 30px;
+        height: 30px;
+        padding: 0;
         border: 0;
         background: #fff;
         cursor: pointer;
@@ -280,18 +298,27 @@
         justify-content: center;
         align-items: center;
         font-size: 13px;
+        color: #000000;
     }
 
     .selected-price {
+        margin-left: auto;
         font-size: 16px;
         font-weight: 700;
+        color: #000000;
     }
 
     .remove {
-        margin-left: 8px;
+        position: absolute;
+        top: -30px;
+        right: 10px;
+        margin: 0;
+        padding: 0;
         border: 0;
         background: none;
         color: #999;
+        font-size: 16px;
+        line-height: 1;
         cursor: pointer;
     }
 
@@ -447,7 +474,8 @@
         <!-- 오른쪽 상품 정보 -->
         <div class="product-info">
 
-            <div class="brand" data-brand-id="${pdto.productDTO.brand_id}" data-brand-name="${pdto.productDTO.brand_name}">
+            <div class="brand" data-brand-id="${pdto.productDTO.brand_id}"
+                 data-brand-name="${pdto.productDTO.brand_name}">
                 ${pdto.productDTO.brand_name}
             </div>
             <div class="product-name">
@@ -533,14 +561,14 @@
                                        items="${pdto.optionDTOList}">
 
 
-								<c:if test="${value.option_group_id == option.option_group_id}">
+                                <c:if test="${value.option_group_id == option.option_group_id}">
 
-									<option value="${value.option_value_id}">
-										${value.option_name}</option>
+                                    <option value="${value.option_value_id}">
+                                            ${value.option_name}</option>
 
-								</c:if>
+                                </c:if>
 
-							</c:forEach>
+                            </c:forEach>
 
                         </select>
 
@@ -582,40 +610,40 @@
                 <a href="#qna">문의</a>
                 <a href="#delivery">배송/환불</a>
             </div>
-<!-- 1. 상품정보 (기본으로 보임: active) -->
-    <section id="detail" class="tab-content active">
-        <h2>상품정보</h2>
-        <div class="detail-empty">상품 상세 정보 내용</div>
-    </section>
+            <!-- 1. 상품정보 (기본으로 보임: active) -->
+            <section id="detail" class="tab-content active">
+                <h2>상품정보</h2>
+                <div class="detail-empty">상품 상세 정보 내용</div>
+            </section>
 
-    <!-- 2. 리뷰 -->
-    <section id="detail-review" class="tab-content">
-        <jsp:include page="/WEB-INF/views/product/review/reviewList.jsp">
-            <jsp:param name="product_id" value="${pdto.productDTO.product_id}" />
-            <jsp:param name="member_id" value="${memberId != null ? memberId : 2}" />
-        </jsp:include>
-    </section>
+            <!-- 2. 리뷰 -->
+            <section id="detail-review" class="tab-content">
+                <jsp:include page="/WEB-INF/views/product/review/reviewList.jsp">
+                    <jsp:param name="product_id" value="${pdto.productDTO.product_id}"/>
+                    <jsp:param name="member_id" value="${memberId != null ? memberId : 2}"/>
+                </jsp:include>
+            </section>
 
-    <!-- 3. 문의 -->
-    <section id="qna" class="tab-content">
-        <h2>문의</h2>
-    </section>
+            <!-- 3. 문의 -->
+            <section id="qna" class="tab-content">
+                <h2>문의</h2>
+            </section>
 
-    <!-- 4. 배송/환불 -->
-    <section id="delivery" class="tab-content">
-        <h2>배송/환불</h2>
-    </section>
+            <!-- 4. 배송/환불 -->
+            <section id="delivery" class="tab-content">
+                <h2>배송/환불</h2>
+            </section>
         </div>
-        
+
 
     </div>
 </div>
 <script src="${pageContext.request.contextPath}/js/productDetail.js"></script>
-<jsp:include page="/WEB-INF/views/product/review/reviewFormModal.jsp" >
-	<jsp:param name="productId" value="${pdto.productDTO.product_id}" />
+<jsp:include page="/WEB-INF/views/product/review/reviewFormModal.jsp">
+    <jsp:param name="productId" value="${pdto.productDTO.product_id}"/>
 </jsp:include>
 <jsp:include page="/WEB-INF/views/product/review/reviewEditModal.jsp">
-    <jsp:param name="productId" value="${pdto.productDTO.product_id}" />
+    <jsp:param name="productId" value="${pdto.productDTO.product_id}"/>
 </jsp:include>
 
 <script>

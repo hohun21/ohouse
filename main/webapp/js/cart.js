@@ -239,7 +239,7 @@ async function updateQuantity(
 
     const response =
         await fetch(
-            "/cartQuantityEdit.htm",
+            "/cart/cartQuantityEdit.htm",
             {
                 method: "POST",
                 headers: {
@@ -557,7 +557,7 @@ $("#buyBtn").on("click", async function () {
     }
 
     try {
-        const response = await fetch("/cartOrder.htm", {
+        const response = await fetch("/cart/cartOrder.htm", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -569,7 +569,7 @@ $("#buyBtn").on("click", async function () {
             throw new Error("주문 데이터 생성 실패");
         }
 
-        location.href = "/order.htm?from=cart";
+        location.href = "/order/order.htm?from=cart";
 
     } catch (error) {
         console.error("주문 이동 오류:", error);
@@ -1625,7 +1625,7 @@ $("#optionChangeConfirm").on(
 
             const response =
                 await fetch(
-                    "/cartOptionEdit.htm",
+                    "/cart/cartOptionEdit.htm",
                     {
                         method: "POST",
                         headers: {
