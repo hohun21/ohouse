@@ -969,11 +969,32 @@ function openReviewModal() {
         return;
     }
 
-    var modal = document.getElementById('review-write-modal');
-    if (modal) {
-        modal.style.display = 'flex';
-    }
- 
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('product_id') || '${product_id}';
+
+    fetch('${pageContext.request.contextPath}/checkReview.htm?product_id=' + productId)
+        .then(response => {
+            if (!response.ok) throw new Error("서버 통신 실패");
+            return response.json();
+        })
+        .then(data => {
+        	if (data.hasReviewed) {
+                // confirm 창을 띄워 사용자의 선택에 따라 분기
+                if (confirm("이미 이 상품에 대한 리뷰를 작성하셨습니다. 작성하신 리뷰 목록으로 이동하시겠습니까?")) {
+                    location.href = '${pageContext.request.contextPath}/member/myReview.htm';
+                }
+                return; // '아니오'를 누르거나 창을 닫으면 여기서 멈추고 현재 페이지에 남아있음
+            }
+
+            var modal = document.getElementById('review-write-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        })
+        .catch(error => {
+            console.error("리뷰 작성 여부 확인 중 에러 발생:", error);
+            alert("오류가 발생했습니다. 다시 시도해 주세요.");
+        });
 }
 // 리뷰 작성 모달 닫기
 function closeReviewModal() {

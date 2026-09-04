@@ -264,5 +264,15 @@ public class ReviewService {
 		}
 		return orderInfo;
 	}
+	
+	public boolean checkUserReviewAndRedirect(int memberId, long productId) {
+	    try (Connection conn = ConnectionProvider.getConnection()) {
+	        return reviewDao.hasUserReviewedProduct(conn, memberId, productId);
+	    } catch (Exception e) {
+	        throw new RuntimeException("리뷰 작성 여부 확인 중 에러 발생", e);
+	    }
+	}
+	
+	
 
 }
