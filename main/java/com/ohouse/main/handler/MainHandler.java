@@ -23,6 +23,7 @@ public class MainHandler implements CommandHandler {
         List<ProductSearchDTO> randomProductList = mainService.getRandomProductList();
         
         request.setAttribute("randomProductList", randomProductList);
+        request.setAttribute("activeMenu", "home");
         
         // 대분류 조회
         CategoryDAO categoryDAO = new CategoryDAOImple();

@@ -22,6 +22,7 @@ public class BestHandler implements CommandHandler {
 				bestService.getBestProducts();
 
 		request.setAttribute("bestProducts", bestProducts);
+		request.setAttribute("activeMenu", "best");
 		
 		return "/WEB-INF/views/shopping/best/best.jsp";
 	}

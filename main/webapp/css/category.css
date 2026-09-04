@@ -14,46 +14,6 @@
 
 
 /* =========================================================
-   1. Store 상단 서브 네비게이션
-========================================================= */
-
-.store-sub-nav-area {
-    border-bottom: 1px solid #EAEDEF;
-    background: #fff;
-    margin-bottom: 30px;
-    position: sticky;
-    top: 0;
-    z-index: 90;
-}
-
-.store-sub-nav {
-    display: flex;
-    align-items: center;
-    min-height: 48px;
-}
-
-.sub-menu-list {
-    display: flex;
-    gap: 28px;
-    font-size: 15px;
-    font-weight: 700;
-    color: #424242;
-}
-
-.sub-menu-list a {
-    padding: 12px 0;
-    position: relative;
-    text-decoration: none;
-    color: inherit;
-}
-
-.sub-menu-list a.active {
-    color: #00A6EA;
-    border-bottom: 2px solid #00A6EA;
-}
-
-
-/* =========================================================
    2. 카테고리 전체 레이아웃
 ========================================================= */
 
@@ -61,7 +21,8 @@
     display: flex;
     align-items: flex-start;
     gap: 48px;
-    margin-bottom: 100px;
+    margin-top: 20px;
+    margin-bottom: 30px;
 }
 
 
