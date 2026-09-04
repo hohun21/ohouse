@@ -621,7 +621,7 @@
 <script>
     $(".link-category").on("click", function (e) {
         const category_id = $(this).data("category_id");
-        location.href = `${pageContext.request.contextPath}/shopping/category.htm?category_id=\${category_id}`;
+        location.href = `${pageContext.request.contextPath}/shopping/category/category.htm?category_id=\${category_id}`;
     })
 </script>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
