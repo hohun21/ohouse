@@ -3,6 +3,7 @@ package com.ohouse.product.review.handler;
 import java.io.PrintWriter;
 
 import com.ohouse.common.handler.CommandHandler;
+import com.ohouse.member.dto.AuthUserDTO;
 import com.ohouse.product.review.service.ReviewService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,8 +18,27 @@ public class AdminReplyHandler implements CommandHandler {
         response.setContentType("application/json; charset=UTF-8");
         PrintWriter out = response.getWriter();
 
-        // 1. 임시 관리자 권한 고정
-        boolean isAdmin = true;
+        AuthUserDTO authUser = (AuthUserDTO) request.getSession().getAttribute("authUser");
+        Integer memberId = 0;
+        String id = "";
+        String name = "";
+        String role = "";
+        
+        if (authUser == null || !"ADMIN".equals(authUser.getRole())) {
+            return "redirect:" + request.getContextPath() + "/login.htm";
+        }
+        
+        
+        if(authUser != null) {
+        	memberId=authUser.getMemberId();
+        	id=authUser.getId();
+        	name=authUser.getName();
+        	role = authUser.getRole();
+        }
+        
+		boolean isAdmin = role.equals("ADMIN");
+	     request.setAttribute("isAdmin", isAdmin);
+	     
         if (!isAdmin) {
             out.write("{\"success\": false, \"message\": \"권한이 없습니다.\"}");
             return null;

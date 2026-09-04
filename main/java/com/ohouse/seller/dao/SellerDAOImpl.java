@@ -28,7 +28,6 @@ public class SellerDAOImpl implements SellerDAO {
     @Override
     public List<SellerDTO> getPendingSellers() throws SQLException {
         List<SellerDTO> list = new ArrayList<>();
-        // 💡 name -> representative_name 으로 통일
         String sql = "SELECT seller_id, email, password, representative_name, status, reg_date " +
                      "FROM seller WHERE status = 'PENDING' ORDER BY seller_id DESC";
 
@@ -39,7 +38,7 @@ public class SellerDAOImpl implements SellerDAO {
                         .sellerId(rs.getInt("seller_id"))
                         .email(rs.getString("email"))
                         .password(rs.getString("password"))
-                        .representativeName(rs.getString("representative_name")) // 💡 여기 수정됨!
+                        .representativeName(rs.getString("representative_name")) 
                         .status(rs.getString("status"))
                         .regDate(rs.getDate("reg_date"))
                         .build());
@@ -73,7 +72,7 @@ public class SellerDAOImpl implements SellerDAO {
         List<SellerDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM ("
                    + "  SELECT a.*, ROWNUM rnum FROM ("
-                   + "    SELECT seller_id, email, representative_name, status, reg_date FROM seller " // 💡 수정됨
+                   + "    SELECT seller_id, email, representative_name, status, reg_date FROM seller " 
                    + "    WHERE status = 'PENDING' ORDER BY seller_id DESC"
                    + "  ) a WHERE ROWNUM <= ?"
                    + ") WHERE rnum >= ?";
@@ -86,7 +85,7 @@ public class SellerDAOImpl implements SellerDAO {
                     list.add(SellerDTO.builder()
                             .sellerId(rs.getInt("seller_id"))
                             .email(rs.getString("email"))
-                            .representativeName(rs.getString("representative_name")) // 💡 수정됨
+                            .representativeName(rs.getString("representative_name")) 
                             .status(rs.getString("status"))
                             .regDate(rs.getDate("reg_date"))
                             .build());
@@ -111,7 +110,7 @@ public class SellerDAOImpl implements SellerDAO {
         List<SellerDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM ("
                    + "  SELECT a.*, ROWNUM rnum FROM ("
-                   + "    SELECT seller_id, email, representative_name, status, reg_date FROM seller ORDER BY seller_id DESC" // 💡 수정됨
+                   + "    SELECT seller_id, email, representative_name, status, reg_date FROM seller ORDER BY seller_id DESC" 
                    + "  ) a WHERE ROWNUM <= ?"
                    + ") WHERE rnum >= ?";
 
@@ -123,7 +122,7 @@ public class SellerDAOImpl implements SellerDAO {
                     list.add(SellerDTO.builder()
                             .sellerId(rs.getInt("seller_id"))
                             .email(rs.getString("email"))
-                            .representativeName(rs.getString("representative_name")) // 💡 수정됨
+                            .representativeName(rs.getString("representative_name"))
                             .status(rs.getString("status"))
                             .regDate(rs.getDate("reg_date"))
                             .build());
@@ -158,7 +157,7 @@ public class SellerDAOImpl implements SellerDAO {
     @Override
     public int insertProduct(ProductDTO dto) throws SQLException {
         String sql = "INSERT INTO product (product_id, category_id, brand_id, product_name, price, description, original_price, discount_rate, created, updated, status) "
-                   + "VALUES (product_seq.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, SYSDATE, NULL, 'ACTIVE')";
+                   + "VALUES (product_seq.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, SYSDATE, SYSDATE, 'ACTIVE')";
         
         try (PreparedStatement pstmt = this.conn.prepareStatement(sql, new String[] {"product_id"})) {
             pstmt.setInt(1, dto.getCategoryId());
@@ -429,7 +428,7 @@ public class SellerDAOImpl implements SellerDAO {
         String sql = "SELECT COUNT(*) FROM (" +
                      "SELECT p.product_id FROM product p " +
                      "JOIN product_option po ON p.product_id = po.product_id " +
-                     "WHERE p.brand_id = ? " + // 💡 내 아이디 필터링
+                     "WHERE p.brand_id = ? " + 
                      "GROUP BY p.product_id HAVING SUM(po.stock) = 0)";
                      
         try (PreparedStatement pstmt = this.conn.prepareStatement(sql)) {
@@ -444,13 +443,28 @@ public class SellerDAOImpl implements SellerDAO {
     @Override
     public List<ProductDTO> getProductListByBrandId(int brandId) throws SQLException {
         List<ProductDTO> list = new ArrayList<>();
-        String sql = "SELECT product_id, category_id, brand_id, product_name, price, description, original_price, discount_rate, status, created, updated " +
-                     "FROM product WHERE brand_id = ? ORDER BY product_id DESC";
+        
+        String sql = "SELECT p.product_id, p.category_id, p.brand_id, p.product_name, p.price, p.description, " +
+                     "       p.original_price, p.discount_rate, p.status, p.created, p.updated, " +
+                     "       NVL(SUM(po.stock), 0) AS total_stock " +
+                     "FROM product p " +
+                     "LEFT JOIN product_option po ON p.product_id = po.product_id " +
+                     "WHERE p.brand_id = ? " +
+                     "GROUP BY p.product_id, p.category_id, p.brand_id, p.product_name, p.price, " +
+                     "         p.description, p.original_price, p.discount_rate, p.status, p.created, p.updated " +
+                     "ORDER BY p.product_id DESC";
         
         try (PreparedStatement pstmt = this.conn.prepareStatement(sql)) {
             pstmt.setInt(1, brandId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
+                    int totalStock = rs.getInt("total_stock");
+                    
+                    String currentStatus = rs.getString("status");
+                    if (totalStock <= 0) {
+                        currentStatus = "SOLD_OUT";
+                    }
+
                     list.add(ProductDTO.builder()
                             .productId(rs.getInt("product_id"))
                             .categoryId(rs.getInt("category_id"))
@@ -460,7 +474,7 @@ public class SellerDAOImpl implements SellerDAO {
                             .description(rs.getString("description"))
                             .originalPrice(rs.getInt("original_price"))
                             .discountRate(rs.getInt("discount_rate"))
-                            .status(rs.getString("status"))
+                            .status(currentStatus)
                             .created(rs.getDate("created"))
                             .updated(rs.getDate("updated"))
                             .build());
@@ -470,6 +484,7 @@ public class SellerDAOImpl implements SellerDAO {
         return list;
     }
     
+    @Override
     public List<ProductDTO> getAllProductsForAdmin() throws SQLException {
         List<ProductDTO> list = new ArrayList<>();
         String sql = "SELECT p.product_id, p.category_id, p.brand_id, b.brand_name, p.product_name, p.price, p.status, p.created " +
@@ -482,7 +497,7 @@ public class SellerDAOImpl implements SellerDAO {
                         .productId(rs.getInt("product_id"))
                         .categoryId(rs.getInt("category_id"))
                         .brandId(rs.getInt("brand_id"))
-                        .brandName(rs.getString("brand_name")) // 💡 상호명 세팅
+                        .brandName(rs.getString("brand_name")) 
                         .productName(rs.getString("product_name"))
                         .price(rs.getInt("price"))
                         .status(rs.getString("status"))
@@ -491,5 +506,68 @@ public class SellerDAOImpl implements SellerDAO {
             }
         }
         return list;
+    }
+    
+    @Override
+    public int deleteProductOptionsByProductId(int productId) throws SQLException {
+        String sql1 = "DELETE FROM cart_items WHERE product_option_id IN "
+                    + "(SELECT product_option_id FROM product_option WHERE product_id = ?)";
+        try (PreparedStatement pstmt1 = this.conn.prepareStatement(sql1)) {
+            pstmt1.setInt(1, productId);
+            pstmt1.executeUpdate();
+        }
+
+        String sql2 = "DELETE FROM product_option WHERE product_id = ?";
+        try (PreparedStatement pstmt2 = this.conn.prepareStatement(sql2)) {
+            pstmt2.setInt(1, productId);
+            return pstmt2.executeUpdate();
+        }
+    }
+    
+    @Override
+    public int updateProductStatus(int productId, String status) throws SQLException {
+        String sql = "UPDATE product SET status = ? WHERE product_id = ?";
+        try (PreparedStatement pstmt = this.conn.prepareStatement(sql)) {
+            pstmt.setString(1, status);
+            pstmt.setInt(2, productId);
+            return pstmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public int getStopProductCount(int brandId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM product WHERE brand_id = ? AND status = 'STOP'";
+        try (PreparedStatement pstmt = this.conn.prepareStatement(sql)) {
+            pstmt.setInt(1, brandId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public void resetAllOptionStocksToZero(int productId) throws SQLException {
+        String sql = "UPDATE product_option SET stock = 0, status = 'SOLD_OUT' WHERE product_id = ?";
+        try (PreparedStatement pstmt = this.conn.prepareStatement(sql)) {
+            pstmt.setInt(1, productId);
+            pstmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public int updateOptionPriceAndStock(int productId, String skuName, int price, int stock) throws SQLException {
+        String sql = "UPDATE product_option SET price = ?, stock = ?, status = ? WHERE product_id = ? AND sku = ?";
+        try (PreparedStatement pstmt = this.conn.prepareStatement(sql)) {
+            pstmt.setInt(1, price);
+            pstmt.setInt(2, stock);
+            
+            String optStatus = (stock == 0) ? "SOLD_OUT" : "ACTIVE";
+            pstmt.setString(3, optStatus);
+            
+            pstmt.setInt(4, productId);
+            pstmt.setString(5, skuName);
+            return pstmt.executeUpdate(); 
+        }
     }
 }

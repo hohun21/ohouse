@@ -1,6 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core"%>
-<!-- 💡 가격 콤마 표시를 위해 fmt 태그라이브러리 추가 -->
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt"%>
 <!DOCTYPE html>
 <html lang="ko">
@@ -8,7 +7,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>오늘의집 - '${keyword}' 검색결과</title>
-<!-- 프리텐다드 폰트 적용 -->
 <link rel="stylesheet" as="style" crossorigin
     href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <style>
@@ -18,99 +16,177 @@
         box-sizing: border-box;
         font-family: 'Pretendard', sans-serif;
     }
-    a { text-decoration: none; color: inherit; display: block; }
-    ul { list-style: none; padding: 0; margin: 0; }
 
-    /* 핵심 공통 컨테이너 */
+    a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
     .container {
         max-width: 1136px;
         margin: 0 auto;
         padding: 0 20px;
         box-sizing: border-box;
+
     }
 
-    /* --- 검색 페이지 전용 서브 메뉴 (LNB) + 실시간 인기 검색어 바 --- */
-    .search-sub-nav-area { border-bottom: 1px solid #EAEDEF; background: #fff; margin-bottom: 30px; }
-    .search-sub-nav { 
+    /* 검색결과 탭은 메인 헤더 바로 아래에 고정한다. */
+    .search-sub-nav-area {
+        position: sticky;
+        top: 80px;
+        z-index: 900;
+        width: 100%;
+        height: 52px;
+        margin-top: 0;
+        margin-bottom: 30px;
+        background: #fff;
+        border-top: 1px solid #eaedef;
+        border-bottom: 1px solid #eaedef;
+    }
+
+    .search-sub-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
         max-width: 1136px;
-        margin: 0 auto; 
-        padding: 0 20px; 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        box-sizing: border-box; 
+        height: 52px;
+        margin: 0 auto;
+        padding: 0 20px;
     }
-    .sub-nav-list { display: flex; gap: 24px; font-size: 15px; font-weight: 700; color: #424242; }
-    .sub-nav-list a { padding: 12px 0; position: relative; transition: color 0.2s; }
-    .sub-nav-list a:hover { color: #1496f4; }
-    .sub-nav-list a.active { color: #1496f4; }
-    .sub-nav-list a.active::after { content: ""; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background-color: #1496f4; }
 
-    /* --- 검색 결과 헤더 --- */
+    .sub-nav-list {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        height: 52px;
+        color: #424242;
+        font-size: 15px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .sub-nav-list a {
+        position: relative;
+        display: flex;
+        align-items: center;
+        height: 52px;
+        transition: color 0.2s;
+    }
+
+    .sub-nav-list a:hover,
+    .sub-nav-list a.active {
+        color: #1496f4;
+    }
+
+    .sub-nav-list a.active::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: 2px;
+        background-color: #1496f4;
+    }
+
+    .search-popular-keyword {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        height: 52px;
+        padding-left: 24px;
+    }
+
     .search-result-header {
         margin-bottom: 24px;
     }
+
     .search-title {
+        color: #2f3438;
         font-size: 22px;
         font-weight: 700;
-        color: #2F3438;
     }
+
     .search-title span {
         color: #1496f4;
     }
+
     .result-count {
-        font-size: 14px;
-        color: #757575;
         margin-top: 6px;
+        color: #757575;
+        font-size: 14px;
         font-weight: 500;
     }
 
-    /* --- 상품 그리드 레이아웃 (4열 구조) --- */
     .grid-4 {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 20px;
         margin-bottom: 60px;
     }
+
     .product-card {
+        display: block;
+        min-width: 0;
         cursor: pointer;
     }
+
     .product-img-wrap {
+        position: relative;
+        overflow: hidden;
         width: 100%;
         aspect-ratio: 1 / 1;
-        border-radius: 8px;
-        background-color: #F7F9FA;
         margin-bottom: 12px;
-        overflow: hidden;
-        position: relative;
+        background-color: #f7f9fa;
+        border-radius: 8px;
     }
+
     .product-img-wrap img {
+        display: block;
         width: 100%;
         height: 100%;
         object-fit: cover;
         transition: transform 0.2s;
     }
+
     .product-card:hover .product-img-wrap img {
         transform: scale(1.05);
     }
+
+    /* 💡 추가: 품절 시 hover 확대 방지 및 커서 기본값 변경 */
+    .product-card.sold-out {
+        cursor: default;
+    }
     
+    .product-card.sold-out:hover .product-img-wrap img {
+        transform: none; 
+    }
+
     .brand-name {
-        font-size: 11px;
-        color: #757575;
-        font-weight: 600;
         margin-bottom: 4px;
+        color: #757575;
+        font-size: 11px;
+        font-weight: 600;
     }
+
     .product-name {
-        font-size: 13px;
-        color: #2F3438;
-        line-height: 1.4;
-        margin-bottom: 8px;
-        font-weight: 400;
         display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
         overflow: hidden;
+        margin-bottom: 8px;
+        color: #2f3438;
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 1.4;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
     }
+
     .price-area {
         display: flex;
         align-items: center;
@@ -118,41 +194,51 @@
         font-size: 17px;
         font-weight: 700;
     }
-    .discount {
-        color: #1496f4;
-    }
-    .price {
-        color: #000;
-    }
+
+    .discount { color: #1496f4; }
+    .price { color: #000; }
+
     .review-area {
-        font-size: 12px;
-        color: #757575;
         margin-top: 6px;
+        color: #757575;
+        font-size: 12px;
         font-weight: 700;
     }
+
     .star {
-        color: #1496f4;
         margin-right: 2px;
+        color: #1496f4;
     }
 
     .no-result {
-        text-align: center;
         padding: 80px 0;
-        color: #828C94;
+        color: #828c94;
         font-size: 16px;
         font-weight: 500;
+        text-align: center;
+    }
+
+    @media (max-width: 900px) {
+        .search-popular-keyword { display: none; }
+        .sub-nav-list { gap: 18px; overflow-x: auto; }
+        .grid-4 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 720px) {
+        .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; }
     }
 </style>
 </head>
 <body>
+    <!-- 헤더 인기 검색어를 숨기면 공통 서브 헤더는 hover 전용으로 동작한다. -->
+    <jsp:include page="/WEB-INF/views/layout/header.jsp">
+        <jsp:param name="showHeaderPopularKeyword" value="false"/>
+    </jsp:include>
 
-    <!-- 1. 공통 헤더 Include -->
-    <jsp:include page="../layout/header.jsp" />
-
-    <!-- 2. 검색 페이지 전용 서브 메뉴바 + 실시간 인기 검색어 컴포넌트 -->
+    <!-- 검색결과 전용 탭 + 인기 검색어 -->
     <div class="search-sub-nav-area">
         <div class="search-sub-nav">
-            <nav class="sub-nav-list">
+            <nav class="sub-nav-list" aria-label="검색결과 유형">
                 <a href="#">통합</a>
                 <a href="#" class="active">쇼핑</a>
                 <a href="#">이미지</a>
@@ -162,13 +248,12 @@
                 <a href="#">유저</a>
             </nav>
 
-            <div style="padding: 8px 0;">
-                <jsp:include page="../layout/popular_keyword.jsp" />
+            <div class="search-popular-keyword">
+                <jsp:include page="/WEB-INF/views/layout/popular_keyword.jsp"/>
             </div>
         </div>
     </div>
 
-    <!-- 3. 메인 검색 결과 컨텐츠 영역 -->
     <main class="container">
         <div class="search-result-header">
             <h1 class="search-title"><span>'${keyword}'</span> 검색결과</h1>
@@ -179,10 +264,28 @@
             <c:when test="${not empty productList}">
                 <div class="grid-4">
                     <c:forEach var="product" items="${productList}">
-                        <!-- 💡 div를 a 태그로 변경하고 상세 페이지로 넘어가는 href 링크 연결! -->
-                        <a href="/productDetail.htm?product_id=${product.productId}" class="product-card">
+                        
+                        <!-- 💡 수정: 품절 여부에 따라 class와 href 속성을 동적으로 분기 -->
+                        <a class="product-card <c:if test="${product.status == 'SOLD_OUT'}">sold-out</c:if>"
+                           <c:choose>
+                               <c:when test="${product.status == 'SOLD_OUT'}">
+                                   href="javascript:void(0);" onclick="alert('품절된 상품입니다.'); return false;"
+                               </c:when>
+                               <c:otherwise>
+                                   href="${pageContext.request.contextPath}/product/productDetail.htm?product_id=${product.productId}"
+                               </c:otherwise>
+                           </c:choose>
+                        >
                             <div class="product-img-wrap">
                                 <img src="${product.imageUrl}" alt="${product.productName}">
+                                
+                                <c:if test="${product.status == 'SOLD_OUT'}">
+                                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+                                                background: rgba(0,0,0,0.5); color: white; display: flex; 
+                                                justify-content: center; align-items: center; font-size: 18px; font-weight: bold; z-index: 10;">
+                                        품절
+                                    </div>
+                                </c:if>
                             </div>
                             <div class="brand-name">${product.brandName}</div>
                             <div class="product-name">${product.productName}</div>
@@ -190,13 +293,13 @@
                                 <c:if test="${not empty product.discountRate and product.discountRate > 0}">
                                     <span class="discount">${product.discountRate}%</span>
                                 </c:if>
-                                <!-- 💡 fmt 태그로 가격에 콤마(,) 표시 추가 -->
                                 <span class="price"><fmt:formatNumber value="${product.price}" pattern="#,###"/>원</span>
                             </div>
                             <div class="review-area">
                                 <span class="star">★</span> 4.8 리뷰 1,204
                             </div>
                         </a>
+                        
                     </c:forEach>
                 </div>
             </c:when>
@@ -207,9 +310,6 @@
             </c:otherwise>
         </c:choose>
     </main>
-
-    <!-- 4. 공통 푸터 Include -->
-    <jsp:include page="../layout/footer.jsp" />
-
+    <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 </body>
 </html>

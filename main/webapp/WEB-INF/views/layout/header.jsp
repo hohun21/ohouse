@@ -1,6 +1,21 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%
+    String showSubHeaderAtTopParam = request.getParameter("showSubHeaderAtTop");
+    boolean pushSubHeaderValue = "false".equalsIgnoreCase(showSubHeaderAtTopParam);
+    boolean showSubHeaderAtTopValue = showSubHeaderAtTopParam == null
+            || !"false".equalsIgnoreCase(showSubHeaderAtTopParam);
+
+    String showHeaderPopularKeywordParam = request.getParameter("showHeaderPopularKeyword");
+    boolean showHeaderPopularKeywordValue = showHeaderPopularKeywordParam == null
+            || !"false".equalsIgnoreCase(showHeaderPopularKeywordParam);
+
+    // 헤더 인기 검색어를 숨기는 검색 페이지에서는 공통 서브 헤더를 hover 전용으로 사용한다.
+    if (!showHeaderPopularKeywordValue) {
+        showSubHeaderAtTopValue = false;
+    }
+%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -224,11 +239,15 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 	z-index: 1000;
 	height: 80px;
 	background-color: #fff;
-	transition: height 0.2s ease;
+	transition: height 0.15s ease;
 }
-/* 상단 배너가 지나가고 메인 헤더가 화면 최상단에 붙으면 서브 네비 높이까지 확보 */
+/* 서브 헤더가 열려도 부모 높이는 바꾸지 않아 화면 흔들림을 방지한다. */
 .sticky-header.sub-open,
 .sticky-header.sub-visible {
+	height: 132px;
+}
+/* showSubHeaderAtTop=false를 직접 전달한 페이지는 hover 시 본문을 52px 아래로 민다. */
+.sticky-header.push-sub-header.sub-open {
 	height: 132px;
 }
 /* 기존 sticky를 해제하고 sticky-header가 전체를 고정한다. */
@@ -239,15 +258,15 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 	left: 0;
 	z-index: 10;
 	width: 100%;
-	height: 0;
+	height: 52px;
 	opacity: 0;
+	visibility: hidden;
 	overflow: hidden;
 	pointer-events: none;
 	background-color: #fff;
 	border-bottom: 0;
 	transform: translateY(-8px);
-	transition: height 0.2s ease, opacity 0.15s ease,
-		transform 0.2s ease;
+	transition: opacity 0.15s ease, transform 0.15s ease;
 }
 /* 메뉴 호버 중이거나 메인 헤더가 최상단에 붙어 있을 때 펼친다. */
 .sticky-header.sub-open .header-sub-area,
@@ -255,6 +274,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 .header-sub-area.is-open {
 	height: 52px;
 	opacity: 1;
+	visibility: visible;
 	overflow: visible;
 	pointer-events: auto;
 	border-bottom: 1px solid #EAEDEF;
@@ -294,9 +314,12 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 .category-tab:hover,
 .home-nav-list > a.active,
 .shoping-nav-list > a.active,
-.interior-nav-list > a.active {
+.interior-nav-list > a.active, 
+.category-tab.active {
 	color: #1496f4;
+	border-bottom: 2px solid #00A6EA;
 }
+
 .realtime-keyword-box {
 	display: flex;
 	align-items: center;
@@ -381,283 +404,337 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 .category-menu > li > a:hover img { transform: translateY(-3px); }
 @media (max-width: 900px) { .header-search, .realtime-keyword-box { display: none; }}
 </style>
+
 </head>
 <body>
-	<header>
-		<!-- 1. 최상단 배너 -->
-		<div class="top-event-banner">
-			<span class="coupon-icon">2만원</span> <span>첫 구매라면 누구나 최대 2만원
+<header>
+    <!-- 1. 최상단 배너 -->
+    <div class="top-event-banner">
+        <span class="coupon-icon">2만원</span> <span>첫 구매라면 누구나 최대 2만원
 				할인! &gt;</span> <span class="btn-close">✕</span>
 		</div>
 	</header>
-		<!-- 2. 메인 헤더 -->
-		<div class="sticky-header">
-		  <div class="header-main-area">
-			<div class="header-container">
-				<!-- 왼쪽 영역 -->
-				<div class="header-main-left">
-					<a href="${pageContext.request.contextPath}/main.htm" class="header-logo">
-						<svg xmlns="http://www\.w3.org/2000/svg" viewBox="0 0 481 136">
-                            <path fill="#111" d="M459.317 41.715H443.04c.134 2.783 1.008 5.303 4.532 8.903s9.133 7.32 15.825 11.457l-6.497 10.51c-6.865-4.243-13.264-8.501-17.985-13.322-.983-1.004-1.92-1.884-2.791-2.98a30 30 0 0 1-2.791 3.323c-4.721 4.82-11.12 9.251-17.985 13.494l-6.497-10.51c6.692-4.137 12.3-8.03 15.825-11.63 3.525-3.599 4.398-6.462 4.532-9.245h-16.277V30.73h46.386zM202.316 29.28c17.481 0 26.613 11.252 26.613 24.263v1.758c0 11.355-6.9 21.37-20.325 23.736V91.98h32.522v10.983h-78.087V91.981h32.522V79.04c-13.441-2.358-20.349-12.378-20.349-23.74v-1.758c0-13.01 9.132-24.263 26.613-24.263zm-.245 10.64c-9.429 0-14.073 6.716-14.073 13.79v1.424c0 7.074 4.714 13.79 14.073 13.79s14.073-6.716 14.073-13.79V53.71c0-7.074-4.645-13.79-14.073-13.79m197.014 73.188h-13.043V94.844c-3.364.484-9.354 1.26-18.175 2.086-14.622 1.372-40.328 1.125-40.328 1.125l-.209-11.819s25.813.169 39.599-.952c9.613-.782 16.079-1.739 19.113-2.247V26.154h13.043zM353.77 30.996c14.752 0 22.408 9.841 22.408 21.089v1.757c0 11.247-7.728 21.088-22.408 21.088l-.491-.005c-14.68 0-22.408-9.836-22.408-21.083v-1.757c0-11.248 7.656-21.089 22.408-21.089zm-.245 10.726c-6.727 0-10.126 5.376-10.126 10.706v1.07c0 5.897 3.399 10.684 10.127 10.706 6.662.022 10.124-4.82 10.124-10.706v-1.07c0-5.33-3.462-10.706-10.125-10.706M268.667 43.4h44.696v10.813h-57.739V26.85h13.043zm-23.778 26.215h78.086V58.803h-78.086z" />
-                            <path fill="#111" d="M479.999 99.939c-.011 10.413-2.221 12.533-12.761 12.54-11.69.007-18.439.011-30.148 0-10.245-.01-12.616-2.046-12.697-11.824-.077-9.232.002-25.554.002-25.567h13.043v9.153h29.69V26.155H480s.03 45.359-.001 73.784m-42.561 1.728h29.69V94.71h-29.69zM313.005 74.209l.004 24.48h-45.043v4.739h46.979v10.297h-47.151c-10.653 0-12.846-2.098-12.871-12.595-.01-4.223 0-12.396 0-12.396h45.039v-4.4h-44.691V74.208z" />
-                            <path fill="#00a1ff" d="M75.001 1.243a20.72 20.72 0 0 0-14.136 0c-8.591 3.093-36.22 21.208-51.007 36.46C1.88 45.928 0 51.618 0 61.48v5.078c.126 15.644.914 34.269 3.675 43.324 4.773 15.652 11.949 25.984 57.295 25.984h13.926c45.345 0 52.521-10.332 57.295-25.984 2.761-9.055 3.549-27.68 3.675-43.325v-5.078c0-9.861-1.882-15.551-9.858-23.777-14.789-15.25-42.414-33.366-51.007-36.459" />
-                        </svg>
-					</a>
-					<nav class="header-main-nav">
-						<a href="#" data-menu="home">집구경</a>
-						<a href="main.htm" data-menu="shopping" class="active">쇼핑</a>
-						<a href="#" data-menu="interior">인테리어/생활</a>
-					</nav>
-				</div>
-				<!-- 오른쪽 영역 -->
-				<div class="header-main-right">
-					<!-- 둥근 통합 검색창 -->
-					<form action="${pageContext.request.contextPath}/search.htm"
-						method="GET" class="header-search">
-						<svg class="search-icon" fill="none" stroke="currentColor"
-							viewBox="0 0 24 24" xmlns="http://www\.w3.org/2000/svg">
-        					<path stroke-linecap="round" stroke-linejoin="round"
-								stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-    					</svg>
-						<input type="text" name="keyword" placeholder="통합검색">
-					</form>
-					<c:choose>
-						<%-- 1. 로그인 상태 (관리자, 판매자, 일반회원 누구든 무조건 이 동일한 메뉴를 봅니다) --%>
-						<c:when test="${not empty sessionScope.authUser or not empty sessionScope.sellerAuth}">
-							<!-- 스크랩 북마크 아이콘 -->
-							<button class="header-icon-btn" title="스크랩북">
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-									<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-								</svg>
-							</button>
-							<!-- 알림 아이콘 -->
-							<button class="header-icon-btn" title="알림">
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-									<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-									<path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-								</svg>
-							</button>
-							<!-- 장바구니 아이콘 -->
-							<button class="header-icon-btn" title="장바구니">
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-									<circle cx="9" cy="21" r="1"></circle>
-									<circle cx="20" cy="21" r="1"></circle>
-									<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-								</svg>
-							</button>
-							<div class="header-profile-wrap">
-								<button class="header-profile-btn" id="profileToggleBtn" title="마이페이지">
-									<svg viewBox="0 0 24 24" fill="currentColor">
-										<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-									</svg>
-								</button>
-								<div class="profile-dropdown-menu" id="profileDropdown">
-									<a href="${pageContext.request.contextPath}/member/myPage.htm">마이페이지</a>
-									<a href="#">나의 쇼핑</a>
-									<a href="#">시공/생활 상담내역</a>
-									<a href="#">이벤트</a>
-									<hr>
-									<a href="${pageContext.request.contextPath}/logout.htm">로그아웃</a>
-								</div>
-							</div>
-						</c:when>
-						<%-- 2. 비로그인 상태일 때 --%>
-						<c:otherwise>
-							<!-- 장바구니 아이콘 -->
-							<button class="header-icon-btn" title="장바구니">
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-									<circle cx="9" cy="21" r="1"></circle>
-									<circle cx="20" cy="21" r="1"></circle>
-									<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-								</svg>
-							</button>
-							<div class="header-auth-nav">
-								<a href="${pageContext.request.contextPath}/login.htm">로그인</a>
-								<a href="${pageContext.request.contextPath}/signup.htm">회원가입</a>
-								<a href="#">고객센터</a>
-							</div>
-						</c:otherwise>
-					</c:choose>
-					<!-- 글쓰기 버튼 -->
-					<button class="header-btn-write">
-						글쓰기
-						<svg viewBox="0 0 24 24" fill="none">
-							<path d="M6 9l6 6 6-6"></path>
-						</svg>
-					</button>
-				</div>
-			</div>
-		</div>
-		<!-- 서브 메뉴 + 실시간 인기 검색어 바 -->
-		<div class="header-sub-area">
-		  <div class="home-sub-nav">
-		    <!-- 집구경 메뉴 리스트 -->
-		        <nav class="home-nav-list">
-		            <a href="#" class="active">집에가고싶다</a>
-		            <a href="#">홈</a>
-		            <a href="#">추천</a>
-		            <a href="#">집들이</a>
-		            <a href="#">집사진</a>
-		            <a href="#">커뮤니티</a>
-		            <a href="#">3D인테리어</a>
-		            <a href="#">원하는날도착</a>
-		        </nav>
-		        <!-- 쇼핑 메뉴 리스트 -->
-		        <nav class="shoping-nav-list">
-		            <a href="main.htm" class="active">쇼핑홈</a>
-		            <div class="category-wrap">
-		              <a href="/shopping/category/category.htm" class="category-tab">카테고리</a>
-		              <div class="category-dropdown">
-		              	<ul class="category-menu">
-				         <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-533660207636544.png?w=1280"/><span>집요한세일</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634278838272.png?w=1280"/><span>가구</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634298495104.png?w=1280"/><span>가전·디지털</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634315501568.png?w=1280"/><span>패브릭</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634333909120.png?w=1280"/><span>주방용품</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634353033280.png?w=1280"/><span>식품</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634373091328.png?w=1280"/><span>데코·식물</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-485389660414080.png?w=1280"/><span>조명</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634412826752.png?w=1280"/><span>수납·정리</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634428547136.png?w=1280"/><span>생활용품</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634451369984.png?w=1280"/><span>생필품</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634472935424.png?w=1280"/><span>유아·아동</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-485353010577408.png?w=1280"/><span>반려동물</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634521288768.png?w=1280"/><span>캠핑·레저</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634541781120.png?w=1280"/><span>공구·DIY</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634560954368.png?w=1280"/><span>인테리어시공</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634580844544.png?w=1280"/><span>렌탈·구독</span></a></li>
-				          <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634600026240.png?w=1280"/><span>장보기</span></a></li>
-				        </ul>
-				      </div>
-		            </div>
-		            <a href="ranks.htm">베스트</a>
-		            <a href="#">오늘의딜</a>
-		            <a href="only.htm">단독상품</a>
-		            <a href="#">집요한세일</a>
-		            <a href="#">오마트</a>
-		            <a href="desiredDelivery.htm">원하는날도착</a>
-		            <a href="#">오!쇼룸</a>
-		            <a href="#">기획전</a>
-		        </nav>
-		        <!-- 인테리어/생활 메뉴 리스트 -->
-		        <nav class="interior-nav-list">
-		            <a href="#" class="active">홈</a>
-		            <a href="#">전체시공</a>
-		            <a href="#">부분시공</a>
-		            <a href="#">시공자재랭킹</a>
-		            <a href="#">제품설치</a>
-		            <a href="#">이사</a>
-		            <a href="#">집보기체크리스트</a>
-		            <a href="#">아파트시공사례</a>
-		        </nav>
-		        <!-- 오른쪽 실시간 인기 검색어 박스 -->
-		        <div style="padding: 8px 0;">
-				  <jsp:include page="/WEB-INF/views/layout/popular_keyword.jsp" />
-				</div>
-		      </div>
-		    </div>
+	<!-- 2. 메인 헤더 -->
+	<div class="sticky-header<%= pushSubHeaderValue ? " push-sub-header" : "" %>">
+	    <div class="header-main-area">
+	        <div class="header-container">
+	            <!-- 왼쪽 영역 -->
+	            <div class="header-main-left">
+	                <a href="${pageContext.request.contextPath}/main.htm" class="header-logo">
+	                    <svg xmlns="http://www\.w3.org/2000/svg" viewBox="0 0 481 136">
+	                        <path fill="#111"
+	                              d="M459.317 41.715H443.04c.134 2.783 1.008 5.303 4.532 8.903s9.133 7.32 15.825 11.457l-6.497 10.51c-6.865-4.243-13.264-8.501-17.985-13.322-.983-1.004-1.92-1.884-2.791-2.98a30 30 0 0 1-2.791 3.323c-4.721 4.82-11.12 9.251-17.985 13.494l-6.497-10.51c6.692-4.137 12.3-8.03 15.825-11.63 3.525-3.599 4.398-6.462 4.532-9.245h-16.277V30.73h46.386zM202.316 29.28c17.481 0 26.613 11.252 26.613 24.263v1.758c0 11.355-6.9 21.37-20.325 23.736V91.98h32.522v10.983h-78.087V91.981h32.522V79.04c-13.441-2.358-20.349-12.378-20.349-23.74v-1.758c0-13.01 9.132-24.263 26.613-24.263zm-.245 10.64c-9.429 0-14.073 6.716-14.073 13.79v1.424c0 7.074 4.714 13.79 14.073 13.79s14.073-6.716 14.073-13.79V53.71c0-7.074-4.645-13.79-14.073-13.79m197.014 73.188h-13.043V94.844c-3.364.484-9.354 1.26-18.175 2.086-14.622 1.372-40.328 1.125-40.328 1.125l-.209-11.819s25.813.169 39.599-.952c9.613-.782 16.079-1.739 19.113-2.247V26.154h13.043zM353.77 30.996c14.752 0 22.408 9.841 22.408 21.089v1.757c0 11.247-7.728 21.088-22.408 21.088l-.491-.005c-14.68 0-22.408-9.836-22.408-21.083v-1.757c0-11.248 7.656-21.089 22.408-21.089zm-.245 10.726c-6.727 0-10.126 5.376-10.126 10.706v1.07c0 5.897 3.399 10.684 10.127 10.706 6.662.022 10.124-4.82 10.124-10.706v-1.07c0-5.33-3.462-10.706-10.125-10.706M268.667 43.4h44.696v10.813h-57.739V26.85h13.043zm-23.778 26.215h78.086V58.803h-78.086z"/>
+	                        <path fill="#111"
+	                              d="M479.999 99.939c-.011 10.413-2.221 12.533-12.761 12.54-11.69.007-18.439.011-30.148 0-10.245-.01-12.616-2.046-12.697-11.824-.077-9.232.002-25.554.002-25.567h13.043v9.153h29.69V26.155H480s.03 45.359-.001 73.784m-42.561 1.728h29.69V94.71h-29.69zM313.005 74.209l.004 24.48h-45.043v4.739h46.979v10.297h-47.151c-10.653 0-12.846-2.098-12.871-12.595-.01-4.223 0-12.396 0-12.396h45.039v-4.4h-44.691V74.208z"/>
+	                        <path fill="#00a1ff"
+	                              d="M75.001 1.243a20.72 20.72 0 0 0-14.136 0c-8.591 3.093-36.22 21.208-51.007 36.46C1.88 45.928 0 51.618 0 61.48v5.078c.126 15.644.914 34.269 3.675 43.324 4.773 15.652 11.949 25.984 57.295 25.984h13.926c45.345 0 52.521-10.332 57.295-25.984 2.761-9.055 3.549-27.68 3.675-43.325v-5.078c0-9.861-1.882-15.551-9.858-23.777-14.789-15.25-42.414-33.366-51.007-36.459"/>
+	                    </svg>
+	                </a>
+	                <nav class="header-main-nav">
+	                    <a href="#" data-menu="home">집구경</a>
+	                    <a href="/main.htm" data-menu="shopping" class="active">쇼핑</a>
+	                    <a href="#" data-menu="interior">인테리어/생활</a>
+	                </nav>
+	            </div>
+	            <!-- 오른쪽 영역 -->
+	            <div class="header-main-right">
+	                <!-- 둥근 통합 검색창 -->
+	                <form action="${pageContext.request.contextPath}/search.htm"
+	                      method="GET" class="header-search">
+	                    <svg class="search-icon" fill="none" stroke="currentColor"
+	                         viewBox="0 0 24 24" xmlns="http://www\.w3.org/2000/svg">
+	                        <path stroke-linecap="round" stroke-linejoin="round"
+	                              stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+	                    </svg>
+	                    <input type="text" name="keyword" placeholder="통합검색">
+	                </form>
+	                <c:choose>
+	                    <%-- 1. 로그인 상태 (관리자, 판매자, 일반회원 누구든 무조건 이 동일한 메뉴를 봅니다) --%>
+	                    <c:when test="${not empty sessionScope.authUser or not empty sessionScope.sellerAuth}">
+	                        <!-- 스크랩 북마크 아이콘 -->
+	                        <button class="header-icon-btn" title="스크랩북">
+	                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+	                                 stroke-linecap="round" stroke-linejoin="round">
+	                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+	                            </svg>
+	                        </button>
+	                        <!-- 알림 아이콘 -->
+	                        <button class="header-icon-btn" title="알림">
+	                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+	                                 stroke-linecap="round" stroke-linejoin="round">
+	                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+	                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+	                            </svg>
+	                        </button>
+	                        <!-- 장바구니 아이콘 -->
+	                        <a href="${pageContext.request.contextPath}/cart/cart.htm" class="header-icon-btn" title="장바구니">
+
+	                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+	                                 stroke-linecap="round" stroke-linejoin="round">
+	                                <circle cx="9" cy="21" r="1"></circle>
+	                                <circle cx="20" cy="21" r="1"></circle>
+	                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+	                            </svg>
+	                        </a>
+
+	                        <div class="header-profile-wrap">
+	                            <button class="header-profile-btn" id="profileToggleBtn" title="마이페이지">
+	                                <svg viewBox="0 0 24 24" fill="currentColor">
+	                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+	                                </svg>
+	                            </button>
+	                            <div class="profile-dropdown-menu" id="profileDropdown">
+	                                <a href="${pageContext.request.contextPath}/member/myPage.htm">마이페이지</a>
+	                                <a href="#">나의 쇼핑</a>
+	                                <a href="#">시공/생활 상담내역</a>
+	                                <a href="#">이벤트</a>
+	                                <hr>
+	                                <a href="${pageContext.request.contextPath}/logout.htm">로그아웃</a>
+	                            </div>
+	                        </div>
+	                    </c:when>
+	                    <%-- 2. 비로그인 상태일 때 --%>
+	                    <c:otherwise>
+	                        <!-- 장바구니 아이콘 -->
+	                        <a href="${pageContext.request.contextPath}/cart.htm" class="header-icon-btn" title="장바구니">
+	                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+	                                 stroke-linecap="round" stroke-linejoin="round">
+	                                <circle cx="9" cy="21" r="1"></circle>
+	                                <circle cx="20" cy="21" r="1"></circle>
+	                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+	                            </svg>
+	                        </a>
+	                        <div class="header-auth-nav">
+	                            <a href="${pageContext.request.contextPath}/login.htm">로그인</a>
+	                            <a href="${pageContext.request.contextPath}/signup.htm">회원가입</a>
+	                            <a href="#">고객센터</a>
+	                        </div>
+	                    </c:otherwise>
+	                </c:choose>
+	                <!-- 글쓰기 버튼 -->
+	                <button class="header-btn-write">
+	                    글쓰기
+	                    <svg viewBox="0 0 24 24" fill="none">
+	                        <path d="M6 9l6 6 6-6"></path>
+	                    </svg>
+	                </button>
+	            </div>
+	        </div>
 	    </div>
+	    <!-- 서브 메뉴 + 실시간 인기 검색어 바 -->
+	    <div class="header-sub-area">
+	        <div class="home-sub-nav">
+	            <!-- 집구경 메뉴 리스트 -->
+	            <nav class="home-nav-list">
+	                <a href="#" class="active">집에가고싶다</a>
+	                <a href="#">홈</a>
+	                <a href="#">추천</a>
+	                <a href="#">집들이</a>
+	                <a href="#">집사진</a>
+	                <a href="#">커뮤니티</a>
+	                <a href="#">3D인테리어</a>
+	                <a href="#">원하는날도착</a>
+	            </nav>
+	            <!-- 쇼핑 메뉴 리스트 -->
+	            <nav class="shoping-nav-list">
+	                <a href="${pageContext.request.contextPath}/main.htm"
+					   class="${activeMenu == 'home' ? 'active' : ''}">
+					    쇼핑홈
+					</a>
+	                <div class="category-wrap">
+	                    <a href="${pageContext.request.contextPath}/shopping/category/category.htm"
+					       class="category-tab ${activeMenu == 'category' ? 'active' : ''}">
+					        카테고리
+					    </a>
+	                    <div class="category-dropdown">
+	                        <ul class="category-menu">
+	                            <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-533660207636544.png?w=1280"/><span>집요한세일</span></a></li>
+                            	<li><a href="${pageContext.request.contextPath}/shopping/category/category.htm?category_id=10000000"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634278838272.png?w=1280"/><span>가구</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634298495104.png?w=1280"/><span>가전·디지털</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634315501568.png?w=1280"/><span>패브릭</span></a></li>
+                            	<li><a href="${pageContext.request.contextPath}/shopping/category/category.htm?category_id=16000000"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634333909120.png?w=1280"/><span>주방용품</span></a></li>
+                           	 	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634353033280.png?w=1280"/><span>식품</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634373091328.png?w=1280"/><span>데코·식물</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-485389660414080.png?w=1280"/><span>조명</span></a></li>
+                            	<li><a href="${pageContext.request.contextPath}/shopping/category/category.htm?category_id=13000000"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634412826752.png?w=1280"/><span>수납·정리</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634428547136.png?w=1280"/><span>생활용품</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634451369984.png?w=1280"/><span>생필품</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634472935424.png?w=1280"/><span>유아·아동</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-485353010577408.png?w=1280"/><span>반려동물</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634521288768.png?w=1280"/><span>캠핑·레저</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634541781120.png?w=1280"/><span>공구·DIY</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634560954368.png?w=1280"/><span>인테리어시공</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634580844544.png?w=1280"/><span>렌탈·구독</span></a></li>
+                            	<li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-484634600026240.png?w=1280"/><span>장보기</span></a></li>
+	                        </ul>
+	                    </div>
+	                </div>
+	               <a href="${pageContext.request.contextPath}/best.htm"
+					   class="${activeMenu == 'best' ? 'active' : ''}">
+					    베스트
+					</a>
+	                <a href="#">오늘의딜</a>
+	                <a href="${pageContext.request.contextPath}/only.htm"
+					   class="${activeMenu == 'only' ? 'active' : ''}">
+					    단독상품
+					</a>
+	                <a href="#">집요한세일</a>
+	                <a href="#">오마트</a>
+	                <a href="${pageContext.request.contextPath}/desiredDelivery.htm"
+					   class="${activeMenu == 'desiredDelivery' ? 'active' : ''}">
+					    원하는날도착
+					</a>
+	                <a href="#">오!쇼룸</a>
+	                <a href="#">기획전</a>
+	            </nav>
+	            <!-- 인테리어/생활 메뉴 리스트 -->
+	            <nav class="interior-nav-list">
+	                <a href="#" class="active">홈</a>
+	                <a href="#">전체시공</a>
+	                <a href="#">부분시공</a>
+	                <a href="#">시공자재랭킹</a>
+	                <a href="#">제품설치</a>
+	                <a href="#">이사</a>
+	                <a href="#">집보기체크리스트</a>
+	                <a href="#">아파트시공사례</a>
+	            </nav>
+	            <!-- 오른쪽 실시간 인기 검색어 박스 -->
+	            <% if (showHeaderPopularKeywordValue) { %>
+	            <div style="padding: 8px 0;">
+	                <jsp:include page="/WEB-INF/views/layout/popular_keyword.jsp"/>
+	            </div>
+	            <% } %>
+	        </div>
+	    </div>
+	</div>
 	<script>
-	$(function () {
-		const $mainMenu = $(".header-main-nav > a");
-		const $allSubMenus = $(".home-nav-list, .shoping-nav-list, .interior-nav-list");
-		const subMenuMap = {
-			home: $(".home-nav-list"),
-			shopping: $(".shoping-nav-list"),
-			interior: $(".interior-nav-list")
-		};
-		const $stickyHeader = $(".sticky-header");
-		const $headerSubArea = $(".header-sub-area");
-		const activeMenuName = $mainMenu.filter(".active").data("menu") || "shopping";
-		let closeSubMenuTimer = null;
-		let lastScrollTop = $(window).scrollTop();
-		function showSubMenu(menuName) {
-			clearTimeout(closeSubMenuTimer);
-			$allSubMenus.removeClass("is-visible");
-			if (subMenuMap[menuName]) {
-				subMenuMap[menuName].addClass("is-visible");
-				$(".sticky-header").addClass("sub-open");
-			}
-		}
-		function hideSubMenu() {
-			/* 최상단에서는 부모 상태를 건드리지 않고 쇼핑 서브 네비 내용만 유지한다. */
-			if ($headerSubArea.hasClass("is-open")) {
-				$stickyHeader.removeClass("sub-open");
-				$allSubMenus.removeClass("is-visible");
-				subMenuMap[activeMenuName].addClass("is-visible");
-				return;
-			}
-			$stickyHeader.removeClass("sub-open");
-			$allSubMenus.removeClass("is-visible");
-			$(".category-wrap").removeClass("is-open");
-			$(".category-dropdown").stop(true, true).hide();
-		}
-		function scheduleHideSubMenu() {
-			clearTimeout(closeSubMenuTimer);
-			closeSubMenuTimer = setTimeout(function () {
-				hideSubMenu();
-			}, 120);
-		}
-		/* 메인 메뉴 hover 시 그 메뉴의 서브 메뉴를 임시 표시한다. */
-		$mainMenu.on("mouseenter", function () {
-			showSubMenu($(this).data("menu"));
-		});
-		/* 경계를 이동할 때 바로 닫히지 않도록 짧게 기다린다. */
-		$stickyHeader
-			.on("mouseenter", function () {
-				clearTimeout(closeSubMenuTimer);
-			})
-			.on("mouseleave", function () {
-				scheduleHideSubMenu();
-			});
-		/* 최초 로드/맨 위/위 스크롤에서는 표시하고, 아래 스크롤에서는 숨긴다. */
-		function updateStickyHeaderState(isScrollEvent) {
-			const currentScrollTop = $(window).scrollTop();
-			const isPageTop = currentScrollTop === 0;
-			const isScrollingDown = isScrollEvent && currentScrollTop > lastScrollTop;
-			const isScrollingUp = isScrollEvent && currentScrollTop < lastScrollTop;
-			if (isPageTop || isScrollingUp) {
-				$headerSubArea.addClass("is-open");
-				$stickyHeader.addClass("sub-visible");
-				$allSubMenus.removeClass("is-visible");
-				subMenuMap[activeMenuName].addClass("is-visible");
-			} else if (isScrollingDown && !$stickyHeader.is(":hover")) {
-				$headerSubArea.removeClass("is-open");
-				$stickyHeader.removeClass("sub-visible");
-				$stickyHeader.removeClass("sub-open");
-				$allSubMenus.removeClass("is-visible");
-			}
-			lastScrollTop = currentScrollTop;
-		}
-		$(window).on("scroll", function () {
-			updateStickyHeaderState(true);
-		});
-		$(window).on("resize", function () {
-			updateStickyHeaderState(false);
-		});
-		/* 카테고리 탭과 목록 사이를 이동하는 동안 계속 열린다. */
-		$(".category-wrap").on("mouseenter", function () {
-			$(this).addClass("is-open");
-			$(this).find(".category-dropdown").stop(true, true).slideDown(180);
-		}).on("mouseleave", function () {
-			$(this).removeClass("is-open");
-			$(this).find(".category-dropdown").stop(true, true).slideUp(150);
-		});
-		/* 프로필 드롭다운 */
-		$("#profileToggleBtn").on("click", function (e) {
-			e.stopPropagation();
-			$("#profileDropdown").toggleClass("show");
-		});
-		$(window).on("click", function () {
-			$("#profileDropdown").removeClass("show");
-		});
-		/* 이벤트 배너 닫기 */
-		$(".btn-close").on("click", function (e) {
-			e.stopPropagation();
-			$(".top-event-banner").stop(true, true).slideUp(200, updateStickyHeaderState);
-		});
-		updateStickyHeaderState();
-	});
+	    $(function () {
+	        const $mainMenu = $(".header-main-nav > a");
+	        const $allSubMenus = $(".home-nav-list, .shoping-nav-list, .interior-nav-list");
+	        const subMenuMap = {
+	            home: $(".home-nav-list"),
+	            shopping: $(".shoping-nav-list"),
+	            interior: $(".interior-nav-list")
+	        };
+	        const $stickyHeader = $(".sticky-header");
+	        const $headerSubArea = $(".header-sub-area");
+	        const activeMenuName = $mainMenu.filter(".active").data("menu") || "shopping";
+	        /*
+	         * 페이지별 최상단 서브 헤더 표시 스위치
+	         * true  : 최초 로드/페이지 최상단에서 서브 헤더 표시
+	         * false : 마우스를 올렸을 때만 서브 헤더 표시
+	         */
+	        /* 값을 생략하면 true, 명시적으로 false를 전달한 경우에만 false */
+	        const showSubHeaderAtTop = <%= showSubHeaderAtTopValue %>;
+	        let closeSubMenuTimer = null;
+	        let lastScrollTop = $(window).scrollTop();
+
+	        function showSubMenu(menuName) {
+	            clearTimeout(closeSubMenuTimer);
+	            $allSubMenus.removeClass("is-visible");
+	            if (subMenuMap[menuName]) {
+	                subMenuMap[menuName].addClass("is-visible");
+	                $(".sticky-header").addClass("sub-open");
+	            }
+	        }
+
+	        function hideSubMenu() {
+	            /* 최상단에서는 부모 상태를 건드리지 않고 쇼핑 서브 네비 내용만 유지한다. */
+	            if ($headerSubArea.hasClass("is-open")) {
+	                $stickyHeader.removeClass("sub-open");
+	                $allSubMenus.removeClass("is-visible");
+	                subMenuMap[activeMenuName].addClass("is-visible");
+	                return;
+	            }
+	            $stickyHeader.removeClass("sub-open");
+	            $allSubMenus.removeClass("is-visible");
+	            $(".category-wrap").removeClass("is-open");
+	            $(".category-dropdown").stop(true, true).hide();
+	        }
+
+	        function scheduleHideSubMenu() {
+	            clearTimeout(closeSubMenuTimer);
+	            closeSubMenuTimer = setTimeout(function () {
+	                hideSubMenu();
+	            }, 120);
+	        }
+
+	        /* 메인 메뉴 hover 시 그 메뉴의 서브 메뉴를 임시 표시한다. */
+	        $mainMenu.on("mouseenter", function () {
+	            showSubMenu($(this).data("menu"));
+	        });
+	        /* 경계를 이동할 때 바로 닫히지 않도록 짧게 기다린다. */
+	        $stickyHeader
+	            .on("mouseenter", function () {
+	                clearTimeout(closeSubMenuTimer);
+	            })
+	            .on("mouseleave", function () {
+	                scheduleHideSubMenu();
+	            });
+
+	        /*
+	         * true이면 최초 로드/페이지 최상단/위 스크롤에서 표시한다.
+	         * false이면 스크롤 상태와 무관하게 숨기고, 마우스 hover로만 표시한다.
+	         * 아래로 스크롤할 때는 숨긴다.
+	         */
+	        function updateStickyHeaderState(isScrollEvent) {
+	            const currentScrollTop = $(window).scrollTop();
+	            const isPageTop = currentScrollTop === 0;
+	            const isScrollingDown = isScrollEvent && currentScrollTop > lastScrollTop;
+	            const isScrollingUp = isScrollEvent && currentScrollTop < lastScrollTop;
+
+	            if (!showSubHeaderAtTop) {
+	                $headerSubArea.removeClass("is-open");
+	                $stickyHeader.removeClass("sub-visible");
+
+	                /* hover 중에는 showSubMenu()가 연 상태를 유지한다. */
+	                if (!$stickyHeader.is(":hover")) {
+	                    $stickyHeader.removeClass("sub-open");
+	                    $allSubMenus.removeClass("is-visible");
+	                }
+	            } else if (isPageTop || isScrollingUp) {
+	                $headerSubArea.addClass("is-open");
+	                $stickyHeader.addClass("sub-visible");
+	                $allSubMenus.removeClass("is-visible");
+	                subMenuMap[activeMenuName].addClass("is-visible");
+	            } else if (isScrollingDown && !$stickyHeader.is(":hover")) {
+	                $headerSubArea.removeClass("is-open");
+	                $stickyHeader.removeClass("sub-visible");
+	                $stickyHeader.removeClass("sub-open");
+	                $allSubMenus.removeClass("is-visible");
+	            }
+	            lastScrollTop = currentScrollTop;
+	        }
+
+	        $(window).on("scroll", function () {
+	            updateStickyHeaderState(true);
+	        });
+	        $(window).on("resize", function () {
+	            updateStickyHeaderState(false);
+	        });
+	        /* 카테고리 탭과 목록 사이를 이동하는 동안 계속 열린다. */
+	        $(".category-wrap").on("mouseenter", function () {
+	            $(this).addClass("is-open");
+	            $(this).find(".category-dropdown").stop(true, true).slideDown(180);
+	        }).on("mouseleave", function () {
+	            $(this).removeClass("is-open");
+	            $(this).find(".category-dropdown").stop(true, true).slideUp(150);
+	        });
+	        /* 프로필 드롭다운 */
+	        $("#profileToggleBtn").on("click", function (e) {
+	            e.stopPropagation();
+	            $("#profileDropdown").toggleClass("show");
+	        });
+	        $(window).on("click", function () {
+	            $("#profileDropdown").removeClass("show");
+	        });
+	        /* 이벤트 배너 닫기 */
+	        $(".btn-close").on("click", function (e) {
+	            e.stopPropagation();
+	            $(".top-event-banner").stop(true, true).slideUp(200, updateStickyHeaderState);
+	        });
+	        updateStickyHeaderState();
+	    });
 	</script>
-</body>
-</html>
+	</body>
+	</html>

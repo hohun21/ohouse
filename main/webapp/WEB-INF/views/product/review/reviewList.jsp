@@ -296,12 +296,15 @@
 			</div>
 
 			<!-- 2. 2단 계층 옵션 드롭다운 -->
+			<!-- 2. 옵션 드롭다운 (단일/복합 구조 유연 대응) -->
+			<!-- 2. 옵션 드롭다운 영역 (여기를 통째로 교체하세요) -->
 			<div class="custom-dropdown" data-dropdown-id="option">
 				<button type="button" class="dropdown-btn js-dropdown-toggle">
 					옵션 <span>∨</span>
 				</button>
 
-				<div class="dropdown-menu-box option-menu">
+				<div class="dropdown-menu-box option-menu"
+					style="width: ${optionFilterList.size() > 1 ? '400px' : '280px'};">
 					<div class="option-menu-header">
 						<span style="font-size: 13px; font-weight: bold;">옵션 선택</span>
 						<button type="button" class="reset-btn js-reset-options">↻
@@ -310,59 +313,94 @@
 
 					<c:choose>
 						<c:when test="${not empty optionFilterList}">
-							<div style="display: flex; height: 260px;">
-								<!-- 좌측: 1차 옵션 목록 -->
-								<div class="tier-left"
-									style="width: 40%; border-right: 1px solid #ededed; overflow-y: auto; background-color: #f7f9fa;">
-									<c:forEach var="parentOpt" items="${optionFilterList}"
-										varStatus="status">
-										<div class="left-tab-item ${status.first ? 'active' : ''}"
-											data-target="sub-group-${parentOpt.optionValueId}">
-											<span>${parentOpt.optionValueName}</span> <span
-												style="font-size: 10px; color: #bdbdbd;">&gt;</span>
-										</div>
-									</c:forEach>
-								</div>
+							<c:choose>
+								<%-- [케이스 1] 1차 옵션 그룹이 딱 1개뿐인 단일 옵션 상품 --%>
+								<c:when test="${optionFilterList.size() == 1}">
+									<div
+										style="padding: 12px; max-height: 260px; overflow-y: auto;">
+										<c:forEach var="parentOpt" items="${optionFilterList}">
+											<c:if test="${not empty parentOpt.optionValueName}">
+												<div
+													style="font-size: 12px; font-weight: bold; color: #8f9bb3; margin-bottom: 8px;">
+													${parentOpt.optionValueName}</div>
+											</c:if>
 
-								<!-- 우측: 2차 옵션 그룹 목록 -->
-								<div class="tier-right"
-									style="width: 60%; padding: 12px; overflow-y: auto;">
-									<c:forEach var="parentOpt" items="${optionFilterList}"
-										varStatus="status">
-										<div class="sub-option-group"
-											id="sub-group-${parentOpt.optionValueId}"
-											data-parent-id="${parentOpt.optionValueId}"
-											data-parent-name="${parentOpt.optionValueName}"
-											style="display: ${status.first ? 'block' : 'none'};">
+											<div class="sub-option-group"
+												id="sub-group-${parentOpt.optionValueId}"
+												data-parent-id="${parentOpt.optionValueId}"
+												data-parent-name="">
 
-											<label class="all-select-label"> <input
-												type="checkbox" class="js-select-all-group" /> <span>전체선택</span>
-											</label>
+												<c:forEach var="subOpt" items="${parentOpt.subOptions}">
+													<label
+														style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; cursor: pointer;">
+														<input type="checkbox" name="options"
+														value="${subOpt.productOptionId}"
+														data-name="${subOpt.subOptionName}"
+														class="js-filter-checkbox js-option-checkbox"
+														<c:if test="${not empty selectedOptions and selectedOptions.contains(subOpt.productOptionId)}">checked</c:if> />
+														<span>${subOpt.subOptionName}</span>
+													</label>
+												</c:forEach>
+											</div>
+										</c:forEach>
+									</div>
+								</c:when>
 
-											<c:forEach var="subOpt" items="${parentOpt.subOptions}">
-												<label
-													style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; cursor: pointer;">
-													<input type="checkbox" name="options"
-													value="${subOpt.productOptionId}"
-													data-name="${subOpt.subOptionName}"
-													class="js-filter-checkbox js-option-checkbox"
-													<c:if test="${not empty selectedOptions and selectedOptions.contains(subOpt.productOptionId)}">checked</c:if> />
-													<span>${subOpt.subOptionName}</span>
-												</label>
+								<%-- [케이스 2] 옵션 그룹이 2개 이상인 복합 옵션 상품 (좌우 2단 탭) --%>
+								<c:otherwise>
+									<div style="display: flex; height: 260px;">
+										<!-- 좌측: 1차 옵션 목록 -->
+										<div class="tier-left"
+											style="width: 40%; border-right: 1px solid #ededed; overflow-y: auto; background-color: #f7f9fa;">
+											<c:forEach var="parentOpt" items="${optionFilterList}"
+												varStatus="status">
+												<div class="left-tab-item ${status.first ? 'active' : ''}"
+													data-target="sub-group-${parentOpt.optionValueId}">
+													<span>${parentOpt.optionValueName}</span> <span
+														style="font-size: 10px; color: #bdbdbd;">&gt;</span>
+												</div>
 											</c:forEach>
-
 										</div>
-									</c:forEach>
-								</div>
-							</div>
+
+										<!-- 우측: 2차 옵션 그룹 목록 -->
+										<div class="tier-right"
+											style="width: 60%; padding: 12px; overflow-y: auto;">
+											<c:forEach var="parentOpt" items="${optionFilterList}"
+												varStatus="status">
+												<div class="sub-option-group"
+													id="sub-group-${parentOpt.optionValueId}"
+													data-parent-id="${parentOpt.optionValueId}"
+													data-parent-name="${parentOpt.optionValueName}"
+													style="display: ${status.first ? 'block' : 'none'};">
+
+													<label class="all-select-label"> <input
+														type="checkbox" class="js-select-all-group" /> <span>전체선택</span>
+													</label>
+
+													<c:forEach var="subOpt" items="${parentOpt.subOptions}">
+														<label
+															style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; cursor: pointer;">
+															<input type="checkbox" name="options"
+															value="${subOpt.productOptionId}"
+															data-name="${subOpt.subOptionName}"
+															class="js-filter-checkbox js-option-checkbox"
+															<c:if test="${not empty selectedOptions and selectedOptions.contains(subOpt.productOptionId)}">checked</c:if> />
+															<span>${subOpt.subOptionName}</span>
+														</label>
+													</c:forEach>
+												</div>
+											</c:forEach>
+										</div>
+									</div>
+								</c:otherwise>
+							</c:choose>
 						</c:when>
 						<c:otherwise>
 							<div
-								style="padding: 16px; font-size: 13px; color: #757575; text-align: center;">선택
-								가능한 옵션이 없습니다.</div>
+								style="padding: 16px; font-size: 13px; color: #757575; text-align: center;">
+								선택 가능한 옵션이 없습니다.</div>
 						</c:otherwise>
 					</c:choose>
-
 				</div>
 			</div>
 		</div>
@@ -377,7 +415,7 @@
 			id="js-btn-clear-all" style="display: none;">↻ 전체 초기화</button>
 	</div>
 	<div id="reviewListContainer">
-    <jsp:include page="/WEB-INF/views/product/review/reviewItem.jsp" />
+		<jsp:include page="/WEB-INF/views/product/review/reviewItem.jsp" />
 	</div>
 </div>
 
@@ -391,6 +429,7 @@
     var selectedRatingsSet = new Set();
     var selectedOptionsSet = new Set();
 
+    // UI 동기화 함수
     // UI 동기화 함수
     function syncFilterUIState() {
         if (!currentActiveTabTarget) {
@@ -456,16 +495,24 @@
 
         if (tagBar) tagBar.innerHTML = tagHtml;
 
+        // 전체 필터 초기화 버튼 노출 여부 판정
+        var checkedRatingsCount = parentContainer.querySelectorAll('.js-rating-checkbox:checked').length;
+        var checkedOptionsCount = parentContainer.querySelectorAll('.js-option-checkbox:checked').length;
+        var hasFilter = (checkedRatingsCount > 0 || checkedOptionsCount > 0);
+
         var clearAllBtn = document.getElementById('js-btn-clear-all');
         if (clearAllBtn) {
-            var hasFilter = (selectedRatingsSet.size > 0 || selectedOptionsSet.size > 0);
             clearAllBtn.style.display = hasFilter ? 'inline-flex' : 'none';
         }
         
+        // 옵션 드롭다운 내부 초기화 버튼 활성화 클래스 조작
         var resetBtn = parentContainer.querySelector('.js-reset-options');
         if (resetBtn) {
-            if (hasAnyCheckedOption) resetBtn.classList.add('active');
-            else resetBtn.classList.remove('active');
+            if (checkedOptionsCount > 0) {
+                resetBtn.classList.add('active');
+            } else {
+                resetBtn.classList.remove('active');
+            }
         }
 
         if (activeDropdownId) {
@@ -488,11 +535,37 @@
             }
         }
     }
+    
+  	//태그의 [x] (btn-remove-tag) 버튼을 눌렀을 때의 처리 로직
+    parentContainer.addEventListener('click', function(e) {
+        var removeBtn = e.target.closest('.btn-remove-tag');
+        if (!removeBtn) return;
 
+        var type = removeBtn.getAttribute('data-type'); // 'rating' 또는 'option'
+        var val = removeBtn.getAttribute('data-val');
+
+        // 1. JS 내부 Set 데이터에서 제거
+        if (type === 'rating') {
+            selectedRatingsSet.delete(val);
+        } else if (type === 'option') {
+            selectedOptionsSet.delete(val);
+        }
+
+        // 2. 화면에 있는 실제 체크박스 찾아서 체크 해제하기 (핵심!)
+        var targetCheckbox = parentContainer.querySelector('input.js-' + type + '-checkbox[value="' + val + '"]');
+        if (targetCheckbox) {
+            targetCheckbox.checked = false;
+            // 체크박스의 change 이벤트나 연동된 데이터 갱신 함수가 있다면 여기서 호출
+        }
+
+        // 3. UI 동기화 함수 호출하여 태그바와 체크박스 상태 갱신
+        syncFilterUIState();
+    });
+  	
     // 💥 [통합 이벤트 리스너] document 수준에서 모든 클릭을 감지하도록 보완
     document.addEventListener('click', function(e) {
         
-        // 1. 도움돼요(좋아요) 토글 버튼 클릭
+    	// 1. 도움돼요(좋아요) 토글 버튼 클릭
         var likeBtn = e.target.closest('.js-review-like');
         if (likeBtn) {
             e.stopPropagation();
@@ -500,17 +573,30 @@
 
             var reviewId = likeBtn.getAttribute('data-review-id');
             if (!reviewId) return;
-            var memberId = ${memberId}; 
-            var url = '${pageContext.request.contextPath}/helpCountToggle.htm?review_id=' + reviewId + '&member_id=' + memberId;
 
-            fetch(url, {   method: 'GET',
+            // 💡 memberId 파라미터 제거 (서버 세션에서 처리하므로 review_id만 보내면 됨)
+            var url = '${pageContext.request.contextPath}/helpCountToggle.htm?review_id=' + reviewId;
+
+            fetch(url, {
+                method: 'GET',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(function (response) {
+                if (response.status === 401) {
+                    // 비로그인 상태일 때 401 응답을 받으면 상세 페이지 주소를 통째로 들고 로그인으로 이동
+                    if (confirm("로그인이 필요한 서비스입니다. 로그인 페이지로 이동하시겠습니까?")) {
+                        const currentDetailUrl = window.location.pathname + window.location.search;
+                        window.location.href = '${pageContext.request.contextPath}/login.htm?referer=' + encodeURIComponent(currentDetailUrl);
+                    }
+                    return null;
+                }
+                
                 if (!response.ok) throw new Error('HTTP 에러: ' + response.status);
                 return response.json();
             })
             .then(function (data) {
+                if (!data) return; // 401 처리로 인해 null인 경우 중단
+
                 var countSpan = likeBtn.querySelector('.count');
                 if (countSpan) countSpan.textContent = data.helpCount;
 
@@ -528,36 +614,39 @@
             })
             .catch(function (error) {
                 console.error('도움돼요 토글 실패:', error);
-                alert('처리에 실패했습니다: ' + error.message);
             });
             return;
         }
 
         // 2. 페이징 및 정렬 버튼 클릭 (💥 href="javascript:void(0)" 기본 동작 차단 추가!)
-        // 2. 페이징 및 정렬 버튼 클릭
+        
         var actionBtn = e.target.closest('.js-review-action');
         if (actionBtn) {
             e.stopPropagation();
             e.preventDefault(); 
             
-            // 정렬 버튼을 클릭한 경우 (베스트순 / 최신순)
-            if (actionBtn.hasAttribute('data-sort')) {
-                var sortButtons = parentContainer.querySelectorAll('.js-review-action[data-sort]');
+            // 정렬 탭을 클릭한 경우 (.filter-tabs 내부)
+            if (actionBtn.closest('.filter-tabs')) {
+                var sortVal = actionBtn.getAttribute('data-sort');
+                var sortButtons = parentContainer.querySelectorAll('.filter-tabs .js-review-action');
                 sortButtons.forEach(function(btn) {
                     btn.classList.remove('active');
                 });
                 actionBtn.classList.add('active');
+                
+                triggerReviewFetch('1', sortVal);
+                return;
             }
 
-            var page = actionBtn.getAttribute('data-page') || '1';
-            
-            // 👉 [핵심 수정] 만약 누른 버튼이 페이징 버튼(data-sort가 없음)이라면, 현재 활성화된 정렬값을 가져와서 유지합니다!
-            var sort = actionBtn.getAttribute('data-sort') || getCurrentSort();
-            
-            triggerReviewFetch(page, sort);
-            return;
+            // 페이징 번호 버튼을 클릭한 경우 (.pagination 내부)
+            if (actionBtn.closest('.pagination')) {
+                var pageVal = actionBtn.getAttribute('data-page');
+                var sort = getCurrentSort(); // 현재 활성화된 정렬 상태 유지
+                
+                triggerReviewFetch(pageVal, sort);
+                return;
+            }
         }
-
         // 3. 전체 필터 초기화 버튼
         var clearAllBtn = e.target.closest('.js-clear-all-filters');
         if (clearAllBtn) {
@@ -622,14 +711,28 @@
         }
 
         // 7. 옵션 드롭다운 초기화 버튼
-        var resetBtn = e.target.closest('.js-reset-options.active');
+        // 7. 옵션 드롭다운 초기화 버튼
+        var resetBtn = e.target.closest('.js-reset-options');
         if (resetBtn) {
             e.stopPropagation();
+            if (!resetBtn.classList.contains('active')) return;
+            
+            // 1. 메모리 셋 비우기
             selectedOptionsSet.clear();
+            
+            // 2. 해당 옵션 메뉴 내의 모든 체크박스 및 전체선택 체크 해제 (태그바 소멸을 위해 필수)
+            var optionMenu = resetBtn.closest('.option-menu');
+            if (optionMenu) {
+                optionMenu.querySelectorAll('.js-option-checkbox, .js-select-all-group').forEach(function(chk) {
+                    chk.checked = false;
+                });
+            }
+            
+            // 3. UI 동기화 호출 및 서버 리스트 갱신
+            syncFilterUIState();
             triggerReviewFetch('1', getCurrentSort());
             return;
         }
-
         // 8. 바깥 클릭 시 드롭다운 닫기
         if (!e.target.closest('.custom-dropdown')) {
             parentContainer.querySelectorAll('.dropdown-menu-box').forEach(function(m) { m.style.display = 'none'; });
@@ -637,49 +740,71 @@
         }
     });
 
-    // 체크박스 변경 이벤트
+ // 체크박스 변경 이벤트 수정
     document.addEventListener('change', function(e) {
+        // 1. 전체 선택 체크박스 조작 시
         if (e.target.classList.contains('js-select-all-group')) {
             var isChecked = e.target.checked;
             var group = e.target.closest('.sub-option-group');
             if (group) {
                 group.querySelectorAll('.js-option-checkbox').forEach(function(chk) {
-                    if (isChecked) selectedOptionsSet.add(chk.value);
-                    else selectedOptionsSet.delete(chk.value);
+                    chk.checked = isChecked; // 화면상 체크박스 상태 즉시 반영
+                    if (isChecked) {
+                        selectedOptionsSet.add(chk.value);
+                    } else {
+                        selectedOptionsSet.delete(chk.value);
+                    }
                 });
             }
+            syncFilterUIState(); // 태그 및 UI 즉시 갱신
             triggerReviewFetch('1', getCurrentSort());
             return;
         }
 
+        // 2. 별점 체크박스 조작 시
         if (e.target.classList.contains('js-rating-checkbox')) {
             if (e.target.checked) selectedRatingsSet.add(e.target.value);
             else selectedRatingsSet.delete(e.target.value);
+            
+            syncFilterUIState();
             triggerReviewFetch('1', getCurrentSort());
             return;
         }
 
+        // 3. 개별 옵션 체크박스 조작 시
         if (e.target.classList.contains('js-option-checkbox')) {
-            if (e.target.checked) selectedOptionsSet.add(e.target.value);
-            else selectedOptionsSet.delete(e.target.value);
+            if (e.target.checked) {
+                selectedOptionsSet.add(e.target.value);
+            } else {
+                selectedOptionsSet.delete(e.target.value);
+            }
+            
+            // 개별 체크박스가 해제되면 해당 그룹의 '전체선택' 체크박스 상태도 즉시 해제
+            var group = e.target.closest('.sub-option-group');
+            if (group) {
+                var selectAllCheckbox = group.querySelector('.js-select-all-group');
+                var optionCheckboxes = group.querySelectorAll('.js-option-checkbox');
+                var checkedOptions = group.querySelectorAll('.js-option-checkbox:checked');
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.checked = (optionCheckboxes.length === checkedOptions.length);
+                }
+            }
+
+            syncFilterUIState(); // 태그바 및 UI 즉시 갱신
             triggerReviewFetch('1', getCurrentSort());
             return;
         }
     });
 
     function getCurrentSort() {
-        var activeSortBtn = parentContainer.querySelector('.filter-tabs .active');
+    	var activeSortBtn = parentContainer.querySelector('.js-review-action.active[data-sort]:not([data-page])') 
+        || parentContainer.querySelector('.filter-tabs .active[data-sort]');
         return activeSortBtn ? activeSortBtn.getAttribute('data-sort') : 'best';
     }
 
-    // 리뷰 AJAX Fetch
+ // 리뷰 AJAX Fetch 수정
     function triggerReviewFetch(page, sort) {
-        var productId = '${product_id}';
-        if (!productId || productId === '0' || productId === 'null') {
-            var params = new URLSearchParams(window.location.search);
-            productId = params.get('product_id') || '3377041';
-        }
-
+        var productId = `${product_id}`;
         var reqUrl = '${pageContext.request.contextPath}/review.htm?product_id=' + productId + '&sort=' + sort + '&page=' + page;
 
         selectedRatingsSet.forEach(function(val) {
@@ -689,47 +814,43 @@
         selectedOptionsSet.forEach(function(val) {
             reqUrl += '&options=' + encodeURIComponent(val);
         });
-        console.log(" 서버로 보내는 최종 요청 URL:", reqUrl); // 이 줄 추가
+
         fetch(reqUrl)
             .then(function(res) {
                 if (!res.ok) throw new Error('Network error');
                 return res.text();
             })
             .then(function(html) {
-            
-            	//서블리 HTML 전체에서 리뷰 리스트와 페이징 영역을 모두 포함하는 부모 컨테이너를 안전하게 교체
                 var parser = new DOMParser();
                 var doc = parser.parseFromString(html, 'text/html');
                 
-                // 서버가 준 응답에서 새로운 리뷰 리스트 + 페이징이 담긴 박스를 찾음
-                var newReviewListArea = doc.querySelector('.review-container-wrapper') || doc.body;
+                // 서버 응답에서 리뷰 리스트 컨테이너만 추출
+                var newReviewList = doc.querySelector('#reviewListContainer');
+                var currentReviewList = parentContainer.querySelector('#reviewListContainer');
                 
-                // 현재 화면의 리뷰 리스트 박스 찾기
-                var currentReviewListArea = parentContainer.querySelector('.review-container-wrapper');
-                
-                if (currentReviewListArea && newReviewListArea) {
-                    // 리스트와 페이징 영역 전체를 서버가 준 최신 상태로 통째로 갈아끼움 (중첩 방지)
-                    currentReviewListArea.innerHTML = newReviewListArea.innerHTML;
+                if (currentReviewList && newReviewList) {
+                    // 필터 바를 건드리지 않고 오직 리뷰 목록 영역만 교체
+                    currentReviewList.innerHTML = newReviewList.innerHTML;
                 } else {
                     parentContainer.innerHTML = html;
                 }
                 
-            
-                parentContainer.querySelectorAll('.js-review-action[data-sort]').forEach(function(btn) {
-                    if (btn.getAttribute('data-sort') === currentSort) {
+                // 정렬 버튼 활성화 상태 갱신
+                parentContainer.querySelectorAll('.js-review-action[data-sort]:not([data-page])').forEach(function(btn) {
+                    if (btn.getAttribute('data-sort') === sort) {
                         btn.classList.add('active');
                     } else {
                         btn.classList.remove('active');
                     }
                 });
                 
+                // 드롭다운을 닫지 않고 UI 태그 및 체크박스 상태만 동기화
                 syncFilterUIState();
-			})
+            })
             .catch(function(err) {
                 console.error('리뷰 조회 실패:', err);
             });
     }
-
     // 초기 서버 세팅 로드
     <c:if test="${not empty selectedRatings}">
         <c:forEach var="r" items="${selectedRatings}">
@@ -838,12 +959,43 @@ function sendAdminReplyRequest(reviewId, adminReply) {
 <script>
 //리뷰 작성 모달 열기
 function openReviewModal() {
-    var modal = document.getElementById('review-write-modal');
-    if (modal) {
-        modal.style.display = 'flex'; // 중앙 정렬 flex 활성화
+    const isLoggedIn = '${sessionScope.authUser}' !== '';
+    if (!isLoggedIn) {
+        if (confirm("로그인 후 이용할 수 있습니다. 로그인하시겠습니까?")) {
+            // 현재 상세 페이지의 경로와 상품 번호 파라미터를 통째로 encode해서 전달
+            const currentDetailUrl = window.location.pathname + window.location.search;
+            location.href = '${pageContext.request.contextPath}/login.htm?referer=' + encodeURIComponent(currentDetailUrl);
+        }
+        return;
     }
-}
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('product_id') || '${product_id}';
+
+    fetch('${pageContext.request.contextPath}/checkReview.htm?product_id=' + productId)
+        .then(response => {
+            if (!response.ok) throw new Error("서버 통신 실패");
+            return response.json();
+        })
+        .then(data => {
+        	if (data.hasReviewed) {
+                // confirm 창을 띄워 사용자의 선택에 따라 분기
+                if (confirm("이미 이 상품에 대한 리뷰를 작성하셨습니다. 작성하신 리뷰 목록으로 이동하시겠습니까?")) {
+                    location.href = '${pageContext.request.contextPath}/member/myReview.htm';
+                }
+                return; // '아니오'를 누르거나 창을 닫으면 여기서 멈추고 현재 페이지에 남아있음
+            }
+
+            var modal = document.getElementById('review-write-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        })
+        .catch(error => {
+            console.error("리뷰 작성 여부 확인 중 에러 발생:", error);
+            alert("오류가 발생했습니다. 다시 시도해 주세요.");
+        });
+}
 // 리뷰 작성 모달 닫기
 function closeReviewModal() {
     var modal = document.getElementById('review-write-modal');

@@ -31,6 +31,10 @@ public class LoginHandler implements CommandHandler {
     }
 
     private String processForm(HttpServletRequest req, HttpServletResponse res) {
+    	String referer = req.getParameter("referer");
+        if (referer != null && !referer.isEmpty()) {
+            req.getSession().setAttribute("referer", referer);
+        }
         return FORM_VIEW;
     }
 
@@ -69,7 +73,11 @@ public class LoginHandler implements CommandHandler {
             } else {
                 location = contextPath + "/main.htm";
             }
-            String referer = (String) session.getAttribute("referer");
+         // 💡 파라미터로 넘어온 referer를 우선 확인하고, 없으면 세션에서 가져옴
+            String referer = req.getParameter("referer");
+            if (referer == null || referer.isEmpty()) {
+                referer = (String) session.getAttribute("referer");
+            }
             
             if( referer != null && referer.startsWith( contextPath + "/")) {
                 location = referer;

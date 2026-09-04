@@ -1,13 +1,16 @@
 package com.ohouse.seller.handler;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.ohouse.common.handler.CommandHandler;
+import com.ohouse.seller.dto.SellerAuthDTO;
+import com.ohouse.seller.service.SellerOrderService; // 💡 1. 주문/정산 서비스 임포트
 import com.ohouse.seller.service.SellerService;
-import com.ohouse.seller.dto.SellerAuthDTO; // 💡 DTO 임포트
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.util.Map;
 
 public class SellerDashboardHandler implements CommandHandler {
 
@@ -24,8 +27,19 @@ public class SellerDashboardHandler implements CommandHandler {
         String myBrandName = sellerAuth.getBrandName(); 
         
         SellerService sellerService = new SellerService();
+        SellerOrderService orderService = new SellerOrderService();
+
+        Map<String, Object> stats = new HashMap<>();
+        Map<String, Integer> productStats = sellerService.getDashboardStats(myBrandName);
+        if (productStats != null) {
+            stats.putAll(productStats);
+        }
         
-        Map<String, Integer> stats = sellerService.getDashboardStats(myBrandName);
+
+        Map<String, Object> orderStats = orderService.getDashboardOrderStats(myBrandName);
+        if (orderStats != null) {
+            stats.putAll(orderStats);
+        }
        
         request.setAttribute("stats", stats);
         

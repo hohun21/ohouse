@@ -116,17 +116,20 @@ function findProductOption() {
             })
             .then(function (data) {
                 if (!data) {
-                    alert("선택한 옵션 조합이 없습니다.");
+                    showToast("선택한 옵션 조합이 없습니다.");
+                    initOptions();
                     return;
                 }
 
                 if (data.status !== "ACTIVE") {
-                    alert("판매할 수 없는 옵션입니다.");
+                    showToast("현재 판매할 수 없는 옵션입니다.");
+                    initOptions();
                     return;
                 }
 
                 if (Number(data.stock) <= 0) {
-                    alert("품절된 옵션입니다.");
+                    showToast("현재 품절된 옵션입니다.");
+                    initOptions();
                     return;
                 }
 
@@ -162,17 +165,20 @@ function findAdditionalProductOption(select) {
         })
         .then(function (data) {
             if (!data) {
-                alert("선택한 추가 옵션이 없습니다.");
+                showToast("선택한 추가 옵션이 없습니다.");
+                select.value = "";
                 return;
             }
 
             if (data.status !== "ACTIVE") {
-                alert("판매할 수 없는 추가 옵션입니다.");
+                showToast("현재 판매할 수 없는 추가 옵션입니다.");
+                select.value = "";
                 return;
             }
 
             if (Number(data.stock) <= 0) {
-                alert("품절된 추가 옵션입니다.");
+                showToast("현재 품절된 추가 옵션입니다.");
+                select.value = "";
                 return;
             }
 
@@ -205,11 +211,9 @@ function showToast(message) {
 
 const selectOptionData = [];
 
-function createSelectedOption(data,
-                              names,
-                              option_value_ids) {
-    const selectedOptionValueIds =
-        option_value_ids.map(Number);
+function createSelectedOption(data, names, option_value_ids) {
+    const selectedOptionValueIds = option_value_ids.map(Number);
+    const maxStock = Number(data.stock);
 
     const options =
         selects
@@ -224,23 +228,19 @@ function createSelectedOption(data,
                     select.options[select.selectedIndex];
 
                 return {
-                    option_group_id:
-                        Number(select.dataset.group_id),
-
-                    option_group_name:
-                    select.dataset.group_name,
-
-                    option_value_id:
-                        Number(select.value),
-
-                    option_value_name:
-                    selectedOption.text
+                    option_group_id: Number(select.dataset.group_id),
+                    option_group_name: select.dataset.group_name,
+                    option_value_id: Number(select.value),
+                    option_value_name: selectedOption.text
                 };
             });
-    const productName =
-        document.querySelector(".product-name").textContent.trim();
+            
+    const productName = document.querySelector(".product-name").textContent.trim();
     const productImage = document.querySelector("#mainProductImage").src;
+
     const optionData = {
+        brand_id : data.brand_id,
+        brand_name: data.brand_name,
         product_option_id: data.product_option_id,
         product_id: data.product_id,
         sku: data.sku,
@@ -248,21 +248,12 @@ function createSelectedOption(data,
         product_name: productName,
         image_url: productImage,
         quantity: 1,
-
         options: options
     };
     selectOptionData.push(optionData);
 
     const selectedList = document.getElementById("selectedList");
     if (!selectedList) return;
-
-    const selectedOptions = selectedList.querySelectorAll(".selected-option");
-
-    for (const selectedOption of selectedOptions) {
-        if (selectedOption.dataset.option_value_ids === option_value_ids.join(",")) {
-            return;
-        }
-    }
 
     const div = document.createElement("div");
     div.className = "selected-option";
@@ -331,6 +322,11 @@ function createSelectedOption(data,
     plusButton.addEventListener("click", function () {
         let quantity = Number(quantityNumber.textContent);
 
+        if (quantity >= maxStock) {
+            alert(`재고가 부족합니다. (최대 ${maxStock}개 구매 가능)`);
+            return;
+        }
+
         quantity++;
         quantityNumber.textContent = quantity;
         optionData.quantity = quantity
@@ -371,47 +367,21 @@ function initOptions() {
 }
 
 function updateTotalPrice() {
-    const selectedOptions =
-        document.querySelectorAll(".selected-option");
-
+    const selectedOptions = document.querySelectorAll(".selected-option");
     let total_price = 0;
 
     selectedOptions.forEach(function (selectedOption) {
-
-        const priceText =
-            selectedOption.querySelector(".selected-price")
+        const priceText = selectedOption.querySelector(".selected-price")
                 .textContent
                 .replace(/[^0-9]/g, "");
-
         const price = Number(priceText);
-
         total_price += price;
     });
 
     const totalPrice = document.getElementById("totalPrice");
-
     if (totalPrice) {
-        totalPrice.textContent =
-            total_price.toLocaleString("ko-KR") + "원";
+        totalPrice.textContent = total_price.toLocaleString("ko-KR") + "원";
     }
-}
-
-function resetRequiredOptions() {
-    const required_selects = Array.from(
-        document.querySelectorAll(".option-select")
-    ).filter(function (select) {
-        return select.dataset.required === "1";
-    });
-
-    required_selects.forEach(function (select, index) {
-        select.value = "";
-
-        if (index === 0) {
-            select.disabled = false;
-        } else {
-            select.disabled = true;
-        }
-    });
 }
 
 function changeImage(element) {
@@ -438,9 +408,7 @@ $(".cart").on("click", async function () {
     }
 
     try {
-        console.log("selectOptionData 객체:", selectOptionData);
-        console.log("JSON:", JSON.stringify(selectOptionData, null, 2));
-        const response = await fetch("/cartAdd.htm", {
+        const response = await fetch("/cart/cartAdd.htm", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -450,11 +418,10 @@ $(".cart").on("click", async function () {
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error("서버 응답:", errorText);
             throw new Error(`장바구니 전송 실패 (${response.status})`);
         }
 
-        location.href = "/cart.htm";
+        location.href = "/cart/cart.htm";
 
     } catch (error) {
         console.error("장바구니 처리 오류:", error);
@@ -468,9 +435,6 @@ $(".buy").on("click", async function () {
     }
 
     try {
-        console.log("selectOptionData 객체:", selectOptionData);
-        console.log("JSON:", JSON.stringify(selectOptionData, null, 2));
-
         const response = await fetch("/productOrder.htm", {
             method: "POST",
             headers: {
@@ -481,13 +445,106 @@ $(".buy").on("click", async function () {
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error("서버 응답:", errorText);
             throw new Error(`주문정보 전송 실패 (${response.status})`);
         }
 
-        location.href = "/order.htm";
+        location.href = "/order/order.htm";
 
     } catch (error) {
         console.error("주문 처리 오류:", error);
+    }
+});
+
+document.querySelectorAll('.tabs a').forEach(tab => {
+    tab.addEventListener('click', function(e) {
+        e.preventDefault(); 
+        document.querySelectorAll('.tabs a').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        const targetId = this.getAttribute('href');
+        document.querySelector(targetId).classList.add('active');
+    });
+});
+
+// 수정 모달 열기 (기존 리뷰 데이터를 가져와서 모달 폼에 채워주는 비동기 호출 등 연결)
+// 수정 모달 열기 및 기존 데이터 바인딩
+// 수정 모달 열기 및 기존 데이터 바인딩 (안전 장치 포함)
+function openEditReviewModal(reviewId, rating, content, imageUrl) {
+	
+    console.log("openEditReviewModal 실행됨! 데이터:", { reviewId, rating, content, imageUrl });
+
+    const reviewIdEl = document.getElementById("editReviewId");
+    const ratingEl = document.getElementById("editRating");
+    const contentEl = document.getElementById("editContent");
+    const imageUrlEl = document.getElementById("editImageUrl");
+    const modalEl = document.getElementById("reviewEditModal");
+
+    // 각 요소가 실제로 존재하는지 확인 (없으면 콘솔에 에러 출력)
+    if (!reviewIdEl) console.error("id가 'editReviewId'인 요소를 찾을 수 없습니다.");
+    if (!ratingEl) console.error("id가 'editRating'인 요소를 찾을 수 없습니다.");
+    if (!contentEl) console.error("id가 'editContent'인 요소를 찾을 수 없습니다.");
+    if (!imageUrlEl) console.error("id가 'editImageUrl'인 요소를 찾을 수 없습니다.");
+    if (!modalEl) console.error("id가 'reviewEditModal'인 요소를 찾을 수 없습니다.");
+
+    if (reviewIdEl) reviewIdEl.value = reviewId;
+    if (ratingEl) ratingEl.value = rating;
+    if (contentEl) contentEl.value = content;
+    if (imageUrlEl) imageUrlEl.value = imageUrl;
+    
+    if (modalEl) {
+        modalEl.style.display = "flex";
+        console.log("모달 display = flex 적용 완료!");
+    }
+}
+
+// 모달 닫기
+function closeEditReviewModal() {
+    const modalEl = document.getElementById("reviewEditModal");
+    if (modalEl) {
+        modalEl.style.display = "none";
+    }
+}
+
+// 리뷰 삭제 요청 함수
+function deleteReview(reviewId, productId) {
+    if (confirm("정말 삭제하시겠습니까?")) {
+		location.href = "deleteReview.htm?reviewId=" + reviewId;
+       }
+}
+
+// 이벤트 위임 (data-* 속성 매칭)
+document.addEventListener("click", function(event) {
+    const editBtn = event.target.closest(".js-edit-review-btn");
+    if (editBtn) {
+        const reviewId = editBtn.getAttribute("data-review-id");
+        const rating = editBtn.getAttribute("data-rating");
+        const content = editBtn.getAttribute("data-content");
+		const imageUrl = editBtn.getAttribute("date-image-url");
+        
+        openEditReviewModal(reviewId, rating, content);
+    }
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // 마이페이지에서 수정 버튼을 눌러 넘어온 경우
+    if (urlParams.get("openEdit") === "true") {
+        const reviewId = urlParams.get("reviewId");
+        const rating = urlParams.get("rating");
+        const content = decodeURIComponent(urlParams.get("content") || "");
+        const imageUrl = decodeURIComponent(urlParams.get("imageUrl") || "");
+        const productId = urlParams.get("product_id");
+
+        // 위에 정의하신 openEditReviewModal 함수 호출
+        if (typeof openEditReviewModal === "function") {
+            openEditReviewModal(reviewId, rating, content, imageUrl);
+        }
+        
+        // 주소창 파라미터 정리 (새로고침 시 모달 중복 실행 방지)
+        window.history.replaceState({}, document.title, window.location.pathname + "?product_id=" + productId);
     }
 });

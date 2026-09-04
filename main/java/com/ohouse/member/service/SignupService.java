@@ -8,6 +8,8 @@ import javax.naming.NamingException;
 import com.ohouse.member.dao.MemberDAO;
 import com.ohouse.member.dao.MemberDAOImpl;
 import com.ohouse.member.dto.MemberDTO;
+import com.ohouse.product.cart.dao.CartDAO;
+import com.ohouse.product.cart.dao.CartDAOImpl;
 import com.ohouse.util.conn.ConnectionProvider;
 import com.ohouse.util.conn.JdbcUtil;
 
@@ -21,25 +23,27 @@ public class SignupService {
             conn.setAutoCommit(false);
 
             MemberDAO memberDao = new MemberDAOImpl(conn);
+            CartDAO cartDao = new CartDAOImpl();
 
             String id = signupReq.getId();
             String name = signupReq.getName();          
 
             // DAO 메서드명은 유지하되, 파라미터는 새로 바뀐 id를 전달합니다.
-            MemberDTO foundMember = memberDao.selectByEmail(conn, id);
+            MemberDTO foundMember = memberDao.selectById(conn, id);
             if (foundMember != null) {
                 JdbcUtil.rollback(conn);
                 throw new DuplicateEmailException(); // 예외 이름은 그대로 유지
             }
             
-            memberDao.insert(conn, 
+            int member_id = memberDao.insert(conn,
                     new MemberDTO(
                             id, 
                             signupReq.getPassword(),
                             name) 
                     );
+            cartDao.createCart(conn,member_id);
             
-            MemberDTO newMember = memberDao.selectByEmail(conn, id);
+            MemberDTO newMember = memberDao.selectById(conn, id);
 
             conn.commit();
 

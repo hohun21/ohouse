@@ -23,6 +23,6 @@ public class CartListHandler implements CommandHandler {
         List<CartItemDTO> cdto = csvc.selectCartList(member_id);
 
         request.setAttribute("cdto", cdto);
-        return "/WEB-INF/views/shopping/cart.jsp";
+        return "/WEB-INF/views/product/cart.jsp";
     }
 }

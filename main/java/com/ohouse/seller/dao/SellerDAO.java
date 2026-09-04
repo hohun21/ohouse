@@ -14,21 +14,18 @@ import com.ohouse.seller.dto.SellerDTO;
 
 public interface SellerDAO {
     
-
     // 1. 판매자 관리
-	
     List<SellerDTO> getPendingSellers() throws SQLException;
     int updateSellerStatus(int sellerId, String status) throws SQLException;
     int getPendingSellerCount() throws SQLException;
     List<SellerDTO> getPendingSellersWithPaging(int startRow, int endRow) throws SQLException;
     int getTotalSellerCount() throws SQLException;
     List<SellerDTO> getSellerListWithPaging(int startRow, int endRow) throws SQLException;
-    int deleteSeller(int sellerId) throws SQLException;
+    int deleteSeller(int sellerId) throws SQLException; // 💡 원복 완료
     List<ProductDTO> getProductListByBrandId(int brandId) throws SQLException;
     List<ProductDTO> getAllProductsForAdmin() throws SQLException;
 
     // 2. 상품 등록 및 관리
-    
     int getBrandId(String brandName) throws SQLException;
 
     int insertProduct(ProductDTO dto) throws SQLException;
@@ -47,10 +44,16 @@ public interface SellerDAO {
     List<ProductOptionDTO> getProductOptions(int productId) throws SQLException;
     int updateProductOption(ProductOptionDTO dto) throws SQLException;
     int deleteProductOption(int productOptionId) throws SQLException;
+    int deleteProductOptionsByProductId(int productId) throws SQLException;
     
     int insertProductImage(ProductImageDTO imageDTO) throws SQLException;
     int deleteProductImages(int productId) throws SQLException;
     int getTotalProductCount(int brandId) throws SQLException;
     int getSoldOutProductCount(int brandId) throws SQLException;
-     
+    
+    int updateProductStatus(int productId, String status) throws SQLException;
+    int getStopProductCount(int brandId) throws SQLException;
+    
+    void resetAllOptionStocksToZero(int productId) throws SQLException;
+    int updateOptionPriceAndStock(int productId, String skuName, int price, int stock) throws SQLException;
 }

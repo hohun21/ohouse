@@ -11,8 +11,10 @@ import com.ohouse.shopping.category.dao.CategoryDAO;
 import com.ohouse.shopping.category.dao.CategoryDAOImple;
 import com.ohouse.shopping.category.dto.CategoryDTO;
 import com.ohouse.shopping.category.service.CategoryService;
-import com.util.conn.ConnectionProvider;
-import com.util.conn.JdbcUtil;
+import com.ohouse.shopping.only.dto.OnlyDTO;
+import com.ohouse.shopping.only.service.OnlyService;
+import com.ohouse.util.conn.ConnectionProvider;
+import com.ohouse.util.conn.JdbcUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,6 +30,13 @@ public String process(
 	    System.out.println("===== CategoryHandler.process() 실행 =====");
 	
 	    String categoryId = request.getParameter("category_id");
+	    String sort = request.getParameter("sort");
+
+	    if (sort == null || sort.isEmpty()) {
+	        sort = "recommend";
+	    }
+	    
+	    request.setAttribute("sort", sort);
 	
 	    Connection conn = null;
 	
@@ -49,6 +58,7 @@ public String process(
 	        CategoryDAO dao = new CategoryDAOImple();
 	        CategoryService categoryService = new CategoryService(dao);
 	        ProductService productService = new ProductService();
+	        OnlyService onlyService = new OnlyService();
 	
 	        // 전체 카테고리 조회
 	        List<CategoryDTO> categories =
@@ -65,13 +75,59 @@ public String process(
 	
 	            selectedCategoryId = Integer.parseInt(categoryId);
 	        }
-	
+	        
+	        // 현재 선택된 카테고리의 대분류 찾기
+	        CategoryDTO currentCategory = null;
+
+	        for (CategoryDTO category : categories) {
+	            if (category.getCategory_id() == selectedCategoryId) {
+	                currentCategory = category;
+	                break;
+	            }
+	        }
+
+	        String view = request.getParameter("view");
+
+	        boolean isOnly = "only".equals(view);
+	        
+	        CategoryDTO mainCategory = currentCategory;
+
+	        // 부모를 따라가면서 대분류까지 올라가기
+	        while (mainCategory != null && mainCategory.getParentId() != null) {
+
+	            int parentId = mainCategory.getParentId();
+
+	            CategoryDTO parentCategory = null;
+
+	            for (CategoryDTO category : categories) {
+	                if (category.getCategory_id() == parentId) {
+	                    parentCategory = category;
+	                    break;
+	                }
+	            }
+
+	            mainCategory = parentCategory;
+	        }
+
+	        String mainCategoryName =
+	                mainCategory != null
+	                        ? mainCategory.getCategory_name()
+	                        : "";
+
+	        request.setAttribute("mainCategoryName", mainCategoryName);
+	        
+	        request.setAttribute("mainCategoryId",
+	                mainCategory != null
+	                        ? mainCategory.getCategory_id()
+	                        : null);
+	        
 	        // 현재 카테고리 아래의 leaf 카테고리 조회
 	        List<CategoryDTO> leafCategories =
 	                categoryService.getLeafCategories(
 	                        conn,
 	                        selectedCategoryId
 	                );
+	        
 	
 	        // 상품 조회에 사용할 카테고리 ID 목록
 	        List<Integer> categoryIds = new ArrayList<>();
@@ -84,15 +140,35 @@ public String process(
 	        List<ProductDTO> products =
 	                productService.getProductListByCategories(
 	                        conn,
-	                        categoryIds
+	                        categoryIds,
+	                        sort
 	                );
-	
+	        
+	     // 오늘의집 ONLY 상품 조회
+	        List<OnlyDTO> onlyProducts = new ArrayList<>();
+
+	        if (isOnly) {
+	            onlyProducts =
+	                    onlyService.getOnlyProductsByMainCategory(
+	                            conn,
+	                            mainCategory.getCategory_id()
+	                    );
+	        }
+	        
+	     // 상단 배너용 상품 3개
+	        List<ProductDTO> bannerProducts = products.size() > 2
+	                ? products.subList(2, Math.min(5, products.size()))
+	                : new ArrayList<>();
+	        request.setAttribute("activeMenu", "category");
 	        // JSP 전달
 	        request.setAttribute("categories", categories);
 	        request.setAttribute("leafCategories", leafCategories);
 	        request.setAttribute("products", products);
 	        request.setAttribute("selectedCategoryId", selectedCategoryId);
-	
+	        request.setAttribute("bannerProducts", bannerProducts);
+	        request.setAttribute("onlyProducts", onlyProducts);
+	        request.setAttribute("isOnly", isOnly);
+	        
 	        System.out.println("현재 카테고리 = " + selectedCategoryId);
 	        System.out.println("전체 카테고리 수 = " + categories.size());
 	        System.out.println("Leaf 카테고리 수 = " + leafCategories.size());

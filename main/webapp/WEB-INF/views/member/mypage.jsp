@@ -65,14 +65,15 @@
 <body>
 
 <!-- 헤더 Include -->
-<jsp:include page="../layout/header.jsp" />
+<jsp:include page="/WEB-INF/views/layout/header.jsp">
+  <jsp:param name="showSubHeaderAtTop" value="false"/>
+</jsp:include>
 
 <div class="top-nav">
-    <a href="#" class="active">프로필</a>
-    <a href="#">나의 쇼핑</a>
-    <a href="#">나의 리뷰</a>
-    <!-- 💡 수정 1: 상단 설정 버튼 경로 연결 -->
-    <a href="${pageContext.request.contextPath}/changePwd.htm">설정</a>
+    <a href="${pageContext.request.contextPath}/member/myPage.htm" class="active">프로필</a>
+	<a href="${pageContext.request.contextPath}/member/myShopping.htm">나의 쇼핑</a>
+    <a href="${pageContext.request.contextPath}/member/myReview.htm">나의 리뷰</a>
+    <a href="${pageContext.request.contextPath}/changePwd.htm" >설정</a>
 </div>
 <div class="sub-nav">
     <a href="#" class="active">모두보기</a>

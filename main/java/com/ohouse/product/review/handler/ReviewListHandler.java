@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.ohouse.common.handler.CommandHandler;
+import com.ohouse.member.dto.AuthUserDTO;
 import com.ohouse.product.review.dto.OptionFilterDTO; // 추가
 import com.ohouse.product.review.dto.PageDTO;
 import com.ohouse.product.review.dto.ReviewDTO;
@@ -29,14 +30,22 @@ public class ReviewListHandler implements CommandHandler {
         String[] optionParams = request.getParameterValues("options");
         String pageParam = request.getParameter("page");
         String sortParam = request.getParameter("sort");
-        String memberIdStr = request.getParameter("member_id");
-        if (memberIdStr == null || memberIdStr.trim().isEmpty()) {
-            memberIdStr = request.getParameter("memberId");
+        
+        
+        AuthUserDTO authUser = (AuthUserDTO) request.getSession().getAttribute("authUser");
+        Integer memberId = 0;
+        String id = "";
+        String name = "";
+        String role = "";
+        
+        if(authUser != null) {
+        	memberId=authUser.getMemberId();
+        	id=authUser.getId();
+        	name=authUser.getName();
+        	role = authUser.getRole();
         }
-
-        int memberId = (memberIdStr != null && !memberIdStr.trim().isEmpty()) 
-                        ? Integer.parseInt(memberIdStr) 
-                        : 3; // 파라미터 누락 시 기본값 3
+		boolean isAdmin = role.equals("ADMIN");
+		System.out.println(memberId+"&"+ id+"&"+  name+"&"+  role+"&"+ isAdmin);
         
         
         // 2. 파싱 및 기본값 세팅
@@ -59,13 +68,13 @@ public class ReviewListHandler implements CommandHandler {
         if (productId > 0) {
             // 3. DTO 생성 (ratings, options 필터 추가)
             ReviewPageDTO reqDTO = ReviewPageDTO.builder()
-                    .productId(productId)
+                    .product_id(productId)
                     .currentPage(currentPage)
                     .numberPerPage(numberPerPage)
                     .sort(sort)
                     .ratings(ratings)
                     .options(options)
-                    .memberId(memberId)
+                    .member_id(memberId)
                     .build();
 
             // 4. Service 연동
@@ -89,7 +98,7 @@ public class ReviewListHandler implements CommandHandler {
             request.setAttribute("product_id", productId);
             request.setAttribute("selectedRatings", ratings);
             request.setAttribute("selectedOptions", options);
-            request.setAttribute("isAdmin", true);
+            request.setAttribute("isAdmin", isAdmin);
             
             
             // [추가] JSP로 2단 옵션 데이터 전달

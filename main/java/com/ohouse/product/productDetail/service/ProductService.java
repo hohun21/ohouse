@@ -1,43 +1,29 @@
 package com.ohouse.product.productDetail.service;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.List;
-
-import com.ohouse.shopping.category.dao.CategoryDAO;
-import com.ohouse.shopping.category.dao.CategoryDAOImple;
-import com.ohouse.product.productDetail.dao.OptionDAO;
-import com.ohouse.product.productDetail.dao.OptionDAOImple;
 import com.ohouse.product.productDetail.dao.ProductDAO;
 import com.ohouse.product.productDetail.dao.ProductDAOImpl;
-import com.ohouse.product.productDetail.dao.ProductImageDAO;
-import com.ohouse.product.productDetail.dao.ProductImageDAOImple;
-import com.ohouse.product.productDetail.dao.ProductOptionDAOImple;
+import com.ohouse.product.productDetail.dto.*;
 import com.ohouse.shopping.category.dto.CategoryDTO;
-import com.ohouse.product.productDetail.dto.OptionDTO;
-import com.ohouse.product.productDetail.dto.ProductDTO;
-import com.ohouse.product.productDetail.dto.ProductDetailDTO;
-import com.ohouse.product.productDetail.dto.ProductImageDTO;
-import com.ohouse.product.productDetail.dto.ProductOptionDTO;
 import com.ohouse.shopping.domain.CouponDTO;
 import com.ohouse.shopping.persistence.CouponDAO;
 import com.ohouse.util.conn.ConnectionProvider;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
 
 public class ProductService {
 
     private ProductDAO productdao = new ProductDAOImpl();
 
-    private ProductImageDAO imageDAO = new ProductImageDAOImple();
-    private OptionDAO optionDAO = new OptionDAOImple();
-    private CategoryDAO categoryDAO = new CategoryDAOImple();
-    private ProductOptionDAOImple productOptionDAO = new ProductOptionDAOImple();
 
     public List<ProductDTO> getProductListByCategories(
             Connection conn,
-            List<Integer> categoryIds
+            List<Integer> categoryIds,
+            String sort
     ) throws SQLException {
 
-        return productdao.viewProductByCategories(conn, categoryIds);
+        return productdao.viewProductByCategories(conn, categoryIds, sort);
     }
     
     private CouponDAO couponDAO = new CouponDAO();
