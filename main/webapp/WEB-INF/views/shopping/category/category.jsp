@@ -462,7 +462,7 @@
                 <c:forEach var="product" items="${onlyProducts}">
 
     <div class="product-card"
-         onclick="location.href='${pageContext.request.contextPath}/productDetail.htm?product_id=${product.productId}'">
+         onclick="location.href='${pageContext.request.contextPath}/product/productDetail.htm?product_id=${product.productId}'">
 
         <div class="product-img-wrap">
             <img src="${product.imageUrl}"
