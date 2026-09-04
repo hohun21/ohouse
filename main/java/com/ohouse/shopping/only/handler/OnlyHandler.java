@@ -22,7 +22,7 @@ public class OnlyHandler implements CommandHandler {
 				onlyService.getOnlyProducts();
 
 		request.setAttribute("products", products);
-		
+		request.setAttribute("activeMenu", "only");
 		return "/WEB-INF/views/shopping/only/only.jsp";
 	}
 

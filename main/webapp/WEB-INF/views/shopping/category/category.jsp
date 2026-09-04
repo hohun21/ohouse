@@ -6,21 +6,6 @@
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/category.css" />
 
-<!-- 스토어 전용 서브 메뉴 -->
-<div class="store-sub-nav-area">
-    <div class="container store-sub-nav">
-        <div class="sub-menu-list">
-            <a href="#">쇼핑홈</a>
-            <a href="#" class="active">카테고리</a>
-            <a href="#">베스트</a>
-            <a href="#">오늘의딜</a>
-            <a href="#">단독상품</a>
-            <a href="#">오마트</a>
-            <a href="#">원하는날도착</a>
-        </div>
-    </div>
-</div>
-
 <!-- 2단 분할 메인 컨텐츠 시작 -->
 <main class="container category-layout">
     

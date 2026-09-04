@@ -252,6 +252,7 @@ ul {
 </style>
 </head>
 <body>
+
 	<!-- 헤더 Include -->
 	<jsp:include page="../layout/header.jsp" />
 	<main class="container">

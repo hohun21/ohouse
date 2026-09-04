@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%
     String showSubHeaderAtTopParam = request.getParameter("showSubHeaderAtTop");
     boolean pushSubHeaderValue = "false".equalsIgnoreCase(showSubHeaderAtTopParam);
@@ -243,7 +244,7 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 /* 서브 헤더가 열려도 부모 높이는 바꾸지 않아 화면 흔들림을 방지한다. */
 .sticky-header.sub-open,
 .sticky-header.sub-visible {
-	height: 80px;
+	height: 132px;
 }
 /* showSubHeaderAtTop=false를 직접 전달한 페이지는 hover 시 본문을 52px 아래로 민다. */
 .sticky-header.push-sub-header.sub-open {
@@ -313,9 +314,12 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 .category-tab:hover,
 .home-nav-list > a.active,
 .shoping-nav-list > a.active,
-.interior-nav-list > a.active {
+.interior-nav-list > a.active, 
+.category-tab.active {
 	color: #1496f4;
+	border-bottom: 2px solid #00A6EA;
 }
+
 .realtime-keyword-box {
 	display: flex;
 	align-items: center;
@@ -533,9 +537,15 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 	            </nav>
 	            <!-- 쇼핑 메뉴 리스트 -->
 	            <nav class="shoping-nav-list">
-	                <a href="${ pageContext.request.contextPath }/main.htm" class="active">쇼핑홈</a>
+	                <a href="${pageContext.request.contextPath}/main.htm"
+					   class="${activeMenu == 'home' ? 'active' : ''}">
+					    쇼핑홈
+					</a>
 	                <div class="category-wrap">
-	                    <a href="${ pageContext.request.contextPath }/shopping/category/category.htm" class="category-tab">카테고리</a>
+	                    <a href="${pageContext.request.contextPath}/shopping/category/category.htm"
+					       class="category-tab ${activeMenu == 'category' ? 'active' : ''}">
+					        카테고리
+					    </a>
 	                    <div class="category-dropdown">
 	                        <ul class="category-menu">
 	                            <li><a href="#"><img src="https://prs.ohouse.com/apne2/commerce/uploads/category/store_hamburger_categories/v1-533660207636544.png?w=1280"/><span>집요한세일</span></a></li>
@@ -559,12 +569,21 @@ button { border: none; background: none; cursor: pointer; font-family: inherit; 
 	                        </ul>
 	                    </div>
 	                </div>
-	                <a href="${ pageContext.request.contextPath }/best.htm">베스트</a>
+	               <a href="${pageContext.request.contextPath}/best.htm"
+					   class="${activeMenu == 'best' ? 'active' : ''}">
+					    베스트
+					</a>
 	                <a href="#">오늘의딜</a>
-	                <a href="${ pageContext.request.contextPath }/only.htm">단독상품</a>
+	                <a href="${pageContext.request.contextPath}/only.htm"
+					   class="${activeMenu == 'only' ? 'active' : ''}">
+					    단독상품
+					</a>
 	                <a href="#">집요한세일</a>
 	                <a href="#">오마트</a>
-	                <a href="${ pageContext.request.contextPath }/desiredDelivery.htm">원하는날도착</a>
+	                <a href="${pageContext.request.contextPath}/desiredDelivery.htm"
+					   class="${activeMenu == 'desiredDelivery' ? 'active' : ''}">
+					    원하는날도착
+					</a>
 	                <a href="#">오!쇼룸</a>
 	                <a href="#">기획전</a>
 	            </nav>

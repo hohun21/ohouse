@@ -159,7 +159,7 @@ public String process(
 	        List<ProductDTO> bannerProducts = products.size() > 2
 	                ? products.subList(2, Math.min(5, products.size()))
 	                : new ArrayList<>();
-	
+	        request.setAttribute("activeMenu", "category");
 	        // JSP 전달
 	        request.setAttribute("categories", categories);
 	        request.setAttribute("leafCategories", leafCategories);

@@ -11,7 +11,7 @@ public class desiredDeliveryHandler implements CommandHandler {
             HttpServletRequest request,
             HttpServletResponse response
     ) throws Exception {
-
+    	request.setAttribute("activeMenu", "desiredDelivery");
         return "/WEB-INF/views/shopping/desiredDelivery/desired_delivery.jsp";
     }
 }
