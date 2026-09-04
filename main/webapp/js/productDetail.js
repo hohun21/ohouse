@@ -408,7 +408,7 @@ $(".cart").on("click", async function () {
     }
 
     try {
-        const response = await fetch("/cartAdd.htm", {
+        const response = await fetch("/cart/cartAdd.htm", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -421,7 +421,7 @@ $(".cart").on("click", async function () {
             throw new Error(`장바구니 전송 실패 (${response.status})`);
         }
 
-        location.href = "/cart.htm";
+        location.href = "/cart/cart.htm";
 
     } catch (error) {
         console.error("장바구니 처리 오류:", error);
@@ -448,7 +448,7 @@ $(".buy").on("click", async function () {
             throw new Error(`주문정보 전송 실패 (${response.status})`);
         }
 
-        location.href = "/order.htm";
+        location.href = "/order/order.htm";
 
     } catch (error) {
         console.error("주문 처리 오류:", error);

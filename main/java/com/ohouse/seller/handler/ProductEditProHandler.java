@@ -73,7 +73,7 @@ public class ProductEditProHandler implements CommandHandler {
         boolean isSuccess = service.updateProduct(formDTO);
 
         if (isSuccess) {
-            return "redirect:" + request.getContextPath() + "/productDetail.htm?product_id=" + formDTO.getProductId();
+            return "redirect:" + request.getContextPath() + "/product/productDetail.htm?product_id=" + formDTO.getProductId();
         } else {
             return "redirect:" + request.getContextPath() + "/seller/editForm.htm?productId=" + formDTO.getProductId() + "&error=1";
         }
