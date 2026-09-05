@@ -16,13 +16,13 @@
     .sidebar-menu li a { display: block; padding: 12px 20px; color: #b0c4de; text-decoration: none; font-size: 14px; transition: 0.2s; }
     .sidebar-menu li a:hover, .sidebar-menu li a.active { background-color: #ff4d4f; color: white; }
     
-    .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; }
+    /* 💡 수정된 메인 영역 (가운데 정렬 통일) */
+    .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
     .top-header { height: 60px; background-color: white; border-bottom: 1px solid #e1e4e6; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; flex-shrink: 0; }
     
-    .dashboard-body { padding: 30px; display: flex; flex-direction: column; gap: 25px; max-width: 1200px; }
+    .dashboard-body { flex: 1; width: calc(100% - 80px); max-width: 1400px; margin: 0 auto; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 25px; }
     
-    /* 💡 3열에서 2열(2x2 구조)로 변경 */
-    .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
     .menu-card { background: white; border-radius: 8px; padding: 30px; border: 1px solid #e1e4e6; text-decoration: none; color: #333; box-shadow: 0 2px 4px rgba(0,0,0,0.04); transition: 0.2s; display: flex; flex-direction: column; gap: 10px; }
     .menu-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #ff4d4f; }
     .menu-card-icon { font-size: 28px; }
@@ -41,6 +41,7 @@
             <li><a href="${pageContext.request.contextPath}/admin/sellerList.htm">🤝 전체 판매자 관리</a></li>
             <li><a href="${pageContext.request.contextPath}/admin/productList.htm">📦 전체 상품 관리</a></li>
             <li><a href="${pageContext.request.contextPath}/admin/settlementList.htm">💰 판매자 정산 관리</a></li>
+            <li><a href="${pageContext.request.contextPath}/admin/couponList.htm">🎟️ 쿠폰 관리</a></li>
         </ul>
     </div>
 
@@ -78,9 +79,15 @@
                     <div class="menu-card-title">판매자 정산 관리</div>
                     <div class="menu-card-desc">구매 확정된 판매자별 정산 대기 내역을 확인하고 정산을 실행합니다.</div>
                 </a>
+                
+                <a href="${pageContext.request.contextPath}/admin/couponList.htm" class="menu-card">
+                    <div class="menu-card-icon">🎟️</div>
+                    <div class="menu-card-title">쿠폰 발급 및 관리</div>
+                    <div class="menu-card-desc">신규 쿠폰을 생성하고 전체 회원에게 일괄 발급할 수 있습니다.</div>
+                </a>
             </div>
         </div>
     </div>
 
 </body>
-</html> 
+</html>

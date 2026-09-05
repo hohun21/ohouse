@@ -316,9 +316,14 @@ ul {
 							<span class="price"><fmt:formatNumber
 									value="${product.price}" pattern="#,###" /></span>
 						</div>
+						
+						<!-- 💡 수정된 부분: 동적 리뷰 연동 영역 -->
 						<div class="review-area">
-							<span class="star">★</span> 4.8 리뷰 1,200
+							<span class="star">★</span>
+							<fmt:formatNumber value="${product.avgRating}" pattern="0.0"/>
+							<span> 리뷰 <fmt:formatNumber value="${product.reviewCount}" pattern="#,###"/>개</span>
 						</div>
+						
 					</a>
 				</c:forEach>
 				<c:if test="${empty randomProductList}">

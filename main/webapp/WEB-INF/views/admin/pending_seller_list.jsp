@@ -132,6 +132,7 @@
             <li><a href="${pageContext.request.contextPath}/admin/sellerList.htm" class="active">🤝 전체 판매자 관리</a></li>
             <li><a href="${pageContext.request.contextPath}/admin/productList.htm">📦 전체 상품 관리</a></li>
             <li><a href="${pageContext.request.contextPath}/admin/settlementList.htm">💰 판매자 정산 관리</a></li>
+            <li><a href="${pageContext.request.contextPath}/admin/couponList.htm">🎟️ 쿠폰 관리</a></li> <!-- 💡 사이드바 추가 -->
         </ul>
     </div>
 
