@@ -1011,7 +1011,7 @@ async function payment() {
         ? orderDetails[0].productName
         : orderDetails[0].productName + " 외 " + (orderDetails.length - 1) + "건";
 
-    const DEV_MODE = false;
+    const DEV_MODE = true;
 
     if (DEV_MODE) {
         location.href = "/order/payment/success.htm?orderName=" + encodeURIComponent(orderName);

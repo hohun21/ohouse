@@ -261,7 +261,7 @@
         font-size: 14px;
         font-weight: 400;
         line-height: 1.5;
-        color:#000000;
+        color: #000000;
     }
 
     .selected-bottom {
@@ -486,7 +486,7 @@
 
             <div class="price-box">
                 <span class="discount">
-                    ${pdto.productDTO.discount_rate}%
+                        <fmt:formatNumber value="${pdto.productDTO.discount_rate}" type="number" maxFractionDigits="0"/>%
                 </span>
 
                 <span class="original-price">
@@ -613,7 +613,14 @@
             <!-- 1. 상품정보 (기본으로 보임: active) -->
             <section id="detail" class="tab-content active">
                 <h2>상품정보</h2>
-                <div class="detail-empty">상품 상세 정보 내용</div>
+                <div class="detail-empty">
+                    <c:forEach var="image" items="${pdto.imageDTOList}" varStatus="s">
+                        <c:if test="${s.first}">
+                            <img src="${image.image_url}"
+                                 alt="${pdto.productDTO.product_name}">
+                        </c:if>
+                    </c:forEach>
+                </div>
             </section>
 
             <!-- 2. 리뷰 -->

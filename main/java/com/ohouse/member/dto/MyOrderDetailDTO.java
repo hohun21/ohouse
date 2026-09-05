@@ -10,6 +10,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Builder
 public class MyOrderDetailDTO {
+    private int product_id;
     private int orders_detail_id;
     private int order_id;
     private int product_option_id;

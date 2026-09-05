@@ -342,9 +342,10 @@
             color: #555;
         }
 
-        .product-info h3 {
+        .product-info a {
             margin: 0 0 8px;
             font-size: 15px;
+            font-weight: bold;
         }
 
         .product-info p {
@@ -708,7 +709,7 @@
                                 <img src="${item.image_url}" alt="${item.product_name}">
                                 <div class="product-info">
                                     <strong>${item.brand_name}</strong>
-                                    <h3>${item.product_name}</h3>
+                                    <a href="/product/productDetail.htm?product_id=${item.product_id}">${item.product_name}</a>
                                     <p>${item.option_name}</p>
                                     <span>${item.quantity}개</span>
                                 </div>
