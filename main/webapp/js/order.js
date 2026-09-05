@@ -163,7 +163,7 @@ document.querySelectorAll(".option-change-btn")
 
 function loadOptionSelects(productId) {
 
-    fetch("productDetail.htm?product_id=" + encodeURIComponent(productId))
+    fetch("/product/productDetail.htm?product_id=" + encodeURIComponent(productId))
         .then(function (response) {
 
             if (!response.ok) {
@@ -535,7 +535,7 @@ function findChangedProductOption() {
      * 상품 옵션 조회
      */
 
-    fetch("productOption.htm?product_id=" + encodeURIComponent(productId) + "&option_value_ids=" + encodeURIComponent(optionValueIds.join(",")))
+    fetch("/product/productOption.htm?product_id=" + encodeURIComponent(productId) + "&option_value_ids=" + encodeURIComponent(optionValueIds.join(",")))
         .then(function (response) {
 
             if (!response.ok) {
@@ -996,7 +996,7 @@ async function payment() {
         ? orderDetails[0].productName
         : orderDetails[0].productName + " 외 " + (orderDetails.length - 1) + "건";
 
-    const DEV_MODE = true;
+    const DEV_MODE = false;
 
     if (DEV_MODE) {
         location.href = "/order/payment/success.htm?orderName=" + encodeURIComponent(orderName);
