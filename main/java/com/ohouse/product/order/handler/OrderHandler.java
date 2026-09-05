@@ -6,7 +6,7 @@ import com.ohouse.common.handler.CommandHandler;
 import com.ohouse.member.dto.AuthUserDTO;
 import com.ohouse.product.order.dto.OrderItemDTO;
 import com.ohouse.product.productDetail.service.ProductService;
-import com.ohouse.shopping.domain.CouponDTO;
+import com.ohouse.member.dto.CouponDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;

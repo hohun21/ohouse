@@ -826,7 +826,8 @@ function updateTotalPrice() {
         const discountValue = Number(selectedCoupon.dataset.value) || 0;
         const maxDiscount = Number(selectedCoupon.dataset.max) || 0;
         const minOrderPrice = Number(selectedCoupon.dataset.min) || 0;
-
+        console.log("상품금액:", productTotal);
+        console.log("최소주문금액:", minOrderPrice);
         // 최소 주문금액 조건
         if (productTotal >= minOrderPrice) {
 
@@ -885,7 +886,21 @@ function updateTotalPrice() {
             ? Number(selectedCoupon.value)
             : null;
 }
+const couponSelect = document.getElementById("couponSelect");
 
+if (couponSelect) {
+    couponSelect.addEventListener("change", function() {
+        const coupon = this.selectedOptions[0];
+
+        console.log("쿠폰 ID:", coupon.value);
+        console.log("할인 타입:", coupon.dataset.type);
+        console.log("할인 값:", coupon.dataset.value);
+        console.log("최대 할인:", coupon.dataset.max);
+        console.log("최소 주문:", coupon.dataset.min);
+
+        updateTotalPrice();
+    });
+}
 
 /* =====================================================
 결제

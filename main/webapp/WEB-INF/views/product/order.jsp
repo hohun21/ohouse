@@ -63,7 +63,7 @@
                         <div class="product-info">
 
                             <div class="brand-name">
-                                ${item.brand_name}<br>
+                                    ${item.brand_name}<br>
                             </div>
                             <div class="product-name">
 
@@ -138,8 +138,8 @@
 
                 <c:choose>
                     <c:when test="${not empty addressList}">
-                        <c:set var="addr" value="${addressList[0]}" />
-                        
+                        <c:set var="addr" value="${addressList[0]}"/>
+
                         <input type="hidden" id="selectedAddressId" value="${addr.address_id}">
 
                         <div class="address-box">
@@ -157,18 +157,27 @@
 
                             <div class="address">
                                 [${addr.zip_code}] ${addr.base_address}<br>
-                                ${addr.detail_address}<br>
-                                ${addr.phone}
+                                    ${addr.detail_address}<br>
+                                    ${addr.phone}
                             </div>
 
                             <div class="delivery-row">
                                 <label>배송 요청사항</label>
                                 <select id="orderRequestMsg">
-                                    <option value="" ${empty addr.request_msg ? 'selected' : ''}>배송 요청사항을 선택해주세요.</option>
-                                    <option value="부재시 문 앞에 놓아주세요." ${addr.request_msg == '부재시 문 앞에 놓아주세요.' ? 'selected' : ''}>부재시 문 앞에 놓아주세요.</option>
-                                    <option value="부재시 경비실에 맡겨주세요." ${addr.request_msg == '부재시 경비실에 맡겨주세요.' ? 'selected' : ''}>부재시 경비실에 맡겨주세요.</option>
-                                    <option value="부재시 전화 또는 문자주세요." ${addr.request_msg == '부재시 전화 또는 문자주세요.' ? 'selected' : ''}>부재시 전화 또는 문자주세요.</option>
-                                    <option value="택배함에 넣어주세요." ${addr.request_msg == '택배함에 넣어주세요.' ? 'selected' : ''}>택배함에 넣어주세요.</option>
+                                    <option value="" ${empty addr.request_msg ? 'selected' : ''}>배송 요청사항을 선택해주세요.
+                                    </option>
+                                    <option value="부재시 문 앞에 놓아주세요." ${addr.request_msg == '부재시 문 앞에 놓아주세요.' ? 'selected' : ''}>
+                                        부재시 문 앞에 놓아주세요.
+                                    </option>
+                                    <option value="부재시 경비실에 맡겨주세요." ${addr.request_msg == '부재시 경비실에 맡겨주세요.' ? 'selected' : ''}>
+                                        부재시 경비실에 맡겨주세요.
+                                    </option>
+                                    <option value="부재시 전화 또는 문자주세요." ${addr.request_msg == '부재시 전화 또는 문자주세요.' ? 'selected' : ''}>
+                                        부재시 전화 또는 문자주세요.
+                                    </option>
+                                    <option value="택배함에 넣어주세요." ${addr.request_msg == '택배함에 넣어주세요.' ? 'selected' : ''}>
+                                        택배함에 넣어주세요.
+                                    </option>
                                     <option value="직접입력" ${addr.request_msg == '직접입력' ? 'selected' : ''}>직접입력</option>
                                 </select>
                             </div>
@@ -178,7 +187,8 @@
                     <c:otherwise>
                         <div class="address-box" style="text-align: center; padding: 40px 0;">
                             <p style="color: #757575; font-size: 15px; margin-bottom: 15px;">등록된 배송지가 없습니다.</p>
-                            <button type="button" class="change-btn" style="padding: 10px 20px; font-size: 14px;" onclick="location.href='${pageContext.request.contextPath}/addressList.htm'">
+                            <button type="button" class="change-btn" style="padding: 10px 20px; font-size: 14px;"
+                                    onclick="location.href='${pageContext.request.contextPath}/addressList.htm'">
                                 배송지 추가하기
                             </button>
                         </div>
@@ -194,7 +204,7 @@
             <section class="section">
 
                 <h2 class="section-title">
-                    할인 및 포인트
+                    쿠폰
                 </h2>
 
 
@@ -205,19 +215,21 @@
                         </option>
 
                         <c:forEach var="coupon" items="${clist}">
-                            <option value="${coupon.coupon_name}"
-                                    data-type="${coupon.discount_type}"
-                                    data-value="${coupon.discount_value}"
-                                    data-max="${coupon.max_discount}"
-                                    data-min="${coupon.min_order_price}">
-                                    ${coupon.coupon_name}
-                            </option>
+                            <c:if test="${coupon.status == 'AVAILABLE'}">
+                                <option value="${coupon.member_coupon_id}"
+                                        data-type="${coupon.discount_type}"
+                                        data-value="${coupon.discount_value}"
+                                        data-max="${coupon.max_discount}"
+                                        data-min="${coupon.min_order_price}">
+                                        ${coupon.coupon_name}
+                                </option>
+                            </c:if>
                         </c:forEach>
                     </select>
                 </div>
 
 
-                <div class="discount-row">
+             <%--   <div class="discount-row">
 
                     <input
                             type="number"
@@ -240,7 +252,7 @@
                         5,000P
                     </span>
 
-                </div>
+                </div>--%>
 
             </section>
 
@@ -389,34 +401,43 @@
                 <h2>배송지 목록</h2>
                 <button type="button" class="btn-close-modal" id="btnCloseModal">✕</button>
             </div>
-            
+
             <div class="modal-body">
                 <c:choose>
                     <c:when test="${empty addressList}">
-                        <div class="empty-msg" style="text-align: center; padding: 40px 0; color: #757575;">등록된 배송지가 없습니다.</div>
+                        <div class="empty-msg" style="text-align: center; padding: 40px 0; color: #757575;">등록된 배송지가
+                            없습니다.
+                        </div>
                     </c:when>
                     <c:otherwise>
                         <c:forEach var="addr" items="${addressList}">
-                            <div class="address-item" style="background: #fff; border: 1px solid #dbdbdb; border-radius: 6px; padding: 20px; margin-bottom: 12px;">
-                                <div class="item-head" style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                            <div class="address-item"
+                                 style="background: #fff; border: 1px solid #dbdbdb; border-radius: 6px; padding: 20px; margin-bottom: 12px;">
+                                <div class="item-head"
+                                     style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                                     <span class="name" style="font-weight: bold; font-size: 16px; color: #292929;">
                                         ${addr.recipient_name}
                                         <c:if test="${not empty addr.address_name}"> (${addr.address_name})</c:if>
                                     </span>
                                     <c:if test="${addr.is_default == 'Y'}">
-                                        <span class="badge" style="font-size: 11px; color: #35c5f0; background: #f0f8fb; padding: 3px 6px; border-radius: 4px; font-weight: bold;">기본배송지</span>
+                                        <span class="badge"
+                                              style="font-size: 11px; color: #35c5f0; background: #f0f8fb; padding: 3px 6px; border-radius: 4px; font-weight: bold;">기본배송지</span>
                                     </c:if>
                                 </div>
                                 <div class="item-body">
-                                    <p style="font-size: 14px; color: #424242; margin-bottom: 6px;">[${addr.zip_code}] ${addr.base_address}</p>
+                                    <p style="font-size: 14px; color: #424242; margin-bottom: 6px;">
+                                        [${addr.zip_code}] ${addr.base_address}</p>
                                     <p style="font-size: 14px; color: #424242; margin-bottom: 6px;">${addr.detail_address}</p>
                                     <p style="font-size: 14px; color: #424242; margin-bottom: 6px;">${addr.phone}</p>
                                     <c:if test="${not empty addr.request_msg}">
-                                        <div class="req-msg" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #ededed; color: #757575; font-size: 13px;">배송 요청사항: ${addr.request_msg}</div>
+                                        <div class="req-msg"
+                                             style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #ededed; color: #757575; font-size: 13px;">
+                                            배송 요청사항: ${addr.request_msg}</div>
                                     </c:if>
                                 </div>
-                                <div class="item-footer" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
-                                    <button type="button" class="btn-item select-address-btn" 
+                                <div class="item-footer"
+                                     style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
+                                    <button type="button" class="btn-item select-address-btn"
                                             data-id="${addr.address_id}"
                                             data-name="${addr.recipient_name}"
                                             data-zip="${addr.zip_code}"
@@ -433,9 +454,10 @@
                         </c:forEach>
                     </c:otherwise>
                 </c:choose>
-                
+
                 <div style="text-align: center; margin-top: 15px;">
-                    <button type="button" onclick="location.href='${pageContext.request.contextPath}/addressList.htm'" style="padding: 10px; width: 100%; background: #fff; border: 1px solid #dbdbdb; border-radius: 4px; font-weight: bold; cursor: pointer; color: #424242;">
+                    <button type="button" onclick="location.href='${pageContext.request.contextPath}/addressList.htm'"
+                            style="padding: 10px; width: 100%; background: #fff; border: 1px solid #dbdbdb; border-radius: 4px; font-weight: bold; cursor: pointer; color: #424242;">
                         배송지 관리 (추가/수정) 하러 가기
                     </button>
                 </div>

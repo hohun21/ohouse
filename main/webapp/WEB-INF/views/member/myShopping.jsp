@@ -604,8 +604,8 @@
     <div class="benefit-item">
         <div class="benefit-icon coupon-icon">C</div>
         <div class="benefit-info">
-            <span class="benefit-title">쿠폰</span>
-            <strong>0</strong>
+            <a href="/member/couponlist.htm" class="benefit-title">쿠폰</a>
+            <strong id="coupon-count"></strong>
         </div>
     </div>
 
@@ -720,13 +720,19 @@
                                     </c:when>
                                     <c:when test="${item.delivery_status == 1}">
                                         <div class="order-buttons">
-                                            <button type="button" class="cancel-btn" data-id="${item.orders_detail_id}">취소요청</button>
+                                            <button type="button" class="cancel-btn" data-id="${item.orders_detail_id}">
+                                                취소요청
+                                            </button>
                                         </div>
                                     </c:when>
                                     <c:otherwise>
                                         <div class="order-buttons">
-                                            <button type="button" class="return-btn" data-id="${item.orders_detail_id}">반품요청</button>
-                                            <button type="button" class="confirm-btn" data-id="${item.orders_detail_id}">구매확정</button>
+                                            <button type="button" class="return-btn" data-id="${item.orders_detail_id}">
+                                                반품요청
+                                            </button>
+                                            <button type="button" class="confirm-btn"
+                                                    data-id="${item.orders_detail_id}">구매확정
+                                            </button>
                                         </div>
                                     </c:otherwise>
                                 </c:choose>
@@ -837,6 +843,26 @@
             }
         });
     });
+    document.addEventListener("DOMContentLoaded", async () => {
+        try {
+            const response = await fetch("${pageContext.request.contextPath}/member/couponCount.htm");
+
+            console.log("status:", response.status);
+            console.log("url:", response.url);
+
+            const result = await response.text();
+            console.log("response:", result);
+
+            if (!response.ok) {
+                throw new Error(`쿠폰 개수 조회 실패: ${response.status}`);
+            }
+
+            document.querySelector("#coupon-count").textContent = result;
+        } catch (error) {
+            console.error(error);
+        }
+    });
+
 </script>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 

@@ -1,9 +1,9 @@
-package com.ohouse.shopping.handler;
+package com.ohouse.member.handler;
 
 import com.ohouse.common.handler.CommandHandler;
 import com.ohouse.member.dto.AuthUserDTO;
 import com.ohouse.product.productDetail.service.ProductService;
-import com.ohouse.shopping.domain.CouponDTO;
+import com.ohouse.member.dto.CouponDTO;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,7 +27,7 @@ public class CouponHandler implements CommandHandler {
         System.out.println("clist size: " + clist.size());
 
         request.setAttribute("clist", clist);
-        String location = "/WEB-INF/views/shopping/couponlist.jsp";
+        String location = "/WEB-INF/views/member/couponlist.jsp";
         RequestDispatcher rd = request.getRequestDispatcher(location);
         rd.forward(request, response);
 
