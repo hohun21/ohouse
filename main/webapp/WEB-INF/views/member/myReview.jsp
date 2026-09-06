@@ -602,9 +602,10 @@ a {
 	<div class="top-nav">
 
 		<a href="${pageContext.request.contextPath}/member/myPage.htm">프로필</a>
-		<a href="${pageContext.request.contextPath}/member/myShopping.htm">나의 쇼핑</a>
-        <a href="${pageContext.request.contextPath}/member/myReview.htm" class="active">나의 리뷰</a>
-        <a href="${pageContext.request.contextPath}/changePwd.htm">설정</a>
+		<a href="${pageContext.request.contextPath}/member/myShopping.htm">나의
+			쇼핑</a> <a href="${pageContext.request.contextPath}/member/myReview.htm"
+			class="active">나의 리뷰</a> <a
+			href="${pageContext.request.contextPath}/changePwd.htm">설정</a>
 	</div>
 
 
@@ -673,9 +674,13 @@ a {
 											style="font-size: 12px; color: #9e9e9e; margin-bottom: 6px;">
 											<span style="color: #35c5f0; font-size: 14px;"> <c:forEach
 													begin="1" end="${review.rating}">★</c:forEach>
-											</span> <span style="margin-left: 6px;">${review.regDate}</span> <span
-												style="margin-left: 4px; color: #35c5f0; font-weight: bold;">|
-												오늘의집 구매</span>
+											</span> <span style="margin-left: 6px;">${review.regDate}</span>
+											<!-- 💡 isPurchased 값이 1일 때만 '오늘의집 구매' 텍스트를 출력하도록 조건문 추가 -->
+											<c:if test="${review.isPurchased eq 1}">
+												<span
+													style="margin-left: 4px; color: #35c5f0; font-weight: bold;">|
+													오늘의집 구매</span>
+											</c:if>
 										</div>
 
 										<c:if test="${not empty review.optionName}">
