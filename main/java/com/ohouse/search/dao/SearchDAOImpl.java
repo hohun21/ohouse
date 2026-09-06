@@ -36,17 +36,24 @@ public class SearchDAOImpl implements SearchDAO {
                      "       b.brand_name, " +
                      "       p.product_name, " +
                      "       p.price, " +
+                     "       p.discount_rate, " +
                      "       img.image_url, " +
                      "       p.status, " +
                      "       COUNT(po.product_id) AS option_count, " + 
-                     "       NVL(SUM(po.stock), 0) AS total_stock " +
+                     "       NVL(SUM(po.stock), 0) AS total_stock, " +
+                     "       NVL(r.avg_rating, 0) AS avgRating, " +
+                     "       NVL(r.review_count, 0) AS reviewCount " +
                      "FROM product p " +
                      "JOIN brand b ON p.brand_id = b.brand_id " +
                      "LEFT JOIN product_image img ON p.product_id = img.product_id AND img.image_type = 'THUMBNAIL' " +
                      "LEFT JOIN product_option po ON p.product_id = po.product_id " +
+                     "LEFT JOIN ( " +
+                     "    SELECT product_id, AVG(rating) AS avg_rating, COUNT(review_id) AS review_count " +
+                     "    FROM review GROUP BY product_id " +
+                     ") r ON p.product_id = r.product_id " +
                      "WHERE p.product_name LIKE '%' || ? || '%' " +
                      "  AND p.status != 'STOP' " +
-                     "GROUP BY p.product_id, b.brand_name, p.product_name, p.price, img.image_url, p.status " +
+                     "GROUP BY p.product_id, b.brand_name, p.product_name, p.price, p.discount_rate, img.image_url, p.status, r.avg_rating, r.review_count " +
                      "ORDER BY p.product_id DESC";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -67,8 +74,11 @@ public class SearchDAOImpl implements SearchDAO {
                             .brandName(rs.getString("brand_name"))
                             .productName(rs.getString("product_name"))
                             .price(rs.getInt("price"))
+                            .discountRate(rs.getInt("discount_rate"))
                             .imageUrl(rs.getString("image_url"))
                             .status(currentStatus)
+                            .avgRating(rs.getDouble("avgRating"))
+                            .reviewCount(rs.getInt("reviewCount"))
                             .build();
                     
                     productList.add(product);

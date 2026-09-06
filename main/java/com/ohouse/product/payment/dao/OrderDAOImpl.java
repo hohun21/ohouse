@@ -157,12 +157,17 @@ public class OrderDAOImpl implements OrderDAO {
     public List<MyOrderDetailDTO> viewMyOrderDetail(int order_id) throws SQLException {
 
         String sql = """
-                     SELECT od.ORDERS_DETAIL_ID,od.ORDER_ID,od.PRODUCT_NAME,od.img_url
-                                         ,od.OPTION_NAME,od.PRICE,od.QUANTITY,b.BRAND_ID,b.BRAND_NAME,od.DELIVERY_STATUS,
-                                         od.DELIVERED_DATE,od.PURCHASE_CONFIRMED_DATE
-                                         FROM ORDERS_DETAIL od JOIN BRAND b
-                                         ON od.brand_id = b.brand_id
-                                         WHERE od.ORDER_ID = ?
+                     SELECT p.PRODUCT_ID,
+                            od.ORDERS_DETAIL_ID,
+                            od.ORDER_ID,
+                            od.PRODUCT_NAME,od.img_url ,
+                            od.OPTION_NAME,od.PRICE,
+                            od.QUANTITY,b.BRAND_ID,
+                            b.BRAND_NAME,od.DELIVERY_STATUS, 
+                            od.DELIVERED_DATE,od.PURCHASE_CONFIRMED_DATE 
+                     FROM ORDERS_DETAIL od JOIN BRAND b ON od.brand_id = b.brand_id 
+                         JOIN PRODUCT p ON od.PRODUCT_NAME = p.PRODUCT_NAME 
+                     WHERE od.ORDER_ID = ?
                 """;
         List<MyOrderDetailDTO> orderDetailDTOList = new ArrayList<>();
         try (
@@ -174,6 +179,7 @@ public class OrderDAOImpl implements OrderDAO {
             while (rs.next()) {
 
                 MyOrderDetailDTO orderDetailDTO = MyOrderDetailDTO.builder()
+                        .product_id(rs.getInt("product_id"))
                         .orders_detail_id(rs.getInt("orders_detail_id"))
                         .order_id(rs.getInt("order_id") )
                         .product_name(rs.getString("product_name"))

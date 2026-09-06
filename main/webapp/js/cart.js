@@ -252,7 +252,7 @@ $(document).on("click", ".remove", async function () {
         if ($(product).find(".cart-item").length === 0) {
             const brand = product.closest(".brand-group");
             $(product).remove();
-            if($(brand).find(".cart-product").length === 0) {
+            if ($(brand).find(".cart-product").length === 0) {
                 $(brand).remove();
             }
         } else {

@@ -4,8 +4,8 @@ import com.ohouse.product.productDetail.dao.ProductDAO;
 import com.ohouse.product.productDetail.dao.ProductDAOImpl;
 import com.ohouse.product.productDetail.dto.*;
 import com.ohouse.shopping.category.dto.CategoryDTO;
-import com.ohouse.shopping.domain.CouponDTO;
-import com.ohouse.shopping.persistence.CouponDAO;
+import com.ohouse.member.dto.CouponDTO;
+import com.ohouse.member.dao.CouponDAO;
 import com.ohouse.util.conn.ConnectionProvider;
 
 import java.sql.Connection;
@@ -15,7 +15,6 @@ import java.util.List;
 public class ProductService {
 
     private ProductDAO productdao = new ProductDAOImpl();
-
 
     public List<ProductDTO> getProductListByCategories(
             Connection conn,
@@ -88,6 +87,13 @@ public class ProductService {
         try (Connection conn = ConnectionProvider.getConnection()) {
             List<CouponDTO> clist = couponDAO.selectAllCoupons(conn, member_id);
             return clist;
+        }
+    }
+    // 쿠폰 카운트
+    public int getmyCouponCount(int member_id) throws Exception {
+        try (Connection conn = ConnectionProvider.getConnection()) {
+            int count = couponDAO.getCouponCount(conn,member_id);
+            return count;
         }
     }
 }

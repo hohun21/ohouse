@@ -295,9 +295,13 @@
                                 </c:if>
                                 <span class="price"><fmt:formatNumber value="${product.price}" pattern="#,###"/>원</span>
                             </div>
+                            
                             <div class="review-area">
-                                <span class="star">★</span> 4.8 리뷰 1,204
+                                <span class="star">★</span>
+                                <fmt:formatNumber value="${product.avgRating}" pattern="0.0"/>
+                                <span> 리뷰 <fmt:formatNumber value="${product.reviewCount}" pattern="#,###"/>개</span>
                             </div>
+                            
                         </a>
                         
                     </c:forEach>

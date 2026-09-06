@@ -22,7 +22,7 @@ import java.util.List;
 
 public class PaymentSuccessHandler implements CommandHandler {
 
-    private static final boolean DEV_MODE = false;
+    private static final boolean DEV_MODE = true;
 
     @Override
     public String process(HttpServletRequest request, HttpServletResponse response) throws Exception {

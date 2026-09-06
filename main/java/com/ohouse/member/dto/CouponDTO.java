@@ -1,4 +1,4 @@
-package com.ohouse.shopping.domain;
+package com.ohouse.member.dto;
 
 import lombok.*;
 
@@ -10,7 +10,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class CouponDTO {
-
+    private int member_coupon_id;
     private String coupon_name;
     private String discount_type;
     private double discount_value;
