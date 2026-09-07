@@ -2,7 +2,9 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
-<jsp:include page="/WEB-INF/views/layout/header.jsp" />
+<jsp:include page="/WEB-INF/views/layout/header.jsp">
+  <jsp:param name="showSubHeaderAtTop" value="false"/>
+</jsp:include>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/category.css" />
 
 <!-- 스토어 전용 서브 메뉴 -->
