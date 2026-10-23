@@ -3,7 +3,10 @@
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
-<jsp:include page="/WEB-INF/views/layout/header.jsp" />
+<jsp:include page="/WEB-INF/views/layout/header.jsp">
+  <jsp:param name="showSubHeaderAtTop" value="false"/>
+</jsp:include>
+
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/category.css" />
 
 <!-- 2단 분할 메인 컨텐츠 시작 -->
